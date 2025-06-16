@@ -1,6 +1,24 @@
-# Welcome to your Expo app 👋
+# TingMate Frontend
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+<!-- TODO: add sections includes:
+- functions/features
+- dependencies -->
+
+## Project Overview
+
+**TingMate** is a daily support app designed for memory-impaired individuals and their caregivers, featuring an AI voice assistant to help manage reminders and tasks. The name "TingMate" reflects its role as a reliable companion for reminders and to-do tasks. This repository contains the frontend implementation, built with React Native and Expo.
+
+## Project Structure
+
+- `app`: Expo routing files for navigation (e.g., tabs for Home and Explore).
+- `src/assets`: Fonts and images.
+- `src/components`: Reusable UI components, organized by Atomic Design (atoms, molecules, organisms).
+- `src/screens`: Screen components containing UI logic for each app page.
+- `src/store`: State management (e.g., Redux, to be added later).
+- `src/styles`: Global styles and themes (e.g., colors, typography).
+- `src/hooks`: Custom hooks.
+- `src/constants`: Constants for configuration.
+- `src/types`: TypeScript type definitions.
 
 ## Get started
 
@@ -41,10 +59,3 @@ To learn more about developing your project with Expo, look at the following res
 
 - [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
 - [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
-
-## Join the community
-
-Join our community of developers creating universal apps.
-
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
