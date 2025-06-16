@@ -7,10 +7,7 @@ import { ThemedView } from '@/components/atoms/ThemedView';
 import { useColorScheme } from '@/hooks/useColorScheme';
 import { Colors } from '@/styles/Colors';
 
-export function Collapsible({
-  children,
-  title,
-}: PropsWithChildren & { title: string }) {
+export function Collapsible({ children, title }: PropsWithChildren & { title: string }) {
   const [isOpen, setIsOpen] = useState(false);
   const theme = useColorScheme() ?? 'light';
 
@@ -37,13 +34,13 @@ export function Collapsible({
 }
 
 const styles = StyleSheet.create({
-  heading: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-  },
   content: {
-    marginTop: 6,
     marginLeft: 24,
+    marginTop: 6,
+  },
+  heading: {
+    alignItems: 'center',
+    flexDirection: 'row',
+    gap: 6,
   },
 });

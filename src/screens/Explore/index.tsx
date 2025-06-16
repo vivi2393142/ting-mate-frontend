@@ -8,6 +8,10 @@ import { Collapsible } from '@/components/molecules/Collapsible';
 import { ExternalLink } from '@/components/molecules/ExternalLink';
 import ParallaxScrollView from '@/components/organisms/ParallaxScrollView';
 
+const COLORS = {
+  GRAY: '#808080',
+};
+
 export default function TabTwoScreen() {
   return (
     <ParallaxScrollView
@@ -15,7 +19,7 @@ export default function TabTwoScreen() {
       headerImage={
         <IconSymbol
           size={310}
-          color="#808080"
+          color={COLORS.GRAY}
           name="chevron.left.forwardslash.chevron.right"
           style={styles.headerImage}
         />
@@ -51,7 +55,7 @@ export default function TabTwoScreen() {
           <ThemedText type="defaultSemiBold">@3x</ThemedText> suffixes to provide files for
           different screen densities
         </ThemedText>
-        <Image source={require('@/assets/images/react-logo.png')} style={{ alignSelf: 'center' }} />
+        <Image source={require('@/assets/images/react-logo.png')} style={styles.centerImage} />
         <ExternalLink href="https://reactnative.dev/docs/images">
           <ThemedText type="link">Learn more</ThemedText>
         </ExternalLink>
@@ -59,9 +63,7 @@ export default function TabTwoScreen() {
       <Collapsible title="Custom fonts">
         <ThemedText>
           Open <ThemedText type="defaultSemiBold">app/_layout.tsx</ThemedText> to see how to load{' '}
-          <ThemedText style={{ fontFamily: 'SpaceMono' }}>
-            custom fonts such as this one.
-          </ThemedText>
+          <ThemedText style={styles.spaceMonoFont}>custom fonts such as this one.</ThemedText>
         </ThemedText>
         <ExternalLink href="https://docs.expo.dev/versions/latest/sdk/font">
           <ThemedText type="link">Learn more</ThemedText>
@@ -98,11 +100,17 @@ export default function TabTwoScreen() {
 }
 
 const styles = StyleSheet.create({
+  centerImage: {
+    alignSelf: 'center',
+  },
   headerImage: {
-    color: '#808080',
     bottom: -90,
+    color: COLORS.GRAY,
     left: -35,
     position: 'absolute',
+  },
+  spaceMonoFont: {
+    fontFamily: 'SpaceMono',
   },
   titleContainer: {
     flexDirection: 'row',

@@ -1,7 +1,6 @@
 import typescriptEslint from '@typescript-eslint/eslint-plugin';
 import typescriptParser from '@typescript-eslint/parser';
-import expoConfig from 'eslint-config-expo/flat';
-import importPlugin from 'eslint-plugin-import';
+import expoConfig from 'eslint-config-expo/flat.js';
 import prettier from 'eslint-plugin-prettier';
 import react from 'eslint-plugin-react';
 import reactNative from 'eslint-plugin-react-native';
@@ -23,16 +22,16 @@ export default defineConfig([
       'react-native': reactNative,
       '@typescript-eslint': typescriptEslint,
       prettier,
-      import: importPlugin,
     },
     rules: {
       ...typescriptEslint.configs.recommended.rules,
       ...react.configs.recommended.rules,
       ...reactNative.configs.all.rules,
+      'react/react-in-jsx-scope': 'off',
       'react-native/no-unused-styles': 'error',
       'react-native/no-inline-styles': 'error',
       'react-native/no-color-literals': 'error',
-      'react-native/no-raw-text': 'error',
+      'react-native/no-raw-text': ['error', { skip: ['ThemedText'] }],
       'prettier/prettier': [
         'error',
         {
