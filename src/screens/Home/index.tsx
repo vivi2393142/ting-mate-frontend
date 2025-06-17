@@ -1,6 +1,8 @@
 import { Image } from 'expo-image';
 import { Platform, StyleSheet } from 'react-native';
 
+import useAppTheme from '@/hooks/useAppTheme';
+
 import ThemedText from '@/components/atoms/ThemedText';
 import ThemedView from '@/components/atoms/ThemedView';
 import HelloWave from '@/components/organisms/HelloWave';
@@ -8,9 +10,14 @@ import HelloWave from '@/components/organisms/HelloWave';
 import ParallaxScrollView from '@/components/organisms/ParallaxScrollView';
 
 const HomeScreen = () => {
+  const theme = useAppTheme();
+
   return (
     <ParallaxScrollView
-      headerBackgroundColor={{ light: '#A1CEDC', dark: '#1D3D47' }}
+      headerBackgroundColor={{
+        light: theme.colors.primaryContainer,
+        dark: theme.colors.primaryContainer,
+      }}
       headerImage={
         <Image
           accessibilityIgnoresInvertColors

@@ -1,6 +1,6 @@
 // Fallback for using MaterialIcons on Android and web.
 
-import { SymbolViewProps, SymbolWeight } from 'expo-symbols';
+import { SymbolViewProps } from 'expo-symbols';
 import { ComponentProps } from 'react';
 import { type StyleProp, type TextStyle } from 'react-native';
 
@@ -30,13 +30,11 @@ const IconSymbol = ({
   size = 24,
   color,
   style,
-  weight = 'regular',
 }: {
   name: SymbolViewProps['name'];
   size?: number;
   color: string;
   style?: StyleProp<TextStyle>;
-  weight?: SymbolWeight;
 }) => {
   return <MaterialIcons color={color} size={size} name={MAPPING[name]} style={style} />;
 };

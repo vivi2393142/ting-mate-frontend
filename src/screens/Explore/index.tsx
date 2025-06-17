@@ -2,6 +2,8 @@ import { Platform, StyleSheet } from 'react-native';
 
 import { Image } from 'expo-image';
 
+import useAppTheme from '@/hooks/useAppTheme';
+
 import IconSymbol from '@/components/atoms/IconSymbol';
 import ThemedText from '@/components/atoms/ThemedText';
 import ThemedView from '@/components/atoms/ThemedView';
@@ -9,18 +11,15 @@ import Collapsible from '@/components/molecules/Collapsible';
 import ExternalLink from '@/components/molecules/ExternalLink';
 import ParallaxScrollView from '@/components/organisms/ParallaxScrollView';
 
-const COLORS = {
-  GRAY: '#808080',
-};
-
 const TabTwoScreen = () => {
+  const theme = useAppTheme();
+
   return (
     <ParallaxScrollView
-      headerBackgroundColor={{ light: '#D0D0D0', dark: '#353636' }}
       headerImage={
         <IconSymbol
           size={310}
-          color={COLORS.GRAY}
+          color={theme.colors.onSurfaceVariant}
           name="chevron.left.forwardslash.chevron.right"
           style={styles.headerImage}
         />
@@ -73,8 +72,8 @@ const TabTwoScreen = () => {
       <Collapsible title="Light and dark mode components">
         <ThemedText>
           This template has light and dark mode support. The{' '}
-          <ThemedText type="defaultSemiBold">useColorScheme()</ThemedText> hook lets you inspect
-          what the user&apos;s current color scheme is, and so you can adjust UI colors accordingly.
+          <ThemedText type="defaultSemiBold">useAppTheme()</ThemedText> hook lets you access the
+          current theme and adjust UI colors accordingly.
         </ThemedText>
         <ExternalLink href="https://docs.expo.dev/develop/user-interface/color-themes/">
           <ThemedText type="link">Learn more</ThemedText>
@@ -108,7 +107,6 @@ const styles = StyleSheet.create({
   },
   headerImage: {
     bottom: -90,
-    color: COLORS.GRAY,
     left: -35,
     position: 'absolute',
   },

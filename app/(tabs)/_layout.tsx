@@ -3,29 +3,29 @@ import { Platform } from 'react-native';
 
 import { Tabs } from 'expo-router';
 
-import useColorScheme from '@/hooks/useColorScheme';
-import Colors from '@/styles/Colors';
+import useAppTheme from '@/hooks/useAppTheme';
 
 import IconSymbol from '@/components/atoms/IconSymbol';
-import TabBarBackground from '@/components/atoms/TabBarBackground';
 import HapticTab from '@/components/molecules/HapticTab';
 
 const TabLayout = () => {
-  const colorScheme = useColorScheme();
+  const theme = useAppTheme();
 
   return (
     <Tabs
       screenOptions={{
-        tabBarActiveTintColor: Colors[colorScheme ?? 'light'].tint,
+        tabBarActiveTintColor: theme.colors.primary,
+        tabBarInactiveTintColor: theme.colors.onSurfaceVariant,
         headerShown: false,
         tabBarButton: HapticTab,
-        tabBarBackground: TabBarBackground,
         tabBarStyle: Platform.select({
           ios: {
-            // Use a transparent background on iOS to show the blur effect
+            backgroundColor: theme.colors.surface,
             position: 'absolute',
           },
-          default: {},
+          default: {
+            backgroundColor: theme.colors.surface,
+          },
         }),
       }}
     >
@@ -41,6 +41,14 @@ const TabLayout = () => {
         options={{
           title: 'Explore',
           tabBarIcon: ({ color }) => <IconSymbol size={28} name="paperplane.fill" color={color} />,
+        }}
+      />
+      {/* TODO: remove this screen */}
+      <Tabs.Screen
+        name="themeTest"
+        options={{
+          title: 'Theme Test',
+          tabBarIcon: ({ color }) => <IconSymbol size={28} name="paintbrush.fill" color={color} />,
         }}
       />
     </Tabs>

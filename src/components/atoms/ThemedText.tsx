@@ -1,6 +1,6 @@
 import { StyleSheet, Text, type TextProps } from 'react-native';
 
-import { useThemeColor } from '@/hooks/useThemeColor';
+import useAppTheme from '@/hooks/useAppTheme';
 
 export type ThemedTextProps = TextProps & {
   lightColor?: string;
@@ -15,7 +15,10 @@ const ThemedText = ({
   type = 'default',
   ...rest
 }: ThemedTextProps) => {
-  const color = useThemeColor({ light: lightColor, dark: darkColor }, 'text');
+  const theme = useAppTheme();
+  const color = theme.dark
+    ? (darkColor ?? theme.colors.onSurface)
+    : (lightColor ?? theme.colors.onSurface);
 
   return (
     <Text
@@ -25,7 +28,7 @@ const ThemedText = ({
         type === 'title' ? styles.title : undefined,
         type === 'defaultSemiBold' ? styles.defaultSemiBold : undefined,
         type === 'subtitle' ? styles.subtitle : undefined,
-        type === 'link' ? styles.link : undefined,
+        type === 'link' ? [styles.link, { color: theme.colors.primary }] : undefined,
         style,
       ]}
       {...rest}
@@ -45,10 +48,7 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     lineHeight: 24,
   },
-  // TODO: this is original example code, should be removed or use theme color
-  // eslint-disable-next-line react-native/no-color-literals
   link: {
-    color: '#0a7ea4',
     fontSize: 16,
     lineHeight: 30,
   },
