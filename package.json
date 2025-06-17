@@ -10,7 +10,8 @@
     "ios": "expo start --ios",
     "web": "expo start --web",
     "lint": "expo lint",
-    "prepare": "husky"
+    "prepare": "husky",
+    "check-a11y": "eslint --ext .js,.jsx,.ts,.tsx src/ --rule 'react-native-a11y/has-accessibility-hint: error' --rule 'react-native-a11y/has-accessibility-props: error' --rule 'react-native-a11y/has-valid-accessibility-role: error' --rule 'react-native-a11y/has-valid-accessibility-state: error'"
   },
   "dependencies": {
     "@expo/vector-icons": "^14.1.0",
@@ -53,6 +54,7 @@
     "eslint-plugin-prettier": "^5.4.1",
     "eslint-plugin-react": "^7.37.5",
     "eslint-plugin-react-native": "^5.0.0",
+    "eslint-plugin-react-native-a11y": "^3.5.1",
     "husky": "^9.1.7",
     "lint-staged": "^16.1.2",
     "prettier": "^3.5.3",

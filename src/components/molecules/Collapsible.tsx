@@ -15,6 +15,7 @@ const Collapsible = ({ children, title }: PropsWithChildren & { title: string })
   return (
     <ThemedView>
       <TouchableOpacity
+        accessibilityRole="button"
         style={styles.heading}
         onPress={() => setIsOpen((value) => !value)}
         activeOpacity={0.8}

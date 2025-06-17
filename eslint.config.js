@@ -4,6 +4,7 @@ import expoConfig from 'eslint-config-expo/flat.js';
 import prettier from 'eslint-plugin-prettier';
 import react from 'eslint-plugin-react';
 import reactNative from 'eslint-plugin-react-native';
+import reactNativeA11y from 'eslint-plugin-react-native-a11y';
 
 import { defineConfig } from 'eslint/config';
 
@@ -22,11 +23,13 @@ export default defineConfig([
       'react-native': reactNative,
       '@typescript-eslint': typescriptEslint,
       prettier,
+      'react-native-a11y': reactNativeA11y,
     },
     rules: {
       ...typescriptEslint.configs.recommended.rules,
       ...react.configs.recommended.rules,
       ...reactNative.configs.all.rules,
+      ...reactNativeA11y.configs.all.rules,
       'react/react-in-jsx-scope': 'off',
       'react-native/no-unused-styles': 'error',
       'react-native/no-inline-styles': 'error',
