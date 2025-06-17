@@ -39,6 +39,21 @@ export default defineConfig([
         },
       ],
       'import/no-extraneous-dependencies': ['error', { devDependencies: true }],
+      'func-style': ['error', 'expression', { allowArrowFunctions: true }],
+      'react/function-component-definition': [
+        'error',
+        {
+          namedComponents: 'arrow-function',
+          unnamedComponents: 'arrow-function',
+        },
+      ],
+      'import/no-default-export': 'off',
+      'import/prefer-default-export': [
+        'error',
+        {
+          target: 'single',
+        },
+      ],
     },
     settings: {
       react: {

@@ -1,13 +1,14 @@
 import { PropsWithChildren, useState } from 'react';
 import { StyleSheet, TouchableOpacity } from 'react-native';
 
-import { IconSymbol } from '@/components/atoms/IconSymbol';
-import { ThemedText } from '@/components/atoms/ThemedText';
-import { ThemedView } from '@/components/atoms/ThemedView';
 import { useColorScheme } from '@/hooks/useColorScheme';
 import { Colors } from '@/styles/Colors';
 
-export function Collapsible({ children, title }: PropsWithChildren & { title: string }) {
+import IconSymbol from '@/components/atoms/IconSymbol';
+import ThemedText from '@/components/atoms/ThemedText';
+import ThemedView from '@/components/atoms/ThemedView';
+
+const Collapsible = ({ children, title }: PropsWithChildren & { title: string }) => {
   const [isOpen, setIsOpen] = useState(false);
   const theme = useColorScheme() ?? 'light';
 
@@ -31,7 +32,9 @@ export function Collapsible({ children, title }: PropsWithChildren & { title: st
       {isOpen && <ThemedView style={styles.content}>{children}</ThemedView>}
     </ThemedView>
   );
-}
+};
+
+export default Collapsible;
 
 const styles = StyleSheet.create({
   content: {

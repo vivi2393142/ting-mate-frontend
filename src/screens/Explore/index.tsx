@@ -1,18 +1,19 @@
-import { Image } from 'expo-image';
 import { Platform, StyleSheet } from 'react-native';
 
-import { IconSymbol } from '@/components/atoms/IconSymbol';
-import { ThemedText } from '@/components/atoms/ThemedText';
-import { ThemedView } from '@/components/atoms/ThemedView';
-import { Collapsible } from '@/components/molecules/Collapsible';
-import { ExternalLink } from '@/components/molecules/ExternalLink';
+import { Image } from 'expo-image';
+
+import IconSymbol from '@/components/atoms/IconSymbol';
+import ThemedText from '@/components/atoms/ThemedText';
+import ThemedView from '@/components/atoms/ThemedView';
+import Collapsible from '@/components/molecules/Collapsible';
+import ExternalLink from '@/components/molecules/ExternalLink';
 import ParallaxScrollView from '@/components/organisms/ParallaxScrollView';
 
 const COLORS = {
   GRAY: '#808080',
 };
 
-export default function TabTwoScreen() {
+const TabTwoScreen = () => {
   return (
     <ParallaxScrollView
       headerBackgroundColor={{ light: '#D0D0D0', dark: '#353636' }}
@@ -97,7 +98,9 @@ export default function TabTwoScreen() {
       </Collapsible>
     </ParallaxScrollView>
   );
-}
+};
+
+export default TabTwoScreen;
 
 const styles = StyleSheet.create({
   centerImage: {

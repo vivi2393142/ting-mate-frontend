@@ -1,13 +1,13 @@
 import { Image } from 'expo-image';
 import { Platform, StyleSheet } from 'react-native';
 
-import { ThemedText } from '@/components/atoms/ThemedText';
-import { ThemedView } from '@/components/atoms/ThemedView';
-import { HelloWave } from '@/components/organisms/HelloWave';
+import ThemedText from '@/components/atoms/ThemedText';
+import ThemedView from '@/components/atoms/ThemedView';
+import HelloWave from '@/components/organisms/HelloWave';
 
 import ParallaxScrollView from '@/components/organisms/ParallaxScrollView';
 
-export default function HomeScreen() {
+const HomeScreen = () => {
   return (
     <ParallaxScrollView
       headerBackgroundColor={{ light: '#A1CEDC', dark: '#1D3D47' }}
@@ -55,7 +55,9 @@ export default function HomeScreen() {
       </ThemedView>
     </ParallaxScrollView>
   );
-}
+};
+
+export default HomeScreen;
 
 const styles = StyleSheet.create({
   reactLogo: {

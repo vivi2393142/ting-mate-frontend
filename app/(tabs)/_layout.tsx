@@ -1,14 +1,16 @@
-import { Tabs } from 'expo-router';
 import React from 'react';
 import { Platform } from 'react-native';
 
-import { IconSymbol } from '@/components/atoms/IconSymbol';
-import TabBarBackground from '@/components/atoms/TabBarBackground';
-import { HapticTab } from '@/components/molecules/HapticTab';
-import { useColorScheme } from '@/hooks/useColorScheme';
-import { Colors } from '@/styles/Colors';
+import { Tabs } from 'expo-router';
 
-export default function TabLayout() {
+import useColorScheme from '@/hooks/useColorScheme';
+import Colors from '@/styles/Colors';
+
+import IconSymbol from '@/components/atoms/IconSymbol';
+import TabBarBackground from '@/components/atoms/TabBarBackground';
+import HapticTab from '@/components/molecules/HapticTab';
+
+const TabLayout = () => {
   const colorScheme = useColorScheme();
 
   return (
@@ -43,4 +45,6 @@ export default function TabLayout() {
       />
     </Tabs>
   );
-}
+};
+
+export default TabLayout;
