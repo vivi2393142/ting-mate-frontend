@@ -5,6 +5,8 @@
   "type": "module",
   "scripts": {
     "start": "expo start",
+    "dev": "expo start --env development",
+    "prod": "expo start --env production",
     "android": "expo start --android",
     "ios": "expo start --ios",
     "web": "expo start --web",
