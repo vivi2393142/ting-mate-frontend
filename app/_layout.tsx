@@ -5,6 +5,7 @@ import { ThemeProvider } from '@react-navigation/native';
 import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { PaperProvider } from 'react-native-paper';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 import useColorScheme from '@/hooks/useColorScheme';
 import '@/i18n';
@@ -30,15 +31,17 @@ const RootLayout = () => {
   const navigationTheme = colorScheme === 'dark' ? navigationDarkTheme : navigationLightTheme;
 
   return (
-    <PaperProvider theme={paperTheme}>
-      <ThemeProvider value={navigationTheme}>
-        <Stack>
-          <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-          <Stack.Screen name="+not-found" />
-        </Stack>
-        <StatusBar style={colorScheme === 'dark' ? 'light' : 'dark'} />
-      </ThemeProvider>
-    </PaperProvider>
+    <SafeAreaProvider>
+      <PaperProvider theme={paperTheme}>
+        <ThemeProvider value={navigationTheme}>
+          <Stack>
+            <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+            <Stack.Screen name="+not-found" />
+          </Stack>
+          <StatusBar style={colorScheme === 'dark' ? 'light' : 'dark'} />
+        </ThemeProvider>
+      </PaperProvider>
+    </SafeAreaProvider>
   );
 };
 

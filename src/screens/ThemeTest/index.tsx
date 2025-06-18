@@ -1,5 +1,5 @@
 /* eslint-disable i18next/no-literal-string */
-import { ScrollView, StyleSheet, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 import {
   Button,
   Card,
@@ -17,12 +17,18 @@ import {
 
 import useAppTheme from '@/hooks/useAppTheme';
 
+import ThemedView from '@/components/atoms/ThemedView';
+
 // TODO: remove this screen
 const ThemeTestScreen = () => {
   const theme = useAppTheme();
 
   return (
-    <ScrollView style={[styles.container, { backgroundColor: theme.colors.background }]}>
+    <ThemedView
+      isRoot
+      scrollable
+      style={[styles.container, { backgroundColor: theme.colors.background }]}
+    >
       <Text variant="headlineMedium" style={styles.sectionTitle}>
         Typography
       </Text>
@@ -155,7 +161,7 @@ const ThemeTestScreen = () => {
         </View>
         <ProgressBar progress={0.5} style={styles.progressBar} />
       </View>
-    </ScrollView>
+    </ThemedView>
   );
 };
 

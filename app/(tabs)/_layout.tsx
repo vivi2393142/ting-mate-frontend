@@ -22,7 +22,6 @@ const TabLayout = () => {
         tabBarStyle: Platform.select({
           ios: {
             backgroundColor: theme.colors.surface,
-            position: 'absolute',
           },
           default: {
             backgroundColor: theme.colors.surface,

@@ -47,7 +47,7 @@ const ParallaxScrollView = ({ children, headerImage, headerBackgroundColor }: Pr
     : theme.colors.surfaceVariant;
 
   return (
-    <ThemedView style={styles.container}>
+    <ThemedView isRoot style={styles.container}>
       <Animated.ScrollView
         ref={scrollRef}
         scrollEventThrottle={16}
