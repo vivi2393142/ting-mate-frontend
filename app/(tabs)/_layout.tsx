@@ -1,4 +1,4 @@
-import React from 'react';
+import { useTranslation } from 'react-i18next';
 import { Platform } from 'react-native';
 
 import { Tabs } from 'expo-router';
@@ -10,6 +10,7 @@ import HapticTab from '@/components/molecules/HapticTab';
 
 const TabLayout = () => {
   const theme = useAppTheme();
+  const { t } = useTranslation('common');
 
   return (
     <Tabs
@@ -32,14 +33,14 @@ const TabLayout = () => {
       <Tabs.Screen
         name="index"
         options={{
-          title: 'Home',
+          title: t('Home'),
           tabBarIcon: ({ color }) => <IconSymbol size={28} name="house.fill" color={color} />,
         }}
       />
       <Tabs.Screen
         name="explore"
         options={{
-          title: 'Explore',
+          title: t('Explore'),
           tabBarIcon: ({ color }) => <IconSymbol size={28} name="paperplane.fill" color={color} />,
         }}
       />
@@ -47,7 +48,7 @@ const TabLayout = () => {
       <Tabs.Screen
         name="themeTest"
         options={{
-          title: 'Theme Test',
+          title: t('Theme Test'),
           tabBarIcon: ({ color }) => <IconSymbol size={28} name="paintbrush.fill" color={color} />,
         }}
       />

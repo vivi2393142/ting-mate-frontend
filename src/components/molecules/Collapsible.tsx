@@ -22,8 +22,8 @@ const Collapsible = ({ children, title }: PropsWithChildren & { title: string })
         <IconSymbol
           name="chevron.right"
           size={18}
-          weight="medium"
           color={theme.colors.onSurfaceVariant}
+          // eslint-disable-next-line i18next/no-literal-string
           style={{ transform: [{ rotate: isOpen ? '90deg' : '0deg' }] }}
         />
 

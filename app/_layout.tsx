@@ -7,6 +7,7 @@ import { StatusBar } from 'expo-status-bar';
 import { PaperProvider } from 'react-native-paper';
 
 import useColorScheme from '@/hooks/useColorScheme';
+import '@/i18n';
 import {
   customDarkTheme,
   customLightTheme,

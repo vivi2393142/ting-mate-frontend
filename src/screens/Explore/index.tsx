@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import { Platform, StyleSheet } from 'react-native';
 
 import { Image } from 'expo-image';
@@ -13,6 +14,7 @@ import ParallaxScrollView from '@/components/organisms/ParallaxScrollView';
 
 const TabTwoScreen = () => {
   const theme = useAppTheme();
+  const { t } = useTranslation('explore');
 
   return (
     <ParallaxScrollView
@@ -26,71 +28,89 @@ const TabTwoScreen = () => {
       }
     >
       <ThemedView style={styles.titleContainer}>
-        <ThemedText type="title">Explore</ThemedText>
+        <ThemedText type="title">{t('Explore')}</ThemedText>
       </ThemedView>
-      <ThemedText>This app includes example code to help you get started.</ThemedText>
-      <Collapsible title="File-based routing">
+      <ThemedText>{t('This app includes example code to help you get started.')}</ThemedText>
+      <Collapsible title={t('File-based routing')}>
         <ThemedText>
-          This app has two screens:{' '}
+          {t('This app has two screens:')}{' '}
+          {/* eslint-disable-next-line i18next/no-literal-string */}
           <ThemedText type="defaultSemiBold">app/(tabs)/index.tsx</ThemedText> and{' '}
+          {/* eslint-disable-next-line i18next/no-literal-string */}
           <ThemedText type="defaultSemiBold">app/(tabs)/explore.tsx</ThemedText>
         </ThemedText>
         <ThemedText>
-          The layout file in <ThemedText type="defaultSemiBold">app/(tabs)/_layout.tsx</ThemedText>{' '}
-          sets up the tab navigator.
+          {t('The layout file in')} {/* eslint-disable-next-line i18next/no-literal-string */}
+          <ThemedText type="defaultSemiBold">app/(tabs)/_layout.tsx</ThemedText>{' '}
+          {t('sets up the tab navigator.')}
         </ThemedText>
         <ExternalLink href="https://docs.expo.dev/router/introduction">
-          <ThemedText type="link">Learn more</ThemedText>
+          <ThemedText type="link">{t('Learn more')}</ThemedText>
         </ExternalLink>
       </Collapsible>
-      <Collapsible title="Android, iOS, and web support">
+      <Collapsible title={t('Android, iOS, and web support')}>
         <ThemedText>
-          You can open this project on Android, iOS, and the web. To open the web version, press{' '}
-          <ThemedText type="defaultSemiBold">w</ThemedText> in the terminal running this project.
+          {t(
+            'You can open this project on Android, iOS, and the web. To open the web version, press',
+          )}
+          {/* eslint-disable-next-line i18next/no-literal-string */}{' '}
+          <ThemedText type="defaultSemiBold">w</ThemedText>{' '}
+          {t('in the terminal running this project.')}
         </ThemedText>
       </Collapsible>
-      <Collapsible title="Images">
+      <Collapsible title={t('Images')}>
         <ThemedText>
-          For static images, you can use the <ThemedText type="defaultSemiBold">@2x</ThemedText> and{' '}
-          <ThemedText type="defaultSemiBold">@3x</ThemedText> suffixes to provide files for
-          different screen densities
+          {/* eslint-disable-next-line i18next/no-literal-string */}
+          <ThemedText type="defaultSemiBold">@2x</ThemedText> and{' '}
+          {/* eslint-disable-next-line i18next/no-literal-string */}
+          <ThemedText type="defaultSemiBold">@3x</ThemedText>{' '}
+          {t('suffixes to provide files for different screen densities')}
         </ThemedText>
         <Image source={require('@/assets/images/react-logo.png')} style={styles.centerImage} />
         <ExternalLink href="https://reactnative.dev/docs/images">
-          <ThemedText type="link">Learn more</ThemedText>
+          <ThemedText type="link">{t('Learn more')}</ThemedText>
         </ExternalLink>
       </Collapsible>
-      <Collapsible title="Custom fonts">
+      <Collapsible title={t('Custom fonts')}>
         <ThemedText>
-          Open <ThemedText type="defaultSemiBold">app/_layout.tsx</ThemedText> to see how to load{' '}
-          <ThemedText style={styles.spaceMonoFont}>custom fonts such as this one.</ThemedText>
+          {/* eslint-disable-next-line i18next/no-literal-string */}
+          {t('Open')} <ThemedText type="defaultSemiBold">app/_layout.tsx</ThemedText>{' '}
+          {t('to see how to load')}{' '}
+          <ThemedText style={styles.spaceMonoFont}>
+            {t('custom fonts such as this one.')}
+          </ThemedText>
         </ThemedText>
         <ExternalLink href="https://docs.expo.dev/versions/latest/sdk/font">
-          <ThemedText type="link">Learn more</ThemedText>
+          <ThemedText type="link">{t('Learn more')}</ThemedText>
         </ExternalLink>
       </Collapsible>
-      <Collapsible title="Light and dark mode components">
+      <Collapsible title={t('Light and dark mode components')}>
         <ThemedText>
-          This template has light and dark mode support. The{' '}
-          <ThemedText type="defaultSemiBold">useAppTheme()</ThemedText> hook lets you access the
-          current theme and adjust UI colors accordingly.
+          {t('This template has light and dark mode support. The')}{' '}
+          {/* eslint-disable-next-line i18next/no-literal-string */}
+          <ThemedText type="defaultSemiBold">useAppTheme()</ThemedText>{' '}
+          {t('hook lets you access the current theme and adjust UI colors accordingly.')}
         </ThemedText>
         <ExternalLink href="https://docs.expo.dev/develop/user-interface/color-themes/">
-          <ThemedText type="link">Learn more</ThemedText>
+          <ThemedText type="link">{t('Learn more')}</ThemedText>
         </ExternalLink>
       </Collapsible>
-      <Collapsible title="Animations">
+      <Collapsible title={t('Animations')}>
         <ThemedText>
-          This template includes an example of an animated component. The{' '}
-          <ThemedText type="defaultSemiBold">components/HelloWave.tsx</ThemedText> component uses
-          the powerful <ThemedText type="defaultSemiBold">react-native-reanimated</ThemedText>{' '}
-          library to create a waving hand animation.
+          {t('This template includes an example of an animated component. The')}{' '}
+          {/* eslint-disable-next-line i18next/no-literal-string */}
+          <ThemedText type="defaultSemiBold">components/HelloWave.tsx</ThemedText>{' '}
+          {t('component uses the powerful')}{' '}
+          {/* eslint-disable-next-line i18next/no-literal-string */}
+          <ThemedText type="defaultSemiBold">react-native-reanimated</ThemedText>{' '}
+          {t('library to create a waving hand animation.')}
         </ThemedText>
         {Platform.select({
           ios: (
             <ThemedText>
-              The <ThemedText type="defaultSemiBold">components/ParallaxScrollView.tsx</ThemedText>{' '}
-              component provides a parallax effect for the header image.
+              {t('The')} {/* eslint-disable-next-line i18next/no-literal-string */}
+              <ThemedText type="defaultSemiBold">components/ParallaxScrollView.tsx</ThemedText>{' '}
+              {t('component provides a parallax effect for the header image.')}
             </ThemedText>
           ),
         })}

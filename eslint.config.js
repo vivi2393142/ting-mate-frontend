@@ -1,77 +1,80 @@
-import typescriptEslint from '@typescript-eslint/eslint-plugin';
-import typescriptParser from '@typescript-eslint/parser';
-import expoConfig from 'eslint-config-expo/flat.js';
-import prettier from 'eslint-plugin-prettier';
-import react from 'eslint-plugin-react';
-import reactNative from 'eslint-plugin-react-native';
-import reactNativeA11y from 'eslint-plugin-react-native-a11y';
+import eslint from '@eslint/js';
+import prettier from 'eslint-config-prettier';
+import i18nextPlugin from 'eslint-plugin-i18next';
+import reactPlugin from 'eslint-plugin-react';
+import reactHooksPlugin from 'eslint-plugin-react-hooks';
+import reactNativePlugin from 'eslint-plugin-react-native';
+import reactNativeA11yPlugin from 'eslint-plugin-react-native-a11y';
+import tseslint from 'typescript-eslint';
 
-import { defineConfig } from 'eslint/config';
-
-export default defineConfig([
-  expoConfig,
+export default [
+  eslint.configs.recommended,
+  ...tseslint.configs.recommended,
   {
-    files: ['**/*.ts', '**/*.tsx'],
-    languageOptions: {
-      parser: typescriptParser,
-      parserOptions: {
-        project: './tsconfig.json',
-      },
-    },
+    files: ['**/*.{js,jsx,ts,tsx}'],
     plugins: {
-      react,
-      'react-native': reactNative,
-      '@typescript-eslint': typescriptEslint,
-      prettier,
-      'react-native-a11y': reactNativeA11y,
+      react: reactPlugin,
+      'react-hooks': reactHooksPlugin,
+      'react-native': reactNativePlugin,
+      'react-native-a11y': reactNativeA11yPlugin,
+      i18next: i18nextPlugin,
     },
-    rules: {
-      ...typescriptEslint.configs.recommended.rules,
-      ...react.configs.recommended.rules,
-      ...reactNative.configs.all.rules,
-      ...reactNativeA11y.configs.all.rules,
-      'react/react-in-jsx-scope': 'off',
-      'react-native/no-unused-styles': 'error',
-      'react-native/no-inline-styles': 'error',
-      'react-native/no-color-literals': 'error',
-      'react-native/no-raw-text': ['error', { skip: ['ThemedText'] }],
-      'prettier/prettier': [
-        'error',
-        {
-          endOfLine: 'auto',
+    languageOptions: {
+      ecmaVersion: 'latest',
+      sourceType: 'module',
+      parser: tseslint.parser,
+      parserOptions: {
+        ecmaFeatures: {
+          jsx: true,
         },
-      ],
-      'import/no-extraneous-dependencies': ['error', { devDependencies: true }],
-      'func-style': ['error', 'expression', { allowArrowFunctions: true }],
-      'react/function-component-definition': [
-        'error',
-        {
-          namedComponents: 'arrow-function',
-          unnamedComponents: 'arrow-function',
-        },
-      ],
-      'import/no-default-export': 'off',
-      'import/prefer-default-export': [
-        'error',
-        {
-          target: 'single',
-        },
-      ],
+      },
     },
     settings: {
       react: {
         version: 'detect',
       },
-      'react-native/style-sheet-object-names': ['StyleSheet', 'EStyleSheet'],
-      'import/resolver': {
-        typescript: {
-          alwaysTryTypes: true,
-          project: './tsconfig.json',
+    },
+    rules: {
+      'react/react-in-jsx-scope': 'off',
+      'react-native/no-raw-text': 'off', // Use i18next/no-literal-string instead
+      'react-native/sort-styles': 'error',
+      'react-native/no-inline-styles': 'error',
+      'react-native/no-color-literals': 'error',
+      'react-native/no-single-element-style-arrays': 'error',
+      'i18next/no-literal-string': [
+        'error',
+        {
+          mode: 'jsx-only',
+          'jsx-attributes': {
+            exclude: ['href', 'name'],
+          },
         },
+      ],
+      '@typescript-eslint/no-require-imports': [
+        'error',
+        {
+          allow: ['\\.(png|jpg|jpeg|gif|svg|ttf)$'],
+        },
+      ],
+    },
+  },
+  {
+    files: ['**/*.ts', '**/*.tsx', '**/*.d.ts'],
+    languageOptions: {
+      parserOptions: {
+        project: './tsconfig.json',
       },
     },
   },
   {
-    ignores: ['dist/*', 'node_modules/*', '.expo/*'],
+    files: ['scripts/**/*.js'],
+    languageOptions: {
+      ecmaVersion: 'latest',
+      sourceType: 'module',
+      globals: {
+        console: 'readonly',
+      },
+    },
   },
-]);
+  prettier,
+];

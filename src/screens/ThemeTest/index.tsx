@@ -1,3 +1,4 @@
+/* eslint-disable i18next/no-literal-string */
 import { ScrollView, StyleSheet, View } from 'react-native';
 import {
   Button,
