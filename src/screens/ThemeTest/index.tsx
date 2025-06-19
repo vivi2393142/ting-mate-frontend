@@ -55,19 +55,19 @@ const ThemeTestScreen = () => {
       </Text>
       <View style={styles.section}>
         <Button mode="contained" onPress={() => {}} style={styles.button}>
-          <Text>Contained Button</Text>
+          Contained Button
         </Button>
         <Button mode="outlined" onPress={() => {}} style={styles.button}>
-          <Text>Outlined Button</Text>
+          Outlined Button
         </Button>
         <Button mode="text" onPress={() => {}} style={styles.button}>
-          <Text>Text Button</Text>
+          Text Button
         </Button>
         <Button mode="contained-tonal" onPress={() => {}} style={styles.button}>
-          <Text>Tonal Button</Text>
+          Tonal Button
         </Button>
         <Button mode="contained" icon="camera" onPress={() => {}} style={styles.button}>
-          <Text>Icon Button</Text>
+          Icon Button
         </Button>
       </View>
 
@@ -85,13 +85,13 @@ const ThemeTestScreen = () => {
               accessibilityLabel="Cancel action"
               accessibilityHint="Cancels the current operation"
             >
-              <Text>Cancel</Text>
+              Cancel
             </Button>
             <Button
               accessibilityLabel="Confirm action"
               accessibilityHint="Confirms the current operation"
             >
-              <Text>Ok</Text>
+              Ok
             </Button>
           </Card.Actions>
         </Card>
@@ -153,10 +153,10 @@ const ThemeTestScreen = () => {
         <FAB icon="plus" style={styles.fab} onPress={() => {}} />
         <View style={styles.chipContainer}>
           <Chip icon="information" onPress={() => {}} style={styles.chip}>
-            <Text>Chip</Text>
+            Chip
           </Chip>
           <Chip icon="check" onPress={() => {}} style={styles.chip}>
-            <Text>Selected</Text>
+            Selected
           </Chip>
         </View>
         <ProgressBar progress={0.5} style={styles.progressBar} />

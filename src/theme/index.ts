@@ -4,9 +4,10 @@ import {
   type Theme as NavigationThemeType,
 } from '@react-navigation/native';
 import type { MD3Theme } from 'react-native-paper';
-import { MD3DarkTheme, MD3LightTheme } from 'react-native-paper';
+import { configureFonts, MD3DarkTheme, MD3LightTheme } from 'react-native-paper';
 
-import figmaTheme from './figmaTheme.json';
+import customColors from './colors.json';
+import customFonts from './fonts.json';
 
 // Base spacing unit (in pixels)
 const BASE_SPACING = 4;
@@ -27,17 +28,18 @@ type CustomTheme = MD3Theme & {
 /* Custom Theme */
 const lightColors = {
   ...MD3LightTheme.colors,
-  ...figmaTheme.schemes.light,
+  ...customColors.schemes.light,
 };
 
 const darkColors = {
   ...MD3DarkTheme.colors,
-  ...figmaTheme.schemes.dark,
+  ...customColors.schemes.dark,
 };
 
-const fonts = {
-  ...MD3LightTheme.fonts,
-};
+// For the elderly-friendly design, font should be larger than 16
+const fonts = configureFonts({
+  config: customFonts,
+});
 
 /* Merged Theme */
 export const customLightTheme: CustomTheme = {
@@ -55,7 +57,7 @@ export const customDarkTheme: CustomTheme = {
 };
 
 const getNavigationThemeColors = (
-  colors: typeof figmaTheme.schemes.light,
+  colors: typeof customColors.schemes.light,
 ): NavigationThemeType['colors'] => ({
   primary: colors.primary,
   background: colors.background,
@@ -67,10 +69,10 @@ const getNavigationThemeColors = (
 
 export const navigationLightTheme: NavigationThemeType = {
   ...NavigationDefaultTheme,
-  colors: getNavigationThemeColors(figmaTheme.schemes.light),
+  colors: getNavigationThemeColors(customColors.schemes.light),
 };
 
 export const navigationDarkTheme: NavigationThemeType = {
   ...NavigationDarkTheme,
-  colors: getNavigationThemeColors(figmaTheme.schemes.dark),
+  colors: getNavigationThemeColors(customColors.schemes.dark),
 };
