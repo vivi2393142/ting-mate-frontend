@@ -1,6 +1,7 @@
 import eslint from '@eslint/js';
 import prettier from 'eslint-config-prettier';
 import i18nextPlugin from 'eslint-plugin-i18next';
+import pluginImport from 'eslint-plugin-import';
 import reactPlugin from 'eslint-plugin-react';
 import reactHooksPlugin from 'eslint-plugin-react-hooks';
 import reactNativePlugin from 'eslint-plugin-react-native';
@@ -18,6 +19,7 @@ export default [
       'react-native': reactNativePlugin,
       'react-native-a11y': reactNativeA11yPlugin,
       i18next: i18nextPlugin,
+      import: pluginImport,
     },
     languageOptions: {
       ecmaVersion: 'latest',
@@ -55,6 +57,12 @@ export default [
         'error',
         {
           allow: ['\\.(png|jpg|jpeg|gif|svg|ttf)$'],
+        },
+      ],
+      'no-restricted-imports': [
+        'error',
+        {
+          patterns: ['.'],
         },
       ],
     },

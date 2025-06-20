@@ -1,14 +1,17 @@
 import { useCallback, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 
-import { StyleSheet, View } from 'react-native';
+import { View } from 'react-native';
 import { List, Text } from 'react-native-paper';
 
 import useAppTheme from '@/hooks/useAppTheme';
 
 import useUserTextSizeTranslation from '@/hooks/useUserTextSizeTranslation';
 import useUserStore from '@/store/useUserStore';
+import type { Theme } from '@/theme';
+import { StaticTheme } from '@/theme';
 import { UserTextSize } from '@/types/user';
+import { createStyles } from '@/utils/createStyles';
 
 import Select from '@/components/atoms/Select';
 import ThemedView from '@/components/atoms/ThemedView';
@@ -31,30 +34,11 @@ const SettingsScreen = () => {
   const { t } = useTranslation('settings');
   const { tUserTextSize } = useUserTextSizeTranslation();
 
-  const theme = useAppTheme();
-
   const userState = useUserStore((state) => state.user);
   const updateUserSettings = useUserStore((state) => state.updateUserSettings);
 
-  const styles = StyleSheet.create({
-    listItem: {
-      // TODO: only show bottom border if not last item
-      borderBottomColor: theme.colors.outlineVariant,
-      borderBottomWidth: 1,
-      paddingRight: theme.spacing.sm,
-      paddingVertical: theme.spacing.xs,
-    },
-    listItemTitle: {
-      fontSize: theme.fonts.bodyLarge.fontSize,
-      lineHeight: theme.fonts.bodyLarge.lineHeight,
-    },
-    subheader: {
-      color: theme.colors.outline,
-      paddingTop: theme.spacing.sm,
-      paddingVertical: theme.spacing.xs,
-      textTransform: 'uppercase',
-    },
-  });
+  const theme = useAppTheme();
+  const styles = getStyles(theme, { userState });
 
   const textSizeOptions = useMemo(
     () =>
@@ -107,5 +91,24 @@ const SettingsScreen = () => {
     </ThemedView>
   );
 };
+
+const getStyles = createStyles({
+  listItem: {
+    borderBottomColor: (theme: Theme) => theme.colors.outlineVariant,
+    borderBottomWidth: 1,
+    paddingRight: StaticTheme.spacing.sm,
+    paddingVertical: StaticTheme.spacing.xs,
+  },
+  listItemTitle: {
+    fontSize: (theme: Theme) => theme.fonts.bodyLarge.fontSize,
+    lineHeight: (theme: Theme) => theme.fonts.bodyLarge.lineHeight,
+  },
+  subheader: {
+    color: (theme: Theme) => theme.colors.outline,
+    paddingTop: StaticTheme.spacing.sm,
+    paddingVertical: StaticTheme.spacing.xs,
+    textTransform: 'uppercase',
+  },
+});
 
 export default SettingsScreen;

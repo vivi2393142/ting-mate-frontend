@@ -1,5 +1,4 @@
 import type { PropsWithChildren, ReactElement } from 'react';
-import { StyleSheet } from 'react-native';
 
 import Animated, {
   interpolate,
@@ -10,6 +9,8 @@ import Animated, {
 
 import { useBottomTabOverflow } from '@/components/atoms/TabBarBackground';
 import useAppTheme from '@/hooks/useAppTheme';
+import { StaticTheme } from '@/theme';
+import { createStyles } from '@/utils/createStyles';
 
 import ThemedView from '@/components/atoms/ThemedView';
 
@@ -22,6 +23,8 @@ type Props = PropsWithChildren<{
 
 const ParallaxScrollView = ({ children, headerImage, headerBackgroundColor }: Props) => {
   const theme = useAppTheme();
+  const styles = getStyles(theme);
+
   const scrollRef = useAnimatedRef<Animated.ScrollView>();
   const scrollOffset = useScrollViewOffset(scrollRef);
   const bottom = useBottomTabOverflow();
@@ -65,15 +68,15 @@ const ParallaxScrollView = ({ children, headerImage, headerBackgroundColor }: Pr
 
 export default ParallaxScrollView;
 
-const styles = StyleSheet.create({
+const getStyles = createStyles({
   container: {
     flex: 1,
   },
   content: {
     flex: 1,
-    gap: 16,
+    gap: StaticTheme.spacing.md,
     overflow: 'hidden',
-    padding: 32,
+    padding: StaticTheme.spacing.xl,
   },
   header: {
     height: HEADER_HEIGHT,

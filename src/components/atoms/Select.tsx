@@ -1,11 +1,14 @@
-import { type ReactNode, useCallback, useMemo, useState } from 'react';
+import { type ReactNode, useCallback, useState } from 'react';
 
 import { Button, Menu, type MenuItemProps } from 'react-native-paper';
 
 import useAppTheme from '@/hooks/useAppTheme';
 import useUserStore from '@/store/useUserStore';
-import { UserTextSize } from '@/types/user';
-import IconSymbol from './IconSymbol';
+import { StaticTheme } from '@/theme';
+import { type User, UserTextSize } from '@/types/user';
+import { createStyles } from '@/utils/createStyles';
+
+import IconSymbol from '@/components/atoms/IconSymbol';
 
 type Value = string | number | boolean;
 export type CustomMenuItemProps<T extends Value> = Omit<MenuItemProps, 'title'> & {
@@ -27,37 +30,7 @@ const Select = <V extends Value, T extends CustomMenuItemProps<V>>({
   const theme = useAppTheme();
   const [open, setOpen] = useState(false);
 
-  const styles = useMemo(
-    () => ({
-      button: {
-        borderRadius: 4,
-      },
-      buttonContent: {
-        flexDirection: 'row-reverse' as const,
-      },
-      label: {
-        marginVertical: theme.spacing.xs,
-      },
-      menuContent: {
-        backgroundColor: theme.colors.background,
-        paddingVertical: 0,
-      },
-      menuItem: {
-        borderBottomColor: theme.colors.outlineVariant,
-        borderBottomWidth: 1,
-        height: userState?.settings.textSize === UserTextSize.LARGE ? 52 : 40,
-      },
-      menuItemLast: {
-        borderBottomWidth: 0,
-      },
-    }),
-    [
-      theme.colors.background,
-      theme.colors.outlineVariant,
-      theme.spacing.xs,
-      userState?.settings.textSize,
-    ],
-  );
+  const styles = getStyles(theme, { userState });
 
   const handleOpen = useCallback(() => {
     setOpen(true);
@@ -110,3 +83,28 @@ const Select = <V extends Value, T extends CustomMenuItemProps<V>>({
 };
 
 export default Select;
+
+const getStyles = createStyles({
+  button: {
+    borderRadius: 4,
+  },
+  buttonContent: {
+    flexDirection: 'row-reverse',
+  },
+  label: {
+    marginVertical: StaticTheme.spacing.xs,
+  },
+  menuContent: {
+    backgroundColor: ({ colors }) => colors.background,
+    paddingVertical: 0,
+  },
+  menuItem: {
+    borderBottomColor: ({ colors }) => colors.outlineVariant,
+    borderBottomWidth: 1,
+    height: (_, params: { userState: User | null }) =>
+      params.userState?.settings.textSize === UserTextSize.LARGE ? 52 : 40,
+  },
+  menuItemLast: {
+    borderBottomWidth: 0,
+  },
+});

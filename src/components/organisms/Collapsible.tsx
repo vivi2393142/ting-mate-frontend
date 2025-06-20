@@ -1,9 +1,11 @@
 import { type PropsWithChildren, useState } from 'react';
-import { StyleSheet, TouchableOpacity } from 'react-native';
 
+import { TouchableOpacity } from 'react-native';
 import { Text } from 'react-native-paper';
 
 import useAppTheme from '@/hooks/useAppTheme';
+import { StaticTheme } from '@/theme';
+import { createStyles } from '@/utils/createStyles';
 
 import IconSymbol from '@/components/atoms/IconSymbol';
 import ThemedView from '@/components/atoms/ThemedView';
@@ -11,6 +13,7 @@ import ThemedView from '@/components/atoms/ThemedView';
 const Collapsible = ({ children, title }: PropsWithChildren & { title: string }) => {
   const [isOpen, setIsOpen] = useState(false);
   const theme = useAppTheme();
+  const styles = getStyles(theme, { isOpen });
 
   return (
     <ThemedView>
@@ -24,27 +27,29 @@ const Collapsible = ({ children, title }: PropsWithChildren & { title: string })
           name="chevron.right"
           size={18}
           color={theme.colors.onSurfaceVariant}
-          // eslint-disable-next-line i18next/no-literal-string
-          style={{ transform: [{ rotate: isOpen ? '90deg' : '0deg' }] }}
+          style={styles.icon}
         />
 
         <Text>{title}</Text>
       </TouchableOpacity>
-      {isOpen && (
-        <ThemedView style={{ marginLeft: theme.spacing.lg, marginTop: theme.spacing.xs }}>
-          {children}
-        </ThemedView>
-      )}
+      {isOpen && <ThemedView style={styles.content}>{children}</ThemedView>}
     </ThemedView>
   );
 };
 
 export default Collapsible;
 
-const styles = StyleSheet.create({
+const getStyles = createStyles({
   heading: {
     alignItems: 'center',
     flexDirection: 'row',
-    gap: 6,
+    gap: StaticTheme.spacing.xs,
+  },
+  content: {
+    marginLeft: StaticTheme.spacing.lg,
+    marginTop: StaticTheme.spacing.xs,
+  },
+  icon: {
+    transform: (_, params: { isOpen: boolean }) => [{ rotate: params.isOpen ? '90deg' : '0deg' }],
   },
 });

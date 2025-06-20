@@ -1,15 +1,15 @@
 import i18n from 'i18next';
 import { initReactI18next } from 'react-i18next';
 
-import enUSCommon from './locales/en-US/common.json';
-import enUSConnect from './locales/en-US/connect.json';
-import enUSHome from './locales/en-US/home.json';
-import enUSSettings from './locales/en-US/settings.json';
+import enUSCommon from '@/i18n/locales/en-US/common.json';
+import enUSConnect from '@/i18n/locales/en-US/connect.json';
+import enUSHome from '@/i18n/locales/en-US/home.json';
+import enUSSettings from '@/i18n/locales/en-US/settings.json';
 
-import zhHantTWCommon from './locales/zh-Hant-TW/common.json';
-import zhHantTWConnect from './locales/zh-Hant-TW/connect.json';
-import zhHantTWHome from './locales/zh-Hant-TW/home.json';
-import zhHantTWSettings from './locales/zh-Hant-TW/settings.json';
+import zhHantTWCommon from '@/i18n/locales/zh-Hant-TW/common.json';
+import zhHantTWConnect from '@/i18n/locales/zh-Hant-TW/connect.json';
+import zhHantTWHome from '@/i18n/locales/zh-Hant-TW/home.json';
+import zhHantTWSettings from '@/i18n/locales/zh-Hant-TW/settings.json';
 
 export const defaultNS = 'common';
 export const resources = {

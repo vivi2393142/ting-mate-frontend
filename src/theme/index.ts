@@ -5,12 +5,12 @@ import {
 } from '@react-navigation/native';
 import { MD3DarkTheme, MD3LightTheme, type MD3Theme } from 'react-native-paper';
 
-import customColors from './colors.json';
+import customColors from '@/theme/colors.json';
 
 // Base spacing unit (in pixels)
 const BASE_SPACING = 4;
 
-export const spacing = {
+const spacing = {
   xs: BASE_SPACING, // 4
   sm: BASE_SPACING * 2, // 8
   md: BASE_SPACING * 4, // 16
@@ -19,6 +19,11 @@ export const spacing = {
   xxl: BASE_SPACING * 12, // 48
 } as const;
 
+export const StaticTheme = {
+  spacing,
+};
+
+// Dynamic icon size
 export const iconSize = {
   standard: {
     small: 24,
@@ -32,12 +37,11 @@ export const iconSize = {
   },
 };
 
-export type CustomTheme = MD3Theme & {
-  spacing: typeof spacing;
+/* Custom Theme */
+export type Theme = MD3Theme & {
   iconSize: (typeof iconSize)['standard'];
 };
 
-/* Custom Theme */
 const lightColors = {
   ...MD3LightTheme.colors,
   ...customColors.schemes.light,
@@ -49,17 +53,15 @@ const darkColors = {
 };
 
 /* Merged Theme */
-export const customLightTheme: CustomTheme = {
+export const customLightTheme: Theme = {
   ...MD3LightTheme,
   colors: lightColors,
-  spacing,
   iconSize: iconSize.standard,
 };
 
-export const customDarkTheme: CustomTheme = {
+export const customDarkTheme: Theme = {
   ...MD3DarkTheme,
   colors: darkColors,
-  spacing,
   iconSize: iconSize.large,
 };
 

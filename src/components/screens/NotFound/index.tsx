@@ -1,16 +1,20 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
-import { StyleSheet } from 'react-native';
 
 import { Link, Stack } from 'expo-router';
 import { Text } from 'react-native-paper';
 
-import { spacing } from '@/theme';
+import useAppTheme from '@/hooks/useAppTheme';
+import { StaticTheme } from '@/theme';
+import { createStyles } from '@/utils/createStyles';
 
 import ThemedView from '@/components/atoms/ThemedView';
 
 const NotFoundScreen = () => {
   const { t } = useTranslation('common');
+
+  const theme = useAppTheme();
+  const styles = getStyles(theme);
 
   return (
     <>
@@ -28,15 +32,15 @@ const NotFoundScreen = () => {
 
 export default NotFoundScreen;
 
-const styles = StyleSheet.create({
+const getStyles = createStyles({
   container: {
     alignItems: 'center',
     flex: 1,
     justifyContent: 'center',
-    padding: spacing.md,
+    padding: StaticTheme.spacing.md,
   },
   link: {
-    marginTop: spacing.md,
-    paddingVertical: spacing.md,
+    marginTop: StaticTheme.spacing.md,
+    paddingVertical: StaticTheme.spacing.md,
   },
 });
