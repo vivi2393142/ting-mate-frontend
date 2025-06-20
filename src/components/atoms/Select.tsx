@@ -1,48 +1,75 @@
-import { type ReactNode, useState } from 'react';
+import { type ReactNode, useCallback, useMemo, useState } from 'react';
 
 import { Button, Menu, type MenuItemProps } from 'react-native-paper';
 
 import useAppTheme from '@/hooks/useAppTheme';
+import useUserStore from '@/store/useUserStore';
+import { UserTextSize } from '@/types/user';
 import IconSymbol from './IconSymbol';
 
-export type CustomMenuItemProps<T extends string | number | boolean> = Omit<
-  MenuItemProps,
-  'title'
-> & {
+type Value = string | number | boolean;
+export type CustomMenuItemProps<T extends Value> = Omit<MenuItemProps, 'title'> & {
   render?: (value: T) => ReactNode;
   value: T;
 };
-interface SelectProps<V extends string | number | boolean, T extends CustomMenuItemProps<V>> {
-  displayValue?: ReactNode;
+interface SelectProps<V extends Value, T extends CustomMenuItemProps<V>> {
+  displayValue: ReactNode;
   options: T[];
   onSelect: (option: T) => void;
 }
 
-const Select = <V extends string | number, T extends CustomMenuItemProps<V>>({
+const Select = <V extends Value, T extends CustomMenuItemProps<V>>({
   displayValue,
   options,
   onSelect,
 }: SelectProps<V, T>) => {
+  const userState = useUserStore((state) => state.user);
   const theme = useAppTheme();
   const [open, setOpen] = useState(false);
 
-  const styles = {
-    button: {
-      borderRadius: 4,
-    },
-    buttonContent: {
-      flexDirection: 'row-reverse' as const,
-    },
-    label: {
-      marginVertical: theme.spacing.xs,
-    },
-  };
+  const styles = useMemo(
+    () => ({
+      button: {
+        borderRadius: 4,
+      },
+      buttonContent: {
+        flexDirection: 'row-reverse' as const,
+      },
+      label: {
+        marginVertical: theme.spacing.xs,
+      },
+      menuContent: {
+        backgroundColor: theme.colors.background,
+        paddingVertical: 0,
+      },
+      menuItem: {
+        borderBottomColor: theme.colors.outlineVariant,
+        borderBottomWidth: 1,
+        height: userState?.settings.textSize === UserTextSize.LARGE ? 52 : 40,
+      },
+      menuItemLast: {
+        borderBottomWidth: 0,
+      },
+    }),
+    [
+      theme.colors.background,
+      theme.colors.outlineVariant,
+      theme.spacing.xs,
+      userState?.settings.textSize,
+    ],
+  );
 
-  const handleOpen = () => {
+  const handleOpen = useCallback(() => {
     setOpen(true);
-  };
-  const handleClose = () => {
+  }, []);
+
+  const handleClose = useCallback(() => {
     setOpen(false);
+  }, []);
+
+  const handleSelect = (option: T) => {
+    onSelect(option);
+    handleClose();
   };
 
   return (
@@ -64,15 +91,17 @@ const Select = <V extends string | number, T extends CustomMenuItemProps<V>>({
         </Button>
       }
       anchorPosition="bottom"
+      contentStyle={styles.menuContent}
     >
-      {options.map((option: T) => {
+      {options.map((option: T, idx) => {
         const { value, render, ...menuItemProps } = option;
         return (
           <Menu.Item
             key={value.toString()}
             title={render ? render(value) : value}
-            onPress={() => onSelect(option)}
+            onPress={() => handleSelect(option)}
             {...menuItemProps}
+            style={[styles.menuItem, idx === options.length - 1 && styles.menuItemLast]}
           />
         );
       })}

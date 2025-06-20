@@ -1,3 +1,4 @@
+import { useCallback, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import { StyleSheet, View } from 'react-native';
@@ -36,11 +37,16 @@ const SettingsScreen = () => {
   const updateUserSettings = useUserStore((state) => state.updateUserSettings);
 
   const styles = StyleSheet.create({
-    optionItem: {
+    listItem: {
+      // TODO: only show bottom border if not last item
       borderBottomColor: theme.colors.outlineVariant,
-      borderBottomWidth: StyleSheet.hairlineWidth,
+      borderBottomWidth: 1,
       paddingRight: theme.spacing.sm,
       paddingVertical: theme.spacing.xs,
+    },
+    listItemTitle: {
+      fontSize: theme.fonts.bodyLarge.fontSize,
+      lineHeight: theme.fonts.bodyLarge.lineHeight,
     },
     subheader: {
       color: theme.colors.outline,
@@ -50,14 +56,21 @@ const SettingsScreen = () => {
     },
   });
 
-  const textSizeOptions = Object.values(UserTextSize).map((value) => ({
-    value: value,
-    title: tUserTextSize(value),
-  }));
+  const textSizeOptions = useMemo(
+    () =>
+      Object.values(UserTextSize).map((value) => ({
+        value: value,
+        title: tUserTextSize(value),
+      })),
+    [tUserTextSize],
+  );
 
-  const handleTextSizeSelect = (option: (typeof textSizeOptions)[number]) => {
-    updateUserSettings({ textSize: option.value });
-  };
+  const handleTextSizeSelect = useCallback(
+    (option: (typeof textSizeOptions)[number]) => {
+      updateUserSettings({ textSize: option.value });
+    },
+    [updateUserSettings],
+  );
 
   // TODO: Add login screen
   // eslint-disable-next-line i18next/no-literal-string
@@ -75,20 +88,21 @@ const SettingsScreen = () => {
                 onSelect={handleTextSizeSelect}
               />
             )}
-            style={styles.optionItem}
+            titleStyle={styles.listItemTitle}
+            style={styles.listItem}
           />
         </View>
       </SectionGroup>
       {/* TODO: implement reset settings */}
       <SectionGroup title={t('Reminder')} subheaderStyle={styles.subheader}>
-        <List.Item title={t('pending', { defaultValue: 'pending' })} style={styles.optionItem} />
+        <List.Item title={t('pending', { defaultValue: 'pending' })} style={styles.listItem} />
       </SectionGroup>
       <SectionGroup title={t('Voice Assistant')} subheaderStyle={styles.subheader}>
-        <List.Item title={t('pending', { defaultValue: 'pending' })} style={styles.optionItem} />
+        <List.Item title={t('pending', { defaultValue: 'pending' })} style={styles.listItem} />
       </SectionGroup>
       <SectionGroup title={t('Account')} subheaderStyle={styles.subheader}>
-        <List.Item title={t('pending', { defaultValue: 'pending' })} style={styles.optionItem} />
-        <List.Item title={t('Logout')} style={styles.optionItem} />
+        <List.Item title={t('pending', { defaultValue: 'pending' })} style={styles.listItem} />
+        <List.Item title={t('Logout')} style={styles.listItem} />
       </SectionGroup>
     </ThemedView>
   );
