@@ -3,11 +3,9 @@ import {
   DefaultTheme as NavigationDefaultTheme,
   type Theme as NavigationThemeType,
 } from '@react-navigation/native';
-import type { MD3Theme } from 'react-native-paper';
-import { configureFonts, MD3DarkTheme, MD3LightTheme } from 'react-native-paper';
+import { MD3DarkTheme, MD3LightTheme, type MD3Theme } from 'react-native-paper';
 
 import customColors from './colors.json';
-import customFonts from './fonts.json';
 
 // Base spacing unit (in pixels)
 const BASE_SPACING = 4;
@@ -21,8 +19,22 @@ export const spacing = {
   xxl: BASE_SPACING * 12, // 48
 } as const;
 
-type CustomTheme = MD3Theme & {
+export const iconSize = {
+  standard: {
+    small: 24,
+    medium: 28,
+    large: 32,
+  },
+  large: {
+    small: 28,
+    medium: 32,
+    large: 36,
+  },
+};
+
+export type CustomTheme = MD3Theme & {
   spacing: typeof spacing;
+  iconSize: (typeof iconSize)['standard'];
 };
 
 /* Custom Theme */
@@ -36,24 +48,19 @@ const darkColors = {
   ...customColors.schemes.dark,
 };
 
-// For the elderly-friendly design, font should be larger than 16
-const fonts = configureFonts({
-  config: customFonts,
-});
-
 /* Merged Theme */
 export const customLightTheme: CustomTheme = {
   ...MD3LightTheme,
   colors: lightColors,
-  fonts,
   spacing,
+  iconSize: iconSize.standard,
 };
 
 export const customDarkTheme: CustomTheme = {
   ...MD3DarkTheme,
   colors: darkColors,
-  fonts,
   spacing,
+  iconSize: iconSize.large,
 };
 
 const getNavigationThemeColors = (

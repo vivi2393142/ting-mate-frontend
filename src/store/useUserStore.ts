@@ -1,19 +1,30 @@
 import { create } from 'zustand';
 
-interface User {
-  email: string;
-  name: string;
-}
+import { UserTextSize, type User } from '@/types/user';
 
 interface UserState {
   user: User | null;
   setUser: (user: User) => void;
+  updateUserSettings: (settings: Partial<User['settings']>) => void;
   clearUser: () => void;
 }
 
 const useUserStore = create<UserState>((set) => ({
-  user: null,
+  // TODO: get init user from API
+  user: {
+    email: 'test@example.com',
+    name: 'Test Doe',
+    settings: {
+      textSize: UserTextSize.STANDARD,
+    },
+  },
   setUser: (user: User) => set({ user }),
+  updateUserSettings: (settings: Partial<User['settings']>) =>
+    set((state) => ({
+      user: state.user
+        ? { ...state.user, settings: { ...state.user.settings, ...settings } }
+        : null,
+    })),
   clearUser: () => set({ user: null }),
 }));
 

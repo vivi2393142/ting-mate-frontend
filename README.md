@@ -10,10 +10,9 @@
 
 ## Project Structure
 
-- `app`: Expo routing files for navigation (e.g., tabs for Home and Explore).
+- `app`: Expo routing files for navigation (e.g., tabs for Home and Settings).
 - `src/assets`: Fonts and images.
-- `src/components`: Reusable UI components, organized by Atomic Design (atoms, molecules, organisms).
-- `src/screens`: Screen components containing UI logic for each app page.
+- `src/components`: Reusable UI components, organized by Atomic Design (atoms, organisms) and screens (UI logic for each app page).
 - `src/store`: State management (e.g., Redux, to be added later).
 - `src/styles`: Global styles and themes (e.g., colors, typography).
 - `src/hooks`: Custom hooks.

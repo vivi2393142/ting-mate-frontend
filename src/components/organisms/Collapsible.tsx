@@ -1,10 +1,11 @@
-import { PropsWithChildren, useState } from 'react';
+import { type PropsWithChildren, useState } from 'react';
 import { StyleSheet, TouchableOpacity } from 'react-native';
+
+import { Text } from 'react-native-paper';
 
 import useAppTheme from '@/hooks/useAppTheme';
 
 import IconSymbol from '@/components/atoms/IconSymbol';
-import ThemedText from '@/components/atoms/ThemedText';
 import ThemedView from '@/components/atoms/ThemedView';
 
 const Collapsible = ({ children, title }: PropsWithChildren & { title: string }) => {
@@ -27,7 +28,7 @@ const Collapsible = ({ children, title }: PropsWithChildren & { title: string })
           style={{ transform: [{ rotate: isOpen ? '90deg' : '0deg' }] }}
         />
 
-        <ThemedText type="defaultSemiBold">{title}</ThemedText>
+        <Text>{title}</Text>
       </TouchableOpacity>
       {isOpen && (
         <ThemedView style={{ marginLeft: theme.spacing.lg, marginTop: theme.spacing.xs }}>

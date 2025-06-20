@@ -1,10 +1,13 @@
 // Fallback for using MaterialIcons on Android and web.
 
 import { SymbolViewProps } from 'expo-symbols';
-import { ComponentProps } from 'react';
+import { type ComponentProps, useMemo } from 'react';
 import { type StyleProp, type TextStyle } from 'react-native';
 
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
+
+import useUserStore from '@/store/useUserStore';
+import { UserTextSize } from '@/types/user';
 
 type IconMapping = Record<SymbolViewProps['name'], ComponentProps<typeof MaterialIcons>['name']>;
 
@@ -18,6 +21,9 @@ const MAPPING: IconMapping = {
   'paperplane.fill': 'send',
   'chevron.left.forwardslash.chevron.right': 'code',
   'chevron.right': 'chevron-right',
+  'gearshape.fill': 'settings',
+  'person.2.fill': 'people',
+  'chevron.up.chevron.down': 'unfold-more',
 } as IconMapping;
 
 /**
@@ -27,7 +33,7 @@ const MAPPING: IconMapping = {
  */
 const IconSymbol = ({
   name,
-  size = 24,
+  size,
   color,
   style,
 }: {
@@ -36,7 +42,15 @@ const IconSymbol = ({
   color: string;
   style?: StyleProp<TextStyle>;
 }) => {
-  return <MaterialIcons color={color} size={size} name={MAPPING[name]} style={style} />;
+  const userState = useUserStore((state) => state.user);
+  const textSize = useMemo(
+    () => userState?.settings.textSize || UserTextSize.LARGE,
+    [userState?.settings.textSize],
+  );
+
+  return (
+    <MaterialIcons style={style} label={textSize} size={size} color={color} name={MAPPING[name]} />
+  );
 };
 
 export default IconSymbol;

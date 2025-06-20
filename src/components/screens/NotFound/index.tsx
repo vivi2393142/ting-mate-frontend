@@ -3,8 +3,10 @@ import { useTranslation } from 'react-i18next';
 import { StyleSheet } from 'react-native';
 
 import { Link, Stack } from 'expo-router';
+import { Text } from 'react-native-paper';
 
-import ThemedText from '@/components/atoms/ThemedText';
+import { spacing } from '@/theme';
+
 import ThemedView from '@/components/atoms/ThemedView';
 
 const NotFoundScreen = () => {
@@ -14,9 +16,10 @@ const NotFoundScreen = () => {
     <>
       <Stack.Screen options={{ title: t('Oops!') }} />
       <ThemedView isRoot style={styles.container}>
-        <ThemedText type="title">{t('This screen does not exist.')}</ThemedText>
+        <Text>{t('This screen does not exist.')}</Text>
         <Link href="/" style={styles.link}>
-          <ThemedText type="link">{t('Go to home screen!')}</ThemedText>
+          {/* TODO: Add link style */}
+          <Text>{t('Go to home screen!')}</Text>
         </Link>
       </ThemedView>
     </>
@@ -30,10 +33,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     flex: 1,
     justifyContent: 'center',
-    padding: 20,
+    padding: spacing.md,
   },
   link: {
-    marginTop: 15,
-    paddingVertical: 15,
+    marginTop: spacing.md,
+    paddingVertical: spacing.md,
   },
 });
