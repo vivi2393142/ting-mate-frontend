@@ -29,3 +29,6 @@ const useUserStore = create<UserState>((set) => ({
 }));
 
 export default useUserStore;
+
+export const useUserTextSize = () =>
+  useUserStore((state) => state.user?.settings.textSize ?? UserTextSize.STANDARD);

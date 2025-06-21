@@ -3,10 +3,10 @@ import { type ReactNode, useCallback, useState } from 'react';
 import { Button, Menu, type MenuItemProps } from 'react-native-paper';
 
 import useAppTheme from '@/hooks/useAppTheme';
-import useUserStore from '@/store/useUserStore';
+import { useUserTextSize } from '@/store/useUserStore';
 import { StaticTheme } from '@/theme';
-import { type User, UserTextSize } from '@/types/user';
-import { createStyles } from '@/utils/createStyles';
+import { UserTextSize } from '@/types/user';
+import { createStyles, type StyleRecord } from '@/utils/createStyles';
 
 import IconSymbol from '@/components/atoms/IconSymbol';
 
@@ -26,11 +26,12 @@ const Select = <V extends Value, T extends CustomMenuItemProps<V>>({
   options,
   onSelect,
 }: SelectProps<V, T>) => {
-  const userState = useUserStore((state) => state.user);
-  const theme = useAppTheme();
-  const [open, setOpen] = useState(false);
+  const userTextSize = useUserTextSize();
 
-  const styles = getStyles(theme, { userState });
+  const theme = useAppTheme();
+  const styles = getStyles(theme, { textSize: userTextSize });
+
+  const [open, setOpen] = useState(false);
 
   const handleOpen = useCallback(() => {
     setOpen(true);
@@ -57,7 +58,7 @@ const Select = <V extends Value, T extends CustomMenuItemProps<V>>({
           contentStyle={styles.buttonContent}
           labelStyle={styles.label}
           icon={({ color }) => (
-            <IconSymbol name="chevron.up.chevron.down" color={color} size={16}></IconSymbol>
+            <IconSymbol name="chevron.up.chevron.down" color={color} size={16} />
           )}
         >
           {displayValue}
@@ -84,7 +85,14 @@ const Select = <V extends Value, T extends CustomMenuItemProps<V>>({
 
 export default Select;
 
-const getStyles = createStyles({
+interface StyleParams {
+  textSize: UserTextSize;
+}
+
+const getStyles = createStyles<
+  StyleRecord<'button' | 'buttonContent' | 'menuContent' | 'menuItem' | 'menuItemLast', 'label'>,
+  StyleParams
+>({
   button: {
     borderRadius: 4,
   },
@@ -99,10 +107,9 @@ const getStyles = createStyles({
     paddingVertical: 0,
   },
   menuItem: {
-    borderBottomColor: ({ colors }) => colors.outlineVariant,
     borderBottomWidth: 1,
-    height: (_, params: { userState: User | null }) =>
-      params.userState?.settings.textSize === UserTextSize.LARGE ? 52 : 40,
+    borderBottomColor: ({ colors }) => colors.outlineVariant,
+    height: (_, { textSize }) => (textSize === UserTextSize.LARGE ? 52 : 40),
   },
   menuItemLast: {
     borderBottomWidth: 0,

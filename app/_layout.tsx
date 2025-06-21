@@ -10,7 +10,7 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 import useColorScheme from '@/hooks/useColorScheme';
 import '@/i18n';
-import useUserStore from '@/store/useUserStore';
+import { useUserTextSize } from '@/store/useUserStore';
 import {
   customDarkTheme,
   iconSize as customIconSize,
@@ -18,24 +18,23 @@ import {
   navigationDarkTheme,
   navigationLightTheme,
 } from '@/theme';
-import customFonts from '@/theme/fonts.json';
+import customFonts from '@/theme/fonts';
 import { UserTextSize } from '@/types/user';
 
 const CombinedThemeProvider = ({ children }: { children: ReactNode }) => {
-  const userState = useUserStore((state) => state.user);
+  const userTextSize = useUserTextSize();
   const colorScheme = useColorScheme();
 
-  const paperTheme = useMemo(() => {
-    const userTextSize = userState?.settings.textSize === UserTextSize.LARGE ? 'large' : 'standard';
-
-    return {
+  const paperTheme = useMemo(
+    () => ({
       ...(colorScheme === 'dark' ? customDarkTheme : customLightTheme),
-      iconSize: customIconSize[userTextSize],
+      iconSize: customIconSize[userTextSize === UserTextSize.LARGE ? 'large' : 'standard'],
       fonts: configureFonts({
         config: customFonts[userTextSize],
       }),
-    };
-  }, [userState?.settings.textSize, colorScheme]);
+    }),
+    [userTextSize, colorScheme],
+  );
   const navigationTheme = colorScheme === 'dark' ? navigationDarkTheme : navigationLightTheme;
 
   return (

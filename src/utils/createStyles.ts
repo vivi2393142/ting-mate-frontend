@@ -1,9 +1,26 @@
-import { type ImageStyle, StyleSheet, type TextStyle, type ViewStyle } from 'react-native';
+import { type ImageStyle, StyleSheet, type ViewStyle } from 'react-native';
+import { type TextStyle } from 'react-native/Libraries/StyleSheet/StyleSheetTypes';
 
 import type { Theme } from '@/theme';
 
+/** Utility type for creating style interfaces with ViewStyle, TextStyle, and ImageStyle */
+export type StyleRecord<
+  V extends string = never,
+  T extends string = never,
+  I extends string = never,
+> = {
+  [K in T]: TextStyle;
+} & {
+  [K in V]: ViewStyle;
+} & {
+  [K in I]: ImageStyle;
+};
+
 // Automatically infer the style type
-export type InferStyleType<T extends object> = T extends { fontSize?: number; fontWeight?: string }
+export type InferStyleType<T extends object> = T extends {
+  fontSize?: TextStyle['fontSize'];
+  fontWeight?: TextStyle['fontWeight'];
+}
   ? TextStyle
   : T extends { resizeMode?: string }
     ? ImageStyle
@@ -11,6 +28,7 @@ export type InferStyleType<T extends object> = T extends { fontSize?: number; fo
 
 // Support static values or functions
 export type StylePropValue<V, P> = V | ((theme: Theme, params: P) => V);
+export type StyleDefinition = { [key: string]: ViewStyle | TextStyle | ImageStyle };
 
 // Support each key to specify the style type (ViewStyle/TextStyle/ImageStyle)
 export type StyleObject<
@@ -23,7 +41,9 @@ export type StyleObject<
 };
 
 // Return type: key corresponds to style type
-export type ExtractedStyleType<T extends StyleObject<P>, P = unknown> = {
+export type ExtractedStyleType<
+  T extends StyleObject<Record<string, ViewStyle | TextStyle | ImageStyle>, unknown>,
+> = {
   [K in keyof T]: [InferStyleType<T[K]>, InferStyleType<T[K]>];
 };
 

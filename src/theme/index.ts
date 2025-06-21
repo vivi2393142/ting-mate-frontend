@@ -21,19 +21,25 @@ const spacing = {
 
 export const StaticTheme = {
   spacing,
+  borderRadius: {
+    s: 4,
+    m: 8,
+    l: 16,
+    round: '100%',
+  },
 };
 
 // Dynamic icon size
 export const iconSize = {
   standard: {
     small: 24,
-    medium: 28,
-    large: 32,
+    medium: 30,
+    large: 36,
   },
   large: {
     small: 28,
-    medium: 32,
-    large: 36,
+    medium: 34,
+    large: 40,
   },
 };
 

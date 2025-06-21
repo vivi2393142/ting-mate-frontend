@@ -13,8 +13,8 @@ import { StaticTheme } from '@/theme';
 import { UserTextSize } from '@/types/user';
 import { createStyles } from '@/utils/createStyles';
 
+import ScreenContainer from '@/components/atoms/ScreenContainer';
 import Select from '@/components/atoms/Select';
-import ThemedView from '@/components/atoms/ThemedView';
 
 interface SectionGroupProps {
   title: string;
@@ -60,7 +60,7 @@ const SettingsScreen = () => {
   // eslint-disable-next-line i18next/no-literal-string
   if (!userState) return <Text>Login</Text>;
   return (
-    <ThemedView isRoot scrollable>
+    <ScreenContainer scrollable>
       <SectionGroup title={t('General')} subheaderStyle={styles.subheader}>
         <View>
           <List.Item
@@ -79,16 +79,19 @@ const SettingsScreen = () => {
       </SectionGroup>
       {/* TODO: implement reset settings */}
       <SectionGroup title={t('Reminder')} subheaderStyle={styles.subheader}>
-        <List.Item title={t('pending', { defaultValue: 'pending' })} style={styles.listItem} />
+        {/* eslint-disable-next-line i18next/no-literal-string */}
+        <List.Item title={'pending'} style={styles.listItem} />
       </SectionGroup>
       <SectionGroup title={t('Voice Assistant')} subheaderStyle={styles.subheader}>
-        <List.Item title={t('pending', { defaultValue: 'pending' })} style={styles.listItem} />
+        {/* eslint-disable-next-line i18next/no-literal-string */}
+        <List.Item title={'pending'} style={styles.listItem} />
       </SectionGroup>
       <SectionGroup title={t('Account')} subheaderStyle={styles.subheader}>
-        <List.Item title={t('pending', { defaultValue: 'pending' })} style={styles.listItem} />
+        {/* eslint-disable-next-line i18next/no-literal-string */}
+        <List.Item title={'pending'} style={styles.listItem} />
         <List.Item title={t('Logout')} style={styles.listItem} />
       </SectionGroup>
-    </ThemedView>
+    </ScreenContainer>
   );
 };
 

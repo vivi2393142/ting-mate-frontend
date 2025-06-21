@@ -5,7 +5,6 @@ import pluginImport from 'eslint-plugin-import';
 import reactPlugin from 'eslint-plugin-react';
 import reactHooksPlugin from 'eslint-plugin-react-hooks';
 import reactNativePlugin from 'eslint-plugin-react-native';
-import reactNativeA11yPlugin from 'eslint-plugin-react-native-a11y';
 import tseslint from 'typescript-eslint';
 
 export default [
@@ -17,7 +16,6 @@ export default [
       react: reactPlugin,
       'react-hooks': reactHooksPlugin,
       'react-native': reactNativePlugin,
-      'react-native-a11y': reactNativeA11yPlugin,
       i18next: i18nextPlugin,
       import: pluginImport,
     },
@@ -38,6 +36,7 @@ export default [
     },
     rules: {
       'react/react-in-jsx-scope': 'off',
+      'react/self-closing-comp': 'error',
       'react-native/no-raw-text': 'off', // Use i18next/no-literal-string instead
       'react-native/sort-styles': 'error',
       'react-native/no-inline-styles': 'error',
@@ -49,7 +48,10 @@ export default [
         {
           mode: 'jsx-only',
           'jsx-attributes': {
-            exclude: ['href', 'name'],
+            exclude: ['href', 'name', 'variant'],
+          },
+          callees: {
+            exclude: ['format'],
           },
         },
       ],

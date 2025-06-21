@@ -2,15 +2,15 @@ import { useTranslation } from 'react-i18next';
 
 import { Text } from 'react-native-paper';
 
-import ThemedView from '@/components/atoms/ThemedView';
+import ScreenContainer from '@/components/atoms/ScreenContainer';
 
 const ConnectScreen = () => {
   const { t } = useTranslation('common');
 
   return (
-    <ThemedView isRoot>
+    <ScreenContainer>
       <Text>{t('Connect')}</Text>
-    </ThemedView>
+    </ScreenContainer>
   );
 };
 

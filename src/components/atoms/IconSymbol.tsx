@@ -1,13 +1,12 @@
 // Fallback for using MaterialIcons on Android and web.
 
-import { SymbolViewProps } from 'expo-symbols';
-import { type ComponentProps, useMemo } from 'react';
-import { type StyleProp, type TextStyle } from 'react-native';
+import type { SymbolViewProps } from 'expo-symbols';
+import type { ComponentProps } from 'react';
+import type { StyleProp, TextStyle } from 'react-native';
 
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 
-import useUserStore from '@/store/useUserStore';
-import { UserTextSize } from '@/types/user';
+import { useUserTextSize } from '@/store/useUserStore';
 
 type IconMapping = Record<SymbolViewProps['name'], ComponentProps<typeof MaterialIcons>['name']>;
 
@@ -24,6 +23,7 @@ const MAPPING: IconMapping = {
   'gearshape.fill': 'settings',
   'person.2.fill': 'people',
   'chevron.up.chevron.down': 'unfold-more',
+  plus: 'add',
 } as IconMapping;
 
 /**
@@ -42,11 +42,7 @@ const IconSymbol = ({
   color: string;
   style?: StyleProp<TextStyle>;
 }) => {
-  const userState = useUserStore((state) => state.user);
-  const textSize = useMemo(
-    () => userState?.settings.textSize || UserTextSize.LARGE,
-    [userState?.settings.textSize],
-  );
+  const textSize = useUserTextSize();
 
   return (
     <MaterialIcons style={style} label={textSize} size={size} color={color} name={MAPPING[name]} />
