@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 
-import { UserTextSize, type User } from '@/types/user';
+import { UserDisplayMode, UserTextSize, type User } from '@/types/user';
 
 interface UserState {
   user: User | null;
@@ -16,6 +16,7 @@ const useUserStore = create<UserState>((set) => ({
     name: 'Test Doe',
     settings: {
       textSize: UserTextSize.STANDARD,
+      displayMode: UserDisplayMode.FULL,
     },
   },
   setUser: (user: User) => set({ user }),
@@ -32,3 +33,6 @@ export default useUserStore;
 
 export const useUserTextSize = () =>
   useUserStore((state) => state.user?.settings.textSize ?? UserTextSize.STANDARD);
+
+export const useUserDisplayMode = () =>
+  useUserStore((state) => state.user?.settings.displayMode ?? UserDisplayMode.FULL);

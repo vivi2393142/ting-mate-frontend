@@ -1,16 +1,16 @@
 import { useCallback, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 
-import { View } from 'react-native';
 import { List, Text } from 'react-native-paper';
 
 import useAppTheme from '@/hooks/useAppTheme';
 
+import useUserDisplayModeTranslation from '@/hooks/useUserDisplayModeTranslation';
 import useUserTextSizeTranslation from '@/hooks/useUserTextSizeTranslation';
 import useUserStore from '@/store/useUserStore';
 import type { Theme } from '@/theme';
 import { StaticTheme } from '@/theme';
-import { UserTextSize } from '@/types/user';
+import { UserDisplayMode, UserTextSize } from '@/types/user';
 import { createStyles } from '@/utils/createStyles';
 
 import ScreenContainer from '@/components/atoms/ScreenContainer';
@@ -33,6 +33,7 @@ const SectionGroup = ({ title, children, style, subheaderStyle }: SectionGroupPr
 const SettingsScreen = () => {
   const { t } = useTranslation('settings');
   const { tUserTextSize } = useUserTextSizeTranslation();
+  const { tUserDisplayMode } = useUserDisplayModeTranslation();
 
   const userState = useUserStore((state) => state.user);
   const updateUserSettings = useUserStore((state) => state.updateUserSettings);
@@ -49,9 +50,25 @@ const SettingsScreen = () => {
     [tUserTextSize],
   );
 
+  const displayModeOptions = useMemo(
+    () =>
+      Object.values(UserDisplayMode).map((value) => ({
+        value: value,
+        title: tUserDisplayMode(value),
+      })),
+    [tUserDisplayMode],
+  );
+
   const handleTextSizeSelect = useCallback(
     (option: (typeof textSizeOptions)[number]) => {
       updateUserSettings({ textSize: option.value });
+    },
+    [updateUserSettings],
+  );
+
+  const handleDisplayModeSelect = useCallback(
+    (option: (typeof displayModeOptions)[number]) => {
+      updateUserSettings({ displayMode: option.value });
     },
     [updateUserSettings],
   );
@@ -62,20 +79,30 @@ const SettingsScreen = () => {
   return (
     <ScreenContainer scrollable>
       <SectionGroup title={t('General')} subheaderStyle={styles.subheader}>
-        <View>
-          <List.Item
-            title={t('Text Size')}
-            right={() => (
-              <Select
-                displayValue={tUserTextSize(userState.settings.textSize)}
-                options={textSizeOptions}
-                onSelect={handleTextSizeSelect}
-              />
-            )}
-            titleStyle={styles.listItemTitle}
-            style={styles.listItem}
-          />
-        </View>
+        <List.Item
+          title={t('Text Size')}
+          right={() => (
+            <Select
+              displayValue={tUserTextSize(userState.settings.textSize)}
+              options={textSizeOptions}
+              onSelect={handleTextSizeSelect}
+            />
+          )}
+          titleStyle={styles.listItemTitle}
+          style={styles.listItem}
+        />
+        <List.Item
+          title={t('Display Mode')}
+          right={() => (
+            <Select
+              displayValue={tUserDisplayMode(userState.settings.displayMode)}
+              options={displayModeOptions}
+              onSelect={handleDisplayModeSelect}
+            />
+          )}
+          titleStyle={styles.listItemTitle}
+          style={[styles.listItem, styles.listItemLast]}
+        />
       </SectionGroup>
       {/* TODO: implement reset settings */}
       <SectionGroup title={t('Reminder')} subheaderStyle={styles.subheader}>
@@ -101,6 +128,9 @@ const getStyles = createStyles({
     borderBottomWidth: 1,
     paddingRight: StaticTheme.spacing.sm,
     paddingVertical: StaticTheme.spacing.xs,
+  },
+  listItemLast: {
+    borderBottomWidth: 0,
   },
   listItemTitle: {
     fontSize: (theme: Theme) => theme.fonts.bodyLarge.fontSize,

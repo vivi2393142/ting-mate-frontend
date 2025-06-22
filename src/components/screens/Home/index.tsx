@@ -1,13 +1,13 @@
 import { default as dayjs } from 'dayjs';
-import { useMemo } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import { Button, List, Text } from 'react-native-paper';
 
 import useAppTheme from '@/hooks/useAppTheme';
-import { useUserTextSize } from '@/store/useUserStore';
+import { useUserDisplayMode, useUserTextSize } from '@/store/useUserStore';
 import { StaticTheme } from '@/theme';
-import { UserTextSize } from '@/types/user';
+import { UserDisplayMode, UserTextSize } from '@/types/user';
 import colorWithAlpha from '@/utils/colorWithAlpha';
 import { createStyles, type StyleRecord } from '@/utils/createStyles';
 
@@ -23,7 +23,7 @@ enum TaskType {
 }
 
 // TODO: retrieve data from backend
-const mockData = [
+const mockInitData = [
   {
     id: '1',
     icon: '💊',
@@ -79,18 +79,60 @@ const mockData = [
 const HomeScreen = () => {
   const { t } = useTranslation('home');
   const userTextSize = useUserTextSize();
+  const userDisplayMode = useUserDisplayMode();
 
   const theme = useAppTheme();
-  const styleParams = useMemo(() => ({ userTextSize: userTextSize }), [userTextSize]);
+  const styleParams = useMemo(() => ({ userTextSize }), [userTextSize]);
   const styles = getStyles(theme, styleParams);
 
+  const [data, setData] = useState(mockInitData);
+
+  // TODO: check if sort by BE
+  const sortedData = useMemo(() => {
+    return [...data].sort((a, b) => {
+      // DONE tasks go first
+      if (a.status === TaskType.DONE && b.status !== TaskType.DONE) return -1;
+      if (b.status === TaskType.DONE && a.status !== TaskType.DONE) return 1;
+
+      // For non-DONE tasks, sort by time (earlier first)
+      const timeA = a.time.hour * 60 + a.time.minute;
+      const timeB = b.time.hour * 60 + b.time.minute;
+      return timeA - timeB;
+    });
+  }, [data]);
+
+  const handleCompleteTask = (id: string) => {
+    setData((prev) =>
+      prev.map((item) => (item.id === id ? { ...item, status: TaskType.DONE } : item)),
+    );
+  };
+
+  const handleListItemPress = (id: string) => () => {
+    if (userDisplayMode === UserDisplayMode.FULL) {
+      // TODO: navigate to edit page
+    } else {
+      handleCompleteTask(id);
+    }
+  };
+
+  const handleCheckboxPress = (id: string) => () => {
+    if (userDisplayMode === UserDisplayMode.SIMPLE) return;
+    handleCompleteTask(id);
+  };
+
+  const handleAddTask = useCallback(() => {
+    // TODO: navigate to add task page
+  }, []);
+
   return (
+    // TODO: stacked done tasks
+    // TODO: should be able to click button when 'FULL' (list item is also clickable which cause error now)
     <ScreenContainer style={styles.container}>
       <Text variant="headlineSmall" style={styles.headline}>
         {t('Todays Tasks')}
       </Text>
       <List.Section style={styles.listSection}>
-        {mockData.map(({ id, title, icon, time, status }) => (
+        {sortedData.map(({ id, title, icon, time, status }) => (
           <List.Item
             key={id}
             title={title}
@@ -100,7 +142,10 @@ const HomeScreen = () => {
                 <Text style={styles.timeText} variant="titleSmall">
                   {dayjs().hour(time.hour).minute(time.minute).format('HH:mm')}
                 </Text>
-                <ThemedCheckbox status={status === TaskType.DONE ? 'checked' : 'unchecked'} />
+                <ThemedCheckbox
+                  status={status === TaskType.DONE ? 'checked' : 'unchecked'}
+                  onPress={handleCheckboxPress(id)}
+                />
               </ThemedView>
             )}
             style={[
@@ -109,23 +154,22 @@ const HomeScreen = () => {
               status === TaskType.MISSED ? styles.listItemMissed : undefined,
             ]}
             titleStyle={styles.listItemTitle}
-            onPress={() => {
-              // TODO: handle onPress
-            }}
+            onPress={handleListItemPress(id)}
+            disabled={userDisplayMode === UserDisplayMode.SIMPLE && status === TaskType.DONE}
           />
         ))}
       </List.Section>
-      <Button
-        mode="contained"
-        onPress={() => {
-          // TODO: handle Add Task
-        }}
-        icon={({ color }) => <IconSymbol name="plus" color={color} size={16} />}
-        style={styles.addButton}
-        labelStyle={styles.addButtonLabel}
-      >
-        {t('Add Task')}
-      </Button>
+      {userDisplayMode === UserDisplayMode.FULL && (
+        <Button
+          mode="contained"
+          onPress={handleAddTask}
+          icon={({ color }) => <IconSymbol name="plus" color={color} size={16} />}
+          style={styles.addButton}
+          labelStyle={styles.addButtonLabel}
+        >
+          {t('Add Task')}
+        </Button>
+      )}
     </ScreenContainer>
   );
 };
@@ -157,11 +201,12 @@ const getStyles = createStyles<
   },
   listSection: {
     gap: StaticTheme.spacing.md,
-    marginVertical: StaticTheme.spacing.sm,
+    marginVertical: StaticTheme.spacing.md,
   },
   listItem: {
     borderWidth: 1,
-    paddingVertical: StaticTheme.spacing.xs,
+    paddingVertical: (_, { userTextSize }) =>
+      userTextSize === UserTextSize.LARGE ? StaticTheme.spacing.sm * 1.5 : StaticTheme.spacing.xs,
     paddingLeft: StaticTheme.spacing.sm * 1.5,
     paddingRight: StaticTheme.spacing.sm * 1.5,
     borderRadius: StaticTheme.borderRadius.s,
@@ -201,6 +246,7 @@ const getStyles = createStyles<
   addButtonLabel: {
     fontSize: ({ fonts }) => fonts.titleMedium.fontSize,
     fontWeight: ({ fonts }) => fonts.titleMedium.fontWeight,
-    marginVertical: StaticTheme.spacing.md,
+    marginVertical: (_, { userTextSize }) =>
+      userTextSize === UserTextSize.LARGE ? StaticTheme.spacing.xs * 5 : StaticTheme.spacing.md,
   },
 });

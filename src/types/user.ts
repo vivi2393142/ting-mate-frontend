@@ -3,10 +3,16 @@ export enum UserTextSize {
   LARGE = 'LARGE',
 }
 
+export enum UserDisplayMode {
+  FULL = 'FULL', // default
+  SIMPLE = 'SIMPLE',
+}
+
 export interface User {
   email: string;
   name: string;
   settings: {
     textSize: UserTextSize;
+    displayMode: UserDisplayMode;
   };
 }
