@@ -1,12 +1,15 @@
 import { default as dayjs } from 'dayjs';
-import { useCallback, useMemo, useState } from 'react';
+import { useRouter } from 'expo-router';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import { Button, List, Text } from 'react-native-paper';
 
 import useAppTheme from '@/hooks/useAppTheme';
+import { useMockTasks } from '@/store/useMockAPI';
 import { useUserDisplayMode, useUserTextSize } from '@/store/useUserStore';
 import { StaticTheme } from '@/theme';
+import type { ReminderTime, Task } from '@/types/task';
 import { UserDisplayMode, UserTextSize } from '@/types/user';
 import colorWithAlpha from '@/utils/colorWithAlpha';
 import { createStyles, type StyleRecord } from '@/utils/createStyles';
@@ -16,113 +19,112 @@ import ScreenContainer from '@/components/atoms/ScreenContainer';
 import ThemedCheckbox from '@/components/atoms/ThemedCheckbox';
 import ThemedView from '@/components/atoms/ThemedView';
 
-enum TaskType {
-  DONE = 'DONE',
-  NOT_DONE = 'NOT_DONE',
-  MISSED = 'MISSED',
-}
+// Custom hook to get current time with controlled updates
+const useCurrentTime = (updateIntervalMs: number = 60000) => {
+  const [currentTime, setCurrentTime] = useState(() => new Date());
 
-// TODO: retrieve data from backend
-const mockInitData = [
-  {
-    id: '1',
-    icon: '💊',
-    title: 'Take medication',
-    time: {
-      hour: 8,
-      minute: 15,
-    },
-    status: TaskType.DONE,
-  },
-  {
-    id: '2',
-    icon: '🐱',
-    title: 'Feed cat',
-    time: {
-      hour: 9,
-      minute: 0,
-    },
-    status: TaskType.MISSED,
-  },
-  {
-    id: '3',
-    icon: '🍔',
-    title: 'Lunch',
-    time: {
-      hour: 12,
-      minute: 30,
-    },
-    status: TaskType.NOT_DONE,
-  },
-  {
-    id: '4',
-    icon: '💊',
-    title: 'Take medication',
-    time: {
-      hour: 13,
-      minute: 30,
-    },
-    status: TaskType.NOT_DONE,
-  },
-  {
-    id: '5',
-    icon: '🏃',
-    title: 'Exercise',
-    time: {
-      hour: 16,
-      minute: 0,
-    },
-    status: TaskType.NOT_DONE,
-  },
-];
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCurrentTime(new Date());
+    }, updateIntervalMs);
+
+    return () => clearInterval(interval);
+  }, [updateIntervalMs]);
+
+  return currentTime;
+};
+
+// Helper function to determine if a task is missed based on current time
+const isTaskMissed = (reminderTime: ReminderTime, currentTime: Date): boolean => {
+  const currentHour = currentTime.getHours();
+  const currentMinute = currentTime.getMinutes();
+
+  const currentTimeInMinutes = currentHour * 60 + currentMinute;
+  const reminderTimeInMinutes = reminderTime.hour * 60 + reminderTime.minute;
+
+  return currentTimeInMinutes > reminderTimeInMinutes;
+};
 
 const HomeScreen = () => {
   const { t } = useTranslation('home');
+  const router = useRouter();
   const userTextSize = useUserTextSize();
   const userDisplayMode = useUserDisplayMode();
+
+  // TODO: remove useMockTasks after the API is implemented
+  const { getTasks, completeTaskReminder } = useMockTasks();
 
   const theme = useAppTheme();
   const styleParams = useMemo(() => ({ userTextSize }), [userTextSize]);
   const styles = getStyles(theme, styleParams);
 
-  const [data, setData] = useState(mockInitData);
+  // Get current time with 1-minute update interval to avoid excessive recalculations
+  const currentTime = useCurrentTime(60000);
 
-  // TODO: check if sort by BE
-  const sortedData = useMemo(() => {
-    return [...data].sort((a, b) => {
+  const tasks = getTasks();
+  const sortedTasks = useMemo(() => {
+    const result: Task[] = [];
+    tasks?.forEach(({ id: taskId, title, icon, reminders }) => {
+      reminders?.forEach(({ id: reminderId, reminderTime, completed }) => {
+        result.push({
+          reminderId,
+          taskId,
+          title,
+          icon,
+          reminderTime,
+          completed,
+        });
+      });
+    });
+
+    // TODO: check if sort by BE
+    result.sort((a, b) => {
       // DONE tasks go first
-      if (a.status === TaskType.DONE && b.status !== TaskType.DONE) return -1;
-      if (b.status === TaskType.DONE && a.status !== TaskType.DONE) return 1;
+      if (a.completed && !b.completed) return -1;
+      if (b.completed && !a.completed) return 1;
 
       // For non-DONE tasks, sort by time (earlier first)
-      const timeA = a.time.hour * 60 + a.time.minute;
-      const timeB = b.time.hour * 60 + b.time.minute;
+      const timeA = a.reminderTime.hour * 60 + a.reminderTime.minute;
+      const timeB = b.reminderTime.hour * 60 + b.reminderTime.minute;
       return timeA - timeB;
     });
-  }, [data]);
 
-  const handleCompleteTask = (id: string) => {
-    setData((prev) =>
-      prev.map((item) => (item.id === id ? { ...item, status: TaskType.DONE } : item)),
-    );
+    return result;
+  }, [tasks]);
+
+  const handleCompleteTask = (taskId: string, reminderId: string) => {
+    completeTaskReminder(taskId, reminderId, true);
   };
 
-  const handleListItemPress = (id: string) => () => {
+  const handleListItemPress = (taskId: string, reminderId: string) => () => {
     if (userDisplayMode === UserDisplayMode.FULL) {
-      // TODO: navigate to edit page
+      const task = tasks.find((t) => t.id === taskId);
+      const reminder = task?.reminders.find((r) => r.id === reminderId);
+      if (task && reminder) {
+        router.push({
+          pathname: '/edit-task',
+          params: {
+            id: task.id,
+            title: task.title,
+            icon: task.icon,
+            hour: reminder.reminderTime.hour.toString(),
+            minute: reminder.reminderTime.minute.toString(),
+          },
+        });
+      }
     } else {
-      handleCompleteTask(id);
+      handleCompleteTask(taskId, reminderId);
     }
   };
 
-  const handleCheckboxPress = (id: string) => () => {
+  const handleCheckboxPress = (taskId: string, reminderId: string) => () => {
     if (userDisplayMode === UserDisplayMode.SIMPLE) return;
-    handleCompleteTask(id);
+    handleCompleteTask(taskId, reminderId);
   };
 
   const handleAddTask = useCallback(() => {
-    // TODO: navigate to add task page
-  }, []);
+    router.push('/add-task');
+  }, [router]);
 
   return (
     // TODO: stacked done tasks
@@ -132,32 +134,40 @@ const HomeScreen = () => {
         {t('Todays Tasks')}
       </Text>
       <List.Section style={styles.listSection}>
-        {sortedData.map(({ id, title, icon, time, status }) => (
-          <List.Item
-            key={id}
-            title={title}
-            left={() => <Text style={styles.listIcon}>{icon}</Text>}
-            right={() => (
-              <ThemedView style={styles.rightContainer}>
-                <Text style={styles.timeText} variant="titleSmall">
-                  {dayjs().hour(time.hour).minute(time.minute).format('HH:mm')}
-                </Text>
-                <ThemedCheckbox
-                  status={status === TaskType.DONE ? 'checked' : 'unchecked'}
-                  onPress={handleCheckboxPress(id)}
-                />
-              </ThemedView>
-            )}
-            style={[
-              styles.listItem,
-              status === TaskType.DONE ? styles.listItemDone : undefined,
-              status === TaskType.MISSED ? styles.listItemMissed : undefined,
-            ]}
-            titleStyle={styles.listItemTitle}
-            onPress={handleListItemPress(id)}
-            disabled={userDisplayMode === UserDisplayMode.SIMPLE && status === TaskType.DONE}
-          />
-        ))}
+        {sortedTasks.map(({ taskId, reminderId, title, icon, reminderTime, completed }) => {
+          const isMissed = !completed && isTaskMissed(reminderTime, currentTime);
+          return (
+            <List.Item
+              key={`${taskId}-${reminderId}`}
+              title={title}
+              left={() => <Text style={styles.listIcon}>{icon}</Text>}
+              right={() => (
+                <ThemedView style={styles.rightContainer}>
+                  <Text
+                    style={[styles.timeText, isMissed && styles.timeTextMissed]}
+                    variant="titleSmall"
+                  >
+                    {dayjs().hour(reminderTime.hour).minute(reminderTime.minute).format('HH:mm')}
+                  </Text>
+                  <ThemedCheckbox
+                    status={completed ? 'checked' : 'unchecked'}
+                    onPress={handleCheckboxPress(taskId, reminderId)}
+                  />
+                </ThemedView>
+              )}
+              style={[
+                styles.listItem,
+                completed && styles.listItemDone,
+                isMissed && styles.listItemMissed,
+              ]}
+              titleStyle={[styles.listItemTitle, isMissed && styles.listItemTitleMissed]}
+              titleNumberOfLines={2}
+              titleEllipsizeMode="tail"
+              onPress={handleListItemPress(taskId, reminderId)}
+              disabled={userDisplayMode === UserDisplayMode.SIMPLE && completed}
+            />
+          );
+        })}
       </List.Section>
       {userDisplayMode === UserDisplayMode.FULL && (
         <Button
@@ -189,7 +199,13 @@ const getStyles = createStyles<
     | 'listItemMissed'
     | 'rightContainer'
     | 'addButton',
-    'headline' | 'listItemTitle' | 'timeText' | 'addButtonLabel' | 'listIcon'
+    | 'headline'
+    | 'listItemTitle'
+    | 'listItemTitleMissed'
+    | 'timeText'
+    | 'timeTextMissed'
+    | 'addButtonLabel'
+    | 'listIcon'
   >,
   StyleParams
 >({
@@ -217,12 +233,18 @@ const getStyles = createStyles<
     borderColor: ({ colors }) => colors.primary,
   },
   listItemMissed: {
-    backgroundColor: ({ colors }) => colorWithAlpha(colors.errorContainer, 0.5),
-    borderColor: ({ colors }) => colors.onErrorContainer,
+    backgroundColor: ({ colors }) => colorWithAlpha(colors.errorContainer, 0.3),
+    borderColor: ({ colors }) => colors.error,
+    borderWidth: 2,
   },
   listItemTitle: {
     fontSize: ({ fonts }) => fonts.bodyLarge.fontSize,
     fontWeight: ({ fonts }) => fonts.bodyLarge.fontWeight,
+    paddingRight: StaticTheme.spacing.xs,
+  },
+  listItemTitleMissed: {
+    fontWeight: 'bold',
+    color: ({ colors }) => colors.error,
   },
   listIcon: {
     margin: 'auto',
@@ -239,6 +261,10 @@ const getStyles = createStyles<
   },
   timeText: {
     margin: 'auto',
+  },
+  timeTextMissed: {
+    color: ({ colors }) => colors.error,
+    fontWeight: 'bold',
   },
   addButton: {
     borderRadius: StaticTheme.borderRadius.s,

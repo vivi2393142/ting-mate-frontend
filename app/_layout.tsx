@@ -1,5 +1,5 @@
 import { useFonts } from 'expo-font';
-import { type ReactNode, useMemo } from 'react';
+import { type ReactNode, useEffect, useMemo } from 'react';
 import 'react-native-reanimated';
 
 import { ThemeProvider } from '@react-navigation/native';
@@ -10,6 +10,7 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 import useColorScheme from '@/hooks/useColorScheme';
 import '@/i18n';
+import useMockAPI from '@/store/useMockAPI';
 import { useUserTextSize } from '@/store/useUserStore';
 import {
   customDarkTheme,
@@ -46,9 +47,15 @@ const CombinedThemeProvider = ({ children }: { children: ReactNode }) => {
 
 const RootLayout = () => {
   const colorScheme = useColorScheme();
+  const { initializeMockData } = useMockAPI();
   const [loaded] = useFonts({
     SpaceMono: require('../src/assets/fonts/SpaceMono-Regular.ttf'),
   });
+
+  // Initialize mock data when the app starts
+  useEffect(() => {
+    initializeMockData();
+  }, [initializeMockData]);
 
   // Async font loading only occurs in development.
   if (!loaded) return null;
