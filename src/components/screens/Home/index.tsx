@@ -94,28 +94,28 @@ const HomeScreen = () => {
     return result;
   }, [tasks]);
 
-  const handleCompleteTask = (taskId: string, reminderId: string) => {
-    completeTaskReminder(taskId, reminderId, true);
+  const handleUpdateTaskStatus = (taskId: string, reminderId: string, newStatus: boolean) => {
+    completeTaskReminder(taskId, reminderId, newStatus);
   };
 
   const handleListItemPress = (taskId: string, reminderId: string) => () => {
+    const task = tasks.find((t) => t.id === taskId);
+    const reminder = task?.reminders.find((r) => r.id === reminderId);
+
+    if (!task || !reminder) return;
     if (userDisplayMode === UserDisplayMode.FULL) {
-      const task = tasks.find((t) => t.id === taskId);
-      const reminder = task?.reminders.find((r) => r.id === reminderId);
-      if (task && reminder) {
-        router.push({
-          pathname: '/edit-task',
-          params: {
-            id: task.id,
-            title: task.title,
-            icon: task.icon,
-            hour: reminder.reminderTime.hour.toString(),
-            minute: reminder.reminderTime.minute.toString(),
-          },
-        });
-      }
+      router.push({
+        pathname: '/edit-task',
+        params: {
+          id: task.id,
+          title: task.title,
+          icon: task.icon,
+          hour: reminder.reminderTime.hour.toString(),
+          minute: reminder.reminderTime.minute.toString(),
+        },
+      });
     } else {
-      handleCompleteTask(taskId, reminderId);
+      handleUpdateTaskStatus(taskId, reminderId, !reminder.completed);
     }
   };
 
@@ -123,9 +123,12 @@ const HomeScreen = () => {
     setIsStackExpanded((prev) => !prev);
   }, []);
 
-  const handleCheckboxPress = (taskId: string, reminderId: string) => () => {
-    if (userDisplayMode === UserDisplayMode.SIMPLE) return;
-    handleCompleteTask(taskId, reminderId);
+  const handleCheckboxPress = (taskId: string, reminderId: string, newStatus: boolean) => () => {
+    if (isStackExpanded) {
+      handleUpdateTaskStatus(taskId, reminderId, newStatus);
+    } else {
+      handleStackPress();
+    }
   };
 
   const handleAddTask = useCallback(() => {
@@ -133,7 +136,6 @@ const HomeScreen = () => {
   }, [router]);
 
   return (
-    // TODO: should be able to click button when 'FULL' (list item is also clickable which cause error now)
     // TODO: add voice assistant button
     // TODO: add animation for collapsed tasks
     <ScreenContainer style={styles.container}>
@@ -159,7 +161,7 @@ const HomeScreen = () => {
                     </Text>
                     <ThemedCheckbox
                       status={completed ? 'checked' : 'unchecked'}
-                      onPress={handleCheckboxPress(taskId, reminderId)}
+                      onPress={handleCheckboxPress(taskId, reminderId, !completed)}
                     />
                   </ThemedView>
                 )}
@@ -175,7 +177,7 @@ const HomeScreen = () => {
                 titleNumberOfLines={2}
                 titleEllipsizeMode="tail"
                 onPress={
-                  completed && (userDisplayMode === UserDisplayMode.SIMPLE || !isStackExpanded)
+                  completed && !isStackExpanded
                     ? handleStackPress
                     : handleListItemPress(taskId, reminderId)
                 }
