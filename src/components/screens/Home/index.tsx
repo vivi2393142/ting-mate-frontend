@@ -1,6 +1,6 @@
 import { default as dayjs } from 'dayjs';
 import { useRouter } from 'expo-router';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { Fragment, useCallback, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import { Button, List, Text } from 'react-native-paper';
@@ -61,6 +61,8 @@ const HomeScreen = () => {
   // Get current time with 1-minute update interval to avoid excessive recalculations
   const currentTime = useCurrentTime(60000);
 
+  const [isStackExpanded, setIsStackExpanded] = useState(false);
+
   const tasks = getTasks();
   const sortedTasks = useMemo(() => {
     const result: Task[] = [];
@@ -117,6 +119,10 @@ const HomeScreen = () => {
     }
   };
 
+  const handleStackPress = useCallback(() => {
+    setIsStackExpanded((prev) => !prev);
+  }, []);
+
   const handleCheckboxPress = (taskId: string, reminderId: string) => () => {
     if (userDisplayMode === UserDisplayMode.SIMPLE) return;
     handleCompleteTask(taskId, reminderId);
@@ -127,45 +133,59 @@ const HomeScreen = () => {
   }, [router]);
 
   return (
-    // TODO: stacked done tasks
     // TODO: should be able to click button when 'FULL' (list item is also clickable which cause error now)
+    // TODO: add voice assistant button
+    // TODO: add animation for collapsed tasks
     <ScreenContainer style={styles.container}>
       <Text variant="headlineSmall" style={styles.headline}>
         {t('Todays Tasks')}
       </Text>
       <List.Section style={styles.listSection}>
-        {sortedTasks.map(({ taskId, reminderId, title, icon, reminderTime, completed }) => {
+        {sortedTasks.map(({ taskId, reminderId, title, icon, reminderTime, completed }, idx) => {
           const isMissed = !completed && isTaskMissed(reminderTime, currentTime);
+          const isLastCompleted = completed && !sortedTasks?.[idx + 1].completed;
           return (
-            <List.Item
-              key={`${taskId}-${reminderId}`}
-              title={title}
-              left={() => <Text style={styles.listIcon}>{icon}</Text>}
-              right={() => (
-                <ThemedView style={styles.rightContainer}>
-                  <Text
-                    style={[styles.timeText, isMissed && styles.timeTextMissed]}
-                    variant="titleSmall"
-                  >
-                    {dayjs().hour(reminderTime.hour).minute(reminderTime.minute).format('HH:mm')}
-                  </Text>
-                  <ThemedCheckbox
-                    status={completed ? 'checked' : 'unchecked'}
-                    onPress={handleCheckboxPress(taskId, reminderId)}
-                  />
+            <Fragment key={`${taskId}-${reminderId}`}>
+              <List.Item
+                title={title}
+                left={() => <Text style={styles.listIcon}>{icon}</Text>}
+                right={() => (
+                  <ThemedView style={styles.rightContainer}>
+                    <Text
+                      style={[styles.timeText, isMissed && styles.timeTextMissed]}
+                      variant="titleSmall"
+                    >
+                      {dayjs().hour(reminderTime.hour).minute(reminderTime.minute).format('HH:mm')}
+                    </Text>
+                    <ThemedCheckbox
+                      status={completed ? 'checked' : 'unchecked'}
+                      onPress={handleCheckboxPress(taskId, reminderId)}
+                    />
+                  </ThemedView>
+                )}
+                style={[
+                  styles.listItem,
+                  completed && styles.listItemDone,
+                  completed && !isStackExpanded && styles.listItemStacked,
+                  isLastCompleted && !isStackExpanded && styles.listItemStackedLast,
+                  isMissed && styles.listItemMissed,
+                ]}
+                containerStyle={completed && styles.listItemContainerDone}
+                titleStyle={[styles.listItemTitle, isMissed && styles.listItemTitleMissed]}
+                titleNumberOfLines={2}
+                titleEllipsizeMode="tail"
+                onPress={
+                  completed && (userDisplayMode === UserDisplayMode.SIMPLE || !isStackExpanded)
+                    ? handleStackPress
+                    : handleListItemPress(taskId, reminderId)
+                }
+              />
+              {isLastCompleted && isStackExpanded && (
+                <ThemedView style={styles.collapseButton} onTouchEnd={handleStackPress}>
+                  <IconSymbol name="chevron.up" color={theme.colors.primary} size={20} />
                 </ThemedView>
               )}
-              style={[
-                styles.listItem,
-                completed && styles.listItemDone,
-                isMissed && styles.listItemMissed,
-              ]}
-              titleStyle={[styles.listItemTitle, isMissed && styles.listItemTitleMissed]}
-              titleNumberOfLines={2}
-              titleEllipsizeMode="tail"
-              onPress={handleListItemPress(taskId, reminderId)}
-              disabled={userDisplayMode === UserDisplayMode.SIMPLE && completed}
-            />
+            </Fragment>
           );
         })}
       </List.Section>
@@ -197,8 +217,12 @@ const getStyles = createStyles<
     | 'listItem'
     | 'listItemDone'
     | 'listItemMissed'
+    | 'listItemStacked'
+    | 'listItemStackedLast'
+    | 'listItemContainerDone'
     | 'rightContainer'
-    | 'addButton',
+    | 'addButton'
+    | 'collapseButton',
     | 'headline'
     | 'listItemTitle'
     | 'listItemTitleMissed'
@@ -227,15 +251,28 @@ const getStyles = createStyles<
     paddingRight: StaticTheme.spacing.sm * 1.5,
     borderRadius: StaticTheme.borderRadius.s,
     borderColor: ({ colors }) => colors.onSurface,
+    backgroundColor: ({ colors }) => colors.background,
   },
   listItemDone: {
-    opacity: 0.3,
-    borderColor: ({ colors }) => colors.primary,
+    borderColor: ({ colors }) => colorWithAlpha(colors.primary, 0.3),
   },
   listItemMissed: {
     backgroundColor: ({ colors }) => colorWithAlpha(colors.errorContainer, 0.3),
     borderColor: ({ colors }) => colors.error,
     borderWidth: 2,
+  },
+  listItemStacked: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+  },
+  listItemStackedLast: {
+    position: 'relative',
+    transform: [{ translateY: 4 }],
+  },
+  listItemContainerDone: {
+    opacity: 0.3,
   },
   listItemTitle: {
     fontSize: ({ fonts }) => fonts.bodyLarge.fontSize,
@@ -274,5 +311,14 @@ const getStyles = createStyles<
     fontWeight: ({ fonts }) => fonts.titleMedium.fontWeight,
     marginVertical: (_, { userTextSize }) =>
       userTextSize === UserTextSize.LARGE ? StaticTheme.spacing.xs * 5 : StaticTheme.spacing.md,
+  },
+  collapseButton: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: StaticTheme.spacing.sm,
+    borderRadius: StaticTheme.borderRadius.s,
+    backgroundColor: ({ colors }) => colorWithAlpha(colors.primary, 0.1),
+    borderWidth: 1,
+    borderColor: ({ colors }) => colorWithAlpha(colors.primary, 0.3),
   },
 });

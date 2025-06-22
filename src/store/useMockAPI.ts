@@ -299,7 +299,7 @@ const mockTasks: TaskTemplate[] = [
       {
         id: 'reminder-1-1',
         reminderTime: { hour: 8, minute: 0 },
-        completed: false,
+        completed: true,
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
       },
