@@ -1,3 +1,5 @@
+import type { ViewStyle } from 'react-native';
+
 import { ReactNode } from 'react';
 import { Button, Text, TextInput, type TextInputProps } from 'react-native-paper';
 
@@ -10,11 +12,13 @@ import { createStyles, type StyleRecord } from '@/utils/createStyles';
 import IconSymbol, { type IconName } from '@/components/atoms/IconSymbol';
 import ThemedView from '@/components/atoms/ThemedView';
 
-type FormInputProps = Omit<TextInputProps, 'mode' | 'value'> & {
+type FormInputProps = Omit<TextInputProps, 'mode' | 'value' | 'style'> & {
   label: string;
   divider?: boolean;
+  dense?: boolean;
   icon?: IconName;
   rightIconName?: IconName;
+  style?: ViewStyle;
 } & (
     | {
         value: string;
@@ -49,7 +53,7 @@ const Input = ({
   onChangeValue,
   render,
   ...rest
-}: Omit<FormInputProps, 'label' | 'icon' | 'divider' | 'helperText'>) => {
+}: Omit<FormInputProps, 'label' | 'icon' | 'divider' | 'helperText' | 'style'>) => {
   const theme = useAppTheme();
   const userTextSize = useUserTextSize();
   const styles = getStyles(theme, { userTextSize });
@@ -85,25 +89,39 @@ const Input = ({
       selectionColor={theme.colors.primary}
       placeholderTextColor={theme.colors.outline}
       {...rest}
-      style={[styles.input, valueAlign === 'right' && styles.inputAlignRight, rest.style]}
+      style={[styles.input, valueAlign === 'right' && styles.inputAlignRight]}
       contentStyle={[styles.contentStyle, rest.contentStyle]}
     />
   );
 };
 
-const FormInput = ({ label, icon, divider = true, helperText, ...rest }: FormInputProps) => {
+const FormInput = ({
+  label,
+  icon,
+  divider = true,
+  dense = true,
+  helperText,
+  style,
+  ...rest
+}: FormInputProps) => {
   const theme = useAppTheme();
   const userTextSize = useUserTextSize();
   const styles = getStyles(theme, { userTextSize });
 
   return (
-    <ThemedView style={styles.row}>
+    <ThemedView style={[styles.row, style]}>
       {icon && (
         <ThemedView style={styles.iconBox}>
           <IconSymbol name={icon} size={16} color={theme.colors.onSurface} />
         </ThemedView>
       )}
-      <ThemedView style={[styles.inputContainer, !divider && styles.inputContainerNoDivider]}>
+      <ThemedView
+        style={[
+          styles.inputContainer,
+          !divider && styles.inputContainerNoDivider,
+          !dense && styles.inputContainerDense,
+        ]}
+      >
         <ThemedView
           style={[
             styles.labelContainer,
@@ -133,6 +151,7 @@ const getStyles = createStyles<
     | 'iconBox'
     | 'inputContainer'
     | 'inputContainerNoDivider'
+    | 'inputContainerDense'
     | 'labelContainer'
     | 'labelContainerAlignRight'
     | 'pressableInputButton'
@@ -172,6 +191,10 @@ const getStyles = createStyles<
   inputContainerNoDivider: {
     borderBottomWidth: 0,
   },
+  inputContainerDense: {
+    padding: StaticTheme.spacing.sm,
+    paddingLeft: StaticTheme.spacing.md,
+  },
   labelContainer: {
     minWidth: 90,
     flexShrink: 0,
@@ -197,7 +220,7 @@ const getStyles = createStyles<
     backgroundColor: 'transparent',
     paddingHorizontal: 0,
     textAlign: 'left',
-    height: 44,
+    height: 48,
   },
   inputAlignRight: {
     flex: 0,
@@ -210,7 +233,7 @@ const getStyles = createStyles<
   pressableInputButton: {
     borderRadius: 0,
     flex: 1,
-    height: 44,
+    height: 48,
   },
   pressableInputButtonLabel: {
     fontSize: ({ fonts }) => fonts.bodyLarge.fontSize,

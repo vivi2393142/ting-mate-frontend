@@ -13,6 +13,7 @@ import { StaticTheme } from '@/theme';
 import { UserDisplayMode, UserTextSize } from '@/types/user';
 import { createStyles } from '@/utils/createStyles';
 
+import FormInput from '@/components/atoms/FormInput';
 import ScreenContainer from '@/components/atoms/ScreenContainer';
 import Select from '@/components/atoms/Select';
 
@@ -79,29 +80,32 @@ const SettingsScreen = () => {
   return (
     <ScreenContainer scrollable>
       <SectionGroup title={t('General')} subheaderStyle={styles.subheader}>
-        <List.Item
-          title={t('Text Size')}
-          right={() => (
+        <FormInput
+          valueAlign="right"
+          rightIconName="chevron.up.chevron.down"
+          dense={false}
+          label={t('Text Size')}
+          render={() => (
             <Select
               displayValue={tUserTextSize(userState.settings.textSize)}
               options={textSizeOptions}
               onSelect={handleTextSizeSelect}
             />
           )}
-          titleStyle={styles.listItemTitle}
-          style={styles.listItem}
         />
-        <List.Item
-          title={t('Display Mode')}
-          right={() => (
+        <FormInput
+          valueAlign="right"
+          rightIconName="chevron.up.chevron.down"
+          dense={false}
+          divider={false}
+          label={t('Display Mode')}
+          render={() => (
             <Select
               displayValue={tUserDisplayMode(userState.settings.displayMode)}
               options={displayModeOptions}
               onSelect={handleDisplayModeSelect}
             />
           )}
-          titleStyle={styles.listItemTitle}
-          style={[styles.listItem, styles.listItemLast]}
         />
       </SectionGroup>
       {/* TODO: implement reset settings */}
@@ -124,8 +128,6 @@ const SettingsScreen = () => {
 
 const getStyles = createStyles({
   listItem: {
-    borderBottomColor: (theme: Theme) => theme.colors.outlineVariant,
-    borderBottomWidth: 1,
     paddingRight: StaticTheme.spacing.sm,
     paddingVertical: StaticTheme.spacing.xs,
   },
