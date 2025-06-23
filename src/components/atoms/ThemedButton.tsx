@@ -42,7 +42,7 @@ const ThemedButton = ({
       buttonColor={mode === 'outlined' ? theme.colors.background : mergedColor}
       textColor={mode === 'outlined' ? mergedColor : theme.colors.onPrimary}
       icon={icon ? ({ color }) => <IconSymbol name={icon} color={color} size={16} /> : undefined}
-      style={[styles.button, mode === 'outlined' && styles.buttonOutlined, style]}
+      style={[styles.button, style]}
       labelStyle={[styles.buttonLabel, labelStyle]}
       {...rest}
     >
@@ -58,15 +58,11 @@ interface StyleParams {
   color: string;
 }
 
-const getStyles = createStyles<
-  StyleRecord<'button' | 'buttonOutlined', 'buttonLabel'>,
-  StyleParams
->({
+const getStyles = createStyles<StyleRecord<'button', 'buttonLabel'>, StyleParams>({
   button: {
     borderRadius: StaticTheme.borderRadius.s,
-  },
-  buttonOutlined: {
     borderColor: (_, { color }) => color,
+    borderWidth: 1,
   },
   buttonLabel: {
     fontSize: ({ fonts }) => fonts.titleMedium.fontSize,

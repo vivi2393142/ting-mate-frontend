@@ -21,6 +21,7 @@ import {
 } from '@/theme';
 import customFonts from '@/theme/fonts';
 import { UserTextSize } from '@/types/user';
+import { useTranslation } from 'react-i18next';
 
 const CombinedThemeProvider = ({ children }: { children: ReactNode }) => {
   const userTextSize = useUserTextSize();
@@ -52,6 +53,8 @@ const RootLayout = () => {
     SpaceMono: require('../src/assets/fonts/SpaceMono-Regular.ttf'),
   });
 
+  const { t } = useTranslation('common');
+
   // Initialize mock data when the app starts
   useEffect(() => {
     initializeMockData();
@@ -63,7 +66,7 @@ const RootLayout = () => {
     <SafeAreaProvider>
       <CombinedThemeProvider>
         <Stack>
-          <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+          <Stack.Screen name="(tabs)" options={{ headerShown: false, title: t('Home') }} />
           <Stack.Screen name="+not-found" />
         </Stack>
         <StatusBar style={colorScheme === 'dark' ? 'light' : 'dark'} />

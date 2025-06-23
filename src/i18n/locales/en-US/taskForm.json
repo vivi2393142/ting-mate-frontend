@@ -1,10 +1,13 @@
 {
   "Add Task": "Add Task",
+  "Add task title": "Add task title",
   "Cancel": "Cancel",
   "Edit Task": "Edit Task",
   "Icon": "Icon",
   "Repeat": "Repeat",
   "Save": "Save",
+  "Select time": "Select time",
+  "SelectTime": "Select time",
   "Task": "Task",
   "Time": "Time",
   "Title": "Title"

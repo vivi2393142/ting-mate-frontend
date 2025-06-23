@@ -48,7 +48,7 @@ export default [
         {
           mode: 'jsx-only',
           'jsx-attributes': {
-            exclude: ['href', 'name', 'variant', 'outlineColor', 'activeOutlineColor'],
+            exclude: ['href', 'name', 'variant', 'outlineColor', 'activeOutlineColor', 'icon'],
           },
           callees: {
             exclude: ['format'],

@@ -32,6 +32,7 @@ interface MockAPIState {
 
   // Task API methods
   getTasks: () => TaskTemplate[];
+  getTask: (taskId: string) => TaskTemplate | null;
   createTask: (task: NewTask) => TaskTemplate;
   updateTask: (taskId: string, updates: Partial<NewTask>) => TaskTemplate;
   completeTaskReminder: (taskId: string, reminderId: string, completed: boolean) => void;
@@ -127,6 +128,11 @@ const useMockAPI = create<MockAPIState>((set, get) => ({
   getTasks: () => {
     const { tasks } = get();
     return tasks;
+  },
+
+  getTask: (taskId: string) => {
+    const { tasks } = get();
+    return tasks.find((task) => task.id === taskId) || null;
   },
 
   createTask: (task: NewTask) => {
@@ -262,8 +268,9 @@ export const useMockLinkedAccounts = () => {
 };
 
 export const useMockTasks = () => {
-  const { getTasks, createTask, updateTask, completeTaskReminder, deleteTask } = useMockAPI();
-  return { getTasks, createTask, updateTask, completeTaskReminder, deleteTask };
+  const { getTask, getTasks, createTask, updateTask, completeTaskReminder, deleteTask } =
+    useMockAPI();
+  return { getTask, getTasks, createTask, updateTask, completeTaskReminder, deleteTask };
 };
 
 // Mock data generators
