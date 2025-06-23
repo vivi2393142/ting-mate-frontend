@@ -1,13 +1,39 @@
 {
   "Connect": "Connect",
-  "Full": "Full",
   "Go to home screen!": "Go to home screen!",
   "Home": "Home",
-  "Large": "Large",
   "Oops!": "Oops!",
   "Settings": "Settings",
-  "Simple": "Simple",
-  "Standard": "Standard",
   "Theme Test": "Theme Test",
-  "This screen does not exist.": "This screen does not exist."
+  "This screen does not exist.": "This screen does not exist.",
+  "dayOfWeek": {
+    "Mon": "Mon",
+    "Monday": "Monday",
+    "Tue": "Tue",
+    "Tuesday": "Tuesday",
+    "Wed": "Wed",
+    "Wednesday": "Wednesday",
+    "Thu": "Thu",
+    "Thursday": "Thursday",
+    "Fri": "Fri",
+    "Friday": "Friday",
+    "Sat": "Sat",
+    "Saturday": "Saturday",
+    "Sun": "Sun",
+    "Sunday": "Sunday"
+  },
+  "recurrenceFrequency": {
+    "Once": "Once",
+    "Daily": "Daily",
+    "Weekly": "Weekly",
+    "Monthly": "Monthly"
+  },
+  "userDisplayMode": {
+    "Full": "Full",
+    "Simple": "Simple"
+  },
+  "userTextSize": {
+    "Standard": "Standard",
+    "Large": "Large"
+  }
 }

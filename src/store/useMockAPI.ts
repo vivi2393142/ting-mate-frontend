@@ -361,6 +361,26 @@ const mockTasks: TaskTemplate[] = [
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
   },
+  {
+    id: 'task-4',
+    title: 'See doctor',
+    icon: '👨‍⚕️',
+    recurrence: {
+      frequency: RecurrenceFrequency.MONTHLY,
+      dayOfMonth: 15,
+    },
+    reminders: [
+      {
+        id: 'reminder-4-1',
+        reminderTime: { hour: 10, minute: 0 },
+        completed: false,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      },
+    ],
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+  },
 ];
 
 const mockLinkedUsers: User[] = [

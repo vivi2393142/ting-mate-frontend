@@ -5,7 +5,7 @@ import { UserDisplayMode } from '@/types/user';
 
 interface useUserDisplayModeTranslationResponse
   extends Omit<ReturnType<typeof useTranslation>, 't'> {
-  tUserDisplayMode: (duration: UserDisplayMode) => string;
+  tUserDisplayMode: (displayMode: UserDisplayMode) => string;
 }
 
 const useUserDisplayModeTranslation = (): useUserDisplayModeTranslationResponse => {
@@ -14,8 +14,8 @@ const useUserDisplayModeTranslation = (): useUserDisplayModeTranslationResponse 
   const tUserDisplayMode = useCallback(
     (displayMode: UserDisplayMode) => {
       const mapping: Record<UserDisplayMode, string> = {
-        [UserDisplayMode.FULL]: t('Full'),
-        [UserDisplayMode.SIMPLE]: t('Simple'),
+        [UserDisplayMode.FULL]: t('userDisplayMode.Full'),
+        [UserDisplayMode.SIMPLE]: t('userDisplayMode.Simple'),
       };
       return mapping[displayMode];
     },

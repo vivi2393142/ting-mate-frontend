@@ -1,10 +1,10 @@
 {
-  "Edit Task": "Edit Task",
   "Add Task": "Add Task",
-  "Task Title": "Task Title",
-  "Icon": "Icon",
-  "Hour": "Hour",
-  "Minute": "Minute",
   "Cancel": "Cancel",
-  "Save": "Save"
+  "Edit Task": "Edit Task",
+  "Hour": "Hour",
+  "Icon": "Icon",
+  "Minute": "Minute",
+  "Save": "Save",
+  "Task Title": "Task Title"
 }

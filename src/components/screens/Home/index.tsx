@@ -3,9 +3,10 @@ import { useRouter } from 'expo-router';
 import { Fragment, useCallback, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
-import { Button, List, Text } from 'react-native-paper';
+import { Button, Divider, List, Text } from 'react-native-paper';
 
 import useAppTheme from '@/hooks/useAppTheme';
+import useRecurrenceText from '@/hooks/useRecurrenceText';
 import { useMockTasks } from '@/store/useMockAPI';
 import { useUserDisplayMode, useUserTextSize } from '@/store/useUserStore';
 import { StaticTheme } from '@/theme';
@@ -13,6 +14,7 @@ import type { ReminderTime, Task } from '@/types/task';
 import { UserDisplayMode, UserTextSize } from '@/types/user';
 import colorWithAlpha from '@/utils/colorWithAlpha';
 import { createStyles, type StyleRecord } from '@/utils/createStyles';
+import { getNextOccurrenceDate, shouldTaskAppearToday } from '@/utils/taskUtils';
 
 import IconSymbol from '@/components/atoms/IconSymbol';
 import ScreenContainer from '@/components/atoms/ScreenContainer';
@@ -47,6 +49,7 @@ const isTaskMissed = (reminderTime: ReminderTime, currentTime: Date): boolean =>
 
 const HomeScreen = () => {
   const { t } = useTranslation('home');
+  const { tRecurrenceText } = useRecurrenceText();
   const router = useRouter();
   const userTextSize = useUserTextSize();
   const userDisplayMode = useUserDisplayMode();
@@ -62,24 +65,51 @@ const HomeScreen = () => {
   const currentTime = useCurrentTime(60000);
 
   const [isStackExpanded, setIsStackExpanded] = useState(false);
+  const [isOtherTasksExpanded, setIsOtherTasksExpanded] = useState(false);
 
   const tasks = getTasks();
-  const sortedTasks = useMemo(() => {
-    const result: Task[] = [];
-    tasks?.forEach(({ id: taskId, title, icon, reminders }) => {
-      reminders?.forEach(({ id: reminderId, reminderTime, completed }) => {
-        result.push({
+
+  // Separate tasks that should appear today vs other tasks
+  const { todayTasks, otherTasks } = useMemo(() => {
+    const today: Task[] = [];
+    const other: Array<{
+      task: Task;
+      recurrenceText: string;
+      nextOccurrence: string | null;
+    }> = [];
+
+    tasks?.forEach((taskTemplate) => {
+      const shouldAppearToday = shouldTaskAppearToday(taskTemplate);
+
+      taskTemplate.reminders?.forEach(({ id: reminderId, reminderTime, completed }) => {
+        const taskItem = {
           reminderId,
-          taskId,
-          title,
-          icon,
+          taskId: taskTemplate.id,
+          title: taskTemplate.title,
+          icon: taskTemplate.icon,
           reminderTime,
           completed,
-        });
+        };
+
+        if (shouldAppearToday) {
+          today.push(taskItem);
+        } else {
+          const recurrenceText = tRecurrenceText(taskTemplate.recurrence);
+          const nextOccurrence = getNextOccurrenceDate(taskTemplate);
+          other.push({
+            task: taskItem,
+            recurrenceText,
+            nextOccurrence: nextOccurrence ? nextOccurrence.format('MM/DD') : null,
+          });
+        }
       });
     });
 
-    // TODO: check if sort by BE
+    return { todayTasks: today, otherTasks: other };
+  }, [tasks, tRecurrenceText]);
+
+  const sortedTasks = useMemo(() => {
+    const result = [...todayTasks];
     result.sort((a, b) => {
       // DONE tasks go first
       if (a.completed && !b.completed) return -1;
@@ -92,7 +122,7 @@ const HomeScreen = () => {
     });
 
     return result;
-  }, [tasks]);
+  }, [todayTasks]);
 
   const handleUpdateTaskStatus = (taskId: string, reminderId: string, newStatus: boolean) => {
     completeTaskReminder(taskId, reminderId, newStatus);
@@ -135,24 +165,36 @@ const HomeScreen = () => {
     router.push('/add-task');
   }, [router]);
 
+  const handleOtherTasksToggle = useCallback(() => {
+    setIsOtherTasksExpanded((prev) => !prev);
+  }, []);
+
   return (
     // TODO: add voice assistant button
     // TODO: add animation for collapsed tasks
-    <ScreenContainer style={styles.container}>
+    <ScreenContainer style={styles.container} scrollable>
       <Text variant="headlineSmall" style={styles.headline}>
         {t('Todays Tasks')}
       </Text>
+      {/* Today's tasks */}
       <List.Section style={styles.listSection}>
         {sortedTasks.map(({ taskId, reminderId, title, icon, reminderTime, completed }, idx) => {
           const isMissed = !completed && isTaskMissed(reminderTime, currentTime);
           const isLastCompleted = completed && !sortedTasks?.[idx + 1].completed;
+          const taskTemplate = tasks.find((t) => t.id === taskId);
+          const recurrenceText = taskTemplate ? tRecurrenceText(taskTemplate.recurrence) : '';
+          const shouldShowRecurrence =
+            taskTemplate &&
+            taskTemplate.recurrence.frequency !== 'DAILY' &&
+            taskTemplate.recurrence.frequency !== 'ONCE';
           return (
             <Fragment key={`${taskId}-${reminderId}`}>
               <List.Item
                 title={title}
+                description={shouldShowRecurrence ? recurrenceText : undefined}
                 left={() => <Text style={styles.listIcon}>{icon}</Text>}
                 right={() => (
-                  <ThemedView style={styles.rightContainer}>
+                  <ThemedView style={styles.timeAndCheckContainer}>
                     <Text
                       style={[styles.timeText, isMissed && styles.timeTextMissed]}
                       variant="titleSmall"
@@ -174,6 +216,7 @@ const HomeScreen = () => {
                 ]}
                 containerStyle={completed && styles.listItemContainerDone}
                 titleStyle={[styles.listItemTitle, isMissed && styles.listItemTitleMissed]}
+                descriptionStyle={styles.recurrenceDesc}
                 titleNumberOfLines={2}
                 titleEllipsizeMode="tail"
                 onPress={
@@ -183,14 +226,79 @@ const HomeScreen = () => {
                 }
               />
               {isLastCompleted && isStackExpanded && (
-                <ThemedView style={styles.collapseButton} onTouchEnd={handleStackPress}>
-                  <IconSymbol name="chevron.up" color={theme.colors.primary} size={20} />
-                </ThemedView>
+                <List.Item
+                  title={t('Collapse Completed')}
+                  right={() => (
+                    <IconSymbol name="chevron.up" color={theme.colors.primary} size={16} />
+                  )}
+                  onPress={handleStackPress}
+                  style={[
+                    styles.collapseListItem,
+                    isStackExpanded && styles.collapseListItemExpanded,
+                  ]}
+                  titleStyle={[
+                    styles.collapseListItemTitle,
+                    isStackExpanded && styles.collapseListItemTitleExpanded,
+                  ]}
+                />
               )}
             </Fragment>
           );
         })}
       </List.Section>
+      {/* Other tasks section */}
+      {otherTasks.length > 0 && (
+        <Fragment>
+          <Divider />
+          <List.Section style={styles.listSection}>
+            <List.Item
+              title={`${t('Other Tasks')} (${otherTasks.length})`}
+              right={() => (
+                <IconSymbol
+                  name={isOtherTasksExpanded ? 'chevron.down' : 'chevron.right'}
+                  color={theme.colors.primary}
+                  size={16}
+                />
+              )}
+              onPress={handleOtherTasksToggle}
+              style={[
+                styles.collapseListItem,
+                isOtherTasksExpanded && styles.collapseListItemExpanded,
+              ]}
+              titleStyle={[
+                styles.collapseListItemTitle,
+                isOtherTasksExpanded && styles.collapseListItemTitleExpanded,
+              ]}
+            />
+            {isOtherTasksExpanded &&
+              otherTasks.map(({ task, recurrenceText, nextOccurrence }) => (
+                <List.Item
+                  key={`${task.taskId}-${task.reminderId}`}
+                  title={task.title}
+                  description={
+                    nextOccurrence
+                      ? `${recurrenceText} • ${t('Next Occurrence')}: ${nextOccurrence}`
+                      : recurrenceText
+                  }
+                  left={() => <Text style={styles.listIcon}>{task.icon}</Text>}
+                  right={() => (
+                    <Text style={styles.otherTaskTime}>
+                      {dayjs()
+                        .hour(task.reminderTime.hour)
+                        .minute(task.reminderTime.minute)
+                        .format('HH:mm')}
+                    </Text>
+                  )}
+                  style={styles.otherTaskItem}
+                  titleStyle={styles.listItemTitle}
+                  descriptionStyle={styles.recurrenceDesc}
+                  onPress={handleListItemPress(task.taskId, task.reminderId)}
+                  disabled={userDisplayMode === UserDisplayMode.SIMPLE}
+                />
+              ))}
+          </List.Section>
+        </Fragment>
+      )}
       {userDisplayMode === UserDisplayMode.FULL && (
         <Button
           mode="contained"
@@ -222,9 +330,11 @@ const getStyles = createStyles<
     | 'listItemStacked'
     | 'listItemStackedLast'
     | 'listItemContainerDone'
-    | 'rightContainer'
+    | 'timeAndCheckContainer'
     | 'addButton'
-    | 'collapseButton',
+    | 'collapseListItem'
+    | 'collapseListItemExpanded'
+    | 'otherTaskItem',
     | 'headline'
     | 'listItemTitle'
     | 'listItemTitleMissed'
@@ -232,6 +342,10 @@ const getStyles = createStyles<
     | 'timeTextMissed'
     | 'addButtonLabel'
     | 'listIcon'
+    | 'otherTaskTime'
+    | 'collapseListItemTitle'
+    | 'collapseListItemTitleExpanded'
+    | 'recurrenceDesc'
   >,
   StyleParams
 >({
@@ -240,10 +354,10 @@ const getStyles = createStyles<
   },
   headline: {
     paddingVertical: StaticTheme.spacing.xs,
+    marginBottom: StaticTheme.spacing.sm,
   },
   listSection: {
     gap: StaticTheme.spacing.md,
-    marginVertical: StaticTheme.spacing.md,
   },
   listItem: {
     borderWidth: 1,
@@ -292,7 +406,7 @@ const getStyles = createStyles<
     borderRadius: StaticTheme.borderRadius.round,
     backgroundColor: ({ colors }) => colors.background,
   },
-  rightContainer: {
+  timeAndCheckContainer: {
     flexDirection: 'row',
     gap: (_, { userTextSize }) =>
       userTextSize === UserTextSize.LARGE ? StaticTheme.spacing.lg : StaticTheme.spacing.sm,
@@ -314,13 +428,40 @@ const getStyles = createStyles<
     marginVertical: (_, { userTextSize }) =>
       userTextSize === UserTextSize.LARGE ? StaticTheme.spacing.xs * 5 : StaticTheme.spacing.md,
   },
-  collapseButton: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: StaticTheme.spacing.sm,
-    borderRadius: StaticTheme.borderRadius.s,
-    backgroundColor: ({ colors }) => colorWithAlpha(colors.primary, 0.1),
+  collapseListItem: {
+    padding: StaticTheme.spacing.xs,
     borderWidth: 1,
     borderColor: ({ colors }) => colorWithAlpha(colors.primary, 0.3),
+    borderRadius: StaticTheme.borderRadius.s,
+    backgroundColor: ({ colors }) => colors.background,
+  },
+  collapseListItemExpanded: {
+    borderColor: ({ colors }) => colors.primary,
+  },
+  collapseListItemTitle: {
+    fontSize: ({ fonts }) => fonts.bodyLarge.fontSize,
+    fontWeight: ({ fonts }) => fonts.bodyLarge.fontWeight,
+    color: ({ colors }) => colors.outline,
+  },
+  collapseListItemTitleExpanded: {
+    color: ({ colors }) => colors.onSurface,
+  },
+  otherTaskItem: {
+    padding: StaticTheme.spacing.md,
+    borderWidth: 1,
+    borderColor: ({ colors }) => colorWithAlpha(colors.primary, 0.3),
+    borderRadius: StaticTheme.borderRadius.s,
+  },
+  otherTaskTime: {
+    fontSize: ({ fonts }) => fonts.bodyMedium.fontSize,
+    fontWeight: ({ fonts }) => fonts.bodyMedium.fontWeight,
+    color: ({ colors }) => colors.onSurfaceVariant,
+    margin: 'auto',
+  },
+  recurrenceDesc: {
+    fontSize: ({ fonts }) => fonts.bodySmall.fontSize,
+    fontWeight: ({ fonts }) => fonts.bodySmall.fontWeight,
+    color: ({ colors }) => colorWithAlpha(colors.onSurface, 0.6),
+    marginTop: StaticTheme.spacing.xs * 0.5,
   },
 });

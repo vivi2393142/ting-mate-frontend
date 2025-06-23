@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { UserTextSize } from '@/types/user';
 
 interface useUserTextSizeTranslationResponse extends Omit<ReturnType<typeof useTranslation>, 't'> {
-  tUserTextSize: (duration: UserTextSize) => string;
+  tUserTextSize: (userTextSize: UserTextSize) => string;
 }
 
 const useUserTextSizeTranslation = (): useUserTextSizeTranslationResponse => {
@@ -13,8 +13,8 @@ const useUserTextSizeTranslation = (): useUserTextSizeTranslationResponse => {
   const tUserTextSize = useCallback(
     (textSize: UserTextSize) => {
       const mapping: Record<UserTextSize, string> = {
-        [UserTextSize.STANDARD]: t('Standard'),
-        [UserTextSize.LARGE]: t('Large'),
+        [UserTextSize.STANDARD]: t('userTextSize.Standard'),
+        [UserTextSize.LARGE]: t('userTextSize.Large'),
       };
       return mapping[textSize];
     },

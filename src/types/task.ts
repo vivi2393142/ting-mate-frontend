@@ -5,20 +5,20 @@ export enum RecurrenceFrequency {
   MONTHLY = 'MONTHLY',
 }
 
-export enum RecurrenceDaysOfWeek {
-  MONDAY = 1,
-  TUESDAY = 2,
-  WEDNESDAY = 3,
-  THURSDAY = 4,
-  FRIDAY = 5,
-  SATURDAY = 6,
-  SUNDAY = 7,
+export enum DayOfWeek {
+  MONDAY = 0,
+  TUESDAY = 1,
+  WEDNESDAY = 2,
+  THURSDAY = 3,
+  FRIDAY = 4,
+  SATURDAY = 5,
+  SUNDAY = 6,
 }
 
 export interface RecurrenceRule {
   frequency: RecurrenceFrequency;
   interval?: number; // WEEKLY & MONTHLY: number of units between recurrences
-  daysOfWeek?: RecurrenceDaysOfWeek[]; // WEEKLY: days of week to repeat on
+  daysOfWeek?: DayOfWeek[]; // WEEKLY: days of week to repeat on
   dayOfMonth?: number; // MONTHLY: day of month to repeat on
 }
 
