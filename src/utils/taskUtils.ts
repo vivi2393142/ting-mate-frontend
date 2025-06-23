@@ -109,3 +109,7 @@ export const isTaskMissed = (reminderTime: ReminderTime, currentTime: Date): boo
 
   return currentTimeInMinutes > reminderTimeInMinutes;
 };
+
+export const formatReminderTime = (reminderTime: ReminderTime): string => {
+  return dayjs().hour(reminderTime.hour).minute(reminderTime.minute).format('HH:mm');
+};

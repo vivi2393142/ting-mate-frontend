@@ -2,23 +2,22 @@ import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useCallback, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
-import { Button, Text, TextInput } from 'react-native-paper';
-
 import useAppTheme from '@/hooks/useAppTheme';
 import { useUserTextSize } from '@/store/useUserStore';
 import { StaticTheme } from '@/theme';
 import { UserTextSize } from '@/types/user';
 import { createStyles, type StyleRecord } from '@/utils/createStyles';
 
-import IconSymbol from '@/components/atoms/IconSymbol';
+import { RecurrenceFrequency, type ReminderTime, type TaskTemplate } from '@/types/task';
+import { formatReminderTime } from '@/utils/taskUtils';
+
+import FormInput from '@/components/atoms/FormInput';
 import ScreenContainer from '@/components/atoms/ScreenContainer';
+import ThemedButton from '@/components/atoms/ThemedButton';
 import ThemedView from '@/components/atoms/ThemedView';
 
-interface TaskFormData {
-  title: string;
-  icon: string;
-  hour: string;
-  minute: string;
+interface TaskFormData extends Pick<TaskTemplate, 'title' | 'icon' | 'recurrence'> {
+  reminderTimeList: ReminderTime[];
 }
 
 const TaskForm = () => {
@@ -32,13 +31,15 @@ const TaskForm = () => {
   const styles = getStyles(theme, styleParams);
 
   const isEditMode = params.id !== undefined;
-  const taskId = params.id as string;
+  const editTaskId = params.id as string;
 
   const [formData, setFormData] = useState<TaskFormData>({
-    title: (params.title as string) || '',
-    icon: (params.icon as string) || '📝',
-    hour: (params.hour as string) || '12',
-    minute: (params.minute as string) || '00',
+    title: '',
+    icon: '📝',
+    recurrence: {
+      frequency: RecurrenceFrequency.DAILY,
+    },
+    reminderTimeList: [],
   });
 
   const handleInputChange = (field: keyof TaskFormData) => (value: string) => {
@@ -47,90 +48,60 @@ const TaskForm = () => {
 
   const handleSave = useCallback(() => {
     // TODO: Save task to backend
-    console.log('Saving task:', { id: taskId, ...formData });
+    console.log('isEditMode', isEditMode);
+    console.log('Saving task:', { id: editTaskId, ...formData });
 
     // Navigate back to home
     router.back();
-  }, [formData, taskId, router]);
+  }, [editTaskId, formData, isEditMode, router]);
 
   const handleCancel = useCallback(() => {
     router.back();
   }, [router]);
 
-  const isFormValid =
-    formData.title.trim().length > 0 &&
-    formData.icon.trim().length > 0 &&
-    parseInt(formData.hour) >= 0 &&
-    parseInt(formData.hour) <= 23 &&
-    parseInt(formData.minute) >= 0 &&
-    parseInt(formData.minute) <= 59;
+  // TODO: Add validation
+  const isFormValid = true;
 
   return (
-    <ScreenContainer style={styles.container}>
-      <Text variant="headlineSmall" style={styles.headline}>
-        {isEditMode ? t('Edit Task') : t('Add Task')}
-      </Text>
-
-      <ThemedView style={styles.form}>
-        <TextInput
-          label={t('Task Title')}
+    <ScreenContainer isRoot={false} style={styles.container}>
+      <ThemedView>
+        <FormInput
+          label={t('Title')}
+          icon="text.justify.leading"
           value={formData.title}
-          onChangeText={handleInputChange('title')}
-          style={styles.input}
-          mode="outlined"
+          onChangeValue={handleInputChange('title')}
         />
-
-        <TextInput
+        {/* TODO: add selects for the following inputs */}
+        <FormInput
           label={t('Icon')}
+          icon="face.smiling"
           value={formData.icon}
-          onChangeText={handleInputChange('icon')}
-          style={styles.input}
-          mode="outlined"
-          placeholder="📝"
+          onChangeValue={handleInputChange('icon')}
         />
-
-        <ThemedView style={styles.timeContainer}>
-          <TextInput
-            label={t('Hour')}
-            value={formData.hour}
-            onChangeText={handleInputChange('hour')}
-            style={styles.timeInput}
-            mode="outlined"
-            keyboardType="numeric"
-            maxLength={2}
-          />
-          <Text style={styles.timeSeparator}>:</Text>
-          <TextInput
-            label={t('Minute')}
-            value={formData.minute}
-            onChangeText={handleInputChange('minute')}
-            style={styles.timeInput}
-            mode="outlined"
-            keyboardType="numeric"
-            maxLength={2}
-          />
-        </ThemedView>
+        <FormInput
+          label={t('Time')}
+          icon="clock"
+          value={
+            formData.reminderTimeList?.[0] ? formatReminderTime(formData.reminderTimeList[0]) : ''
+          }
+          onChangeValue={handleInputChange('reminderTimeList')}
+        />
+        <FormInput
+          label={t('Repeat')}
+          icon="repeat"
+          value={formData.recurrence.frequency}
+          onChangeValue={handleInputChange('recurrence')}
+          divider={false}
+        />
       </ThemedView>
-
       <ThemedView style={styles.buttonContainer}>
-        <Button
-          mode="outlined"
-          onPress={handleCancel}
-          style={styles.button}
-          labelStyle={styles.buttonLabel}
-        >
+        {/* TODO: add 'completed' button */}
+        <ThemedButton mode="outlined" onPress={handleCancel}>
           {t('Cancel')}
-        </Button>
-        <Button
-          mode="contained"
-          onPress={handleSave}
-          disabled={!isFormValid}
-          style={styles.button}
-          labelStyle={styles.buttonLabel}
-          icon={({ color }) => <IconSymbol name="checkmark" color={color} size={16} />}
-        >
+        </ThemedButton>
+        <ThemedButton onPress={handleSave} disabled={!isFormValid}>
           {t('Save')}
-        </Button>
+        </ThemedButton>
       </ThemedView>
     </ScreenContainer>
   );
@@ -142,53 +113,14 @@ interface StyleParams {
   userTextSize: UserTextSize;
 }
 
-const getStyles = createStyles<
-  StyleRecord<
-    'button' | 'buttonContainer' | 'container' | 'form' | 'timeContainer',
-    'headline' | 'buttonLabel' | 'input' | 'timeInput' | 'timeSeparator'
-  >,
-  StyleParams
->({
-  button: {
-    borderRadius: StaticTheme.borderRadius.s,
-    flex: 1,
+const getStyles = createStyles<StyleRecord<'buttonContainer' | 'container'>, StyleParams>({
+  container: {
+    gap: StaticTheme.spacing.md,
+    paddingTop: StaticTheme.spacing.md,
   },
   buttonContainer: {
     backgroundColor: 'transparent',
-    flexDirection: 'row',
-    gap: StaticTheme.spacing.md,
-  },
-  buttonLabel: {
-    fontSize: ({ fonts }) => fonts.titleMedium.fontSize,
-    fontWeight: ({ fonts }) => fonts.titleMedium.fontWeight,
-    marginVertical: (_, { userTextSize }) =>
-      userTextSize === UserTextSize.LARGE ? StaticTheme.spacing.xs * 5 : StaticTheme.spacing.md,
-  },
-  container: {
-    gap: StaticTheme.spacing.md,
-  },
-  form: {
-    backgroundColor: 'transparent',
-    gap: StaticTheme.spacing.md,
-  },
-  headline: {
-    paddingVertical: StaticTheme.spacing.xs,
-  },
-  input: {
-    fontSize: ({ fonts }) => fonts.bodyLarge.fontSize,
-  },
-  timeContainer: {
-    alignItems: 'center',
-    backgroundColor: 'transparent',
-    flexDirection: 'row',
-    gap: StaticTheme.spacing.sm,
-  },
-  timeInput: {
-    flex: 1,
-    fontSize: ({ fonts }) => fonts.bodyLarge.fontSize,
-  },
-  timeSeparator: {
-    fontSize: ({ fonts }) => fonts.headlineMedium.fontSize,
-    fontWeight: ({ fonts }) => fonts.headlineMedium.fontWeight,
+    gap: StaticTheme.spacing.sm * 1.5,
+    marginTop: StaticTheme.spacing.xs,
   },
 });

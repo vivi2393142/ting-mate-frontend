@@ -2,7 +2,7 @@ import { useRouter } from 'expo-router';
 import { Fragment, useCallback, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
-import { Button, Divider, List, Text } from 'react-native-paper';
+import { Divider, List, Text } from 'react-native-paper';
 
 import useAppTheme from '@/hooks/useAppTheme';
 import useCurrentTime from '@/hooks/useCurrentTime';
@@ -15,8 +15,8 @@ import { UserDisplayMode, UserTextSize } from '@/types/user';
 import { createStyles, type StyleRecord } from '@/utils/createStyles';
 import { getNextOccurrenceDate, isTaskMissed, shouldTaskAppearToday } from '@/utils/taskUtils';
 
-import IconSymbol from '@/components/atoms/IconSymbol';
 import ScreenContainer from '@/components/atoms/ScreenContainer';
+import ThemedButton from '@/components/atoms/ThemedButton';
 import ExpandableSectionHeader from '@/components/screens/Home/ExpandableSectionHeader';
 import OtherTaskListItem from '@/components/screens/Home/OtherTaskListItem';
 import TaskListItem from '@/components/screens/Home/TaskListItem';
@@ -213,15 +213,9 @@ const HomeScreen = () => {
         </Fragment>
       )}
       {userDisplayMode === UserDisplayMode.FULL && (
-        <Button
-          mode="contained"
-          onPress={handleAddTask}
-          icon={({ color }) => <IconSymbol name="plus" color={color} size={16} />}
-          style={styles.addButton}
-          labelStyle={styles.addButtonLabel}
-        >
+        <ThemedButton onPress={handleAddTask} icon={'plus'}>
           {t('Add Task')}
-        </Button>
+        </ThemedButton>
       )}
     </ScreenContainer>
   );
@@ -234,7 +228,7 @@ interface StyleParams {
 }
 
 const getStyles = createStyles<
-  StyleRecord<'root' | 'listSection' | 'addButton' | 'divider', 'headline' | 'addButtonLabel'>,
+  StyleRecord<'root' | 'listSection' | 'divider', 'headline'>,
   StyleParams
 >({
   root: {
@@ -249,14 +243,5 @@ const getStyles = createStyles<
   },
   divider: {
     marginVertical: StaticTheme.spacing.xs,
-  },
-  addButton: {
-    borderRadius: StaticTheme.borderRadius.s,
-  },
-  addButtonLabel: {
-    fontSize: ({ fonts }) => fonts.titleMedium.fontSize,
-    fontWeight: ({ fonts }) => fonts.titleMedium.fontWeight,
-    marginVertical: (_, { userTextSize }) =>
-      userTextSize === UserTextSize.LARGE ? StaticTheme.spacing.xs * 5 : StaticTheme.spacing.md,
   },
 });

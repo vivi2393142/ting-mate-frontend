@@ -4,11 +4,9 @@ import { StaticTheme } from '@/theme';
 
 import ThemedView, { type ThemedViewProps } from '@/components/atoms/ThemedView';
 
-type ScreenContainerProps = Omit<ThemedViewProps, 'isRoot'>;
-
-const ScreenContainer = ({ children, style, ...rest }: ScreenContainerProps) => {
+const ScreenContainer = ({ children, style, ...rest }: ThemedViewProps) => {
   return (
-    <ThemedView {...rest} isRoot={true} style={[styles.container, style]}>
+    <ThemedView isRoot={true} {...rest} style={[styles.container, style]}>
       {children}
     </ThemedView>
   );

@@ -1,4 +1,3 @@
-import dayjs from 'dayjs';
 import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 
@@ -11,6 +10,7 @@ import type { Task } from '@/types/task';
 import { UserTextSize } from '@/types/user';
 import colorWithAlpha from '@/utils/colorWithAlpha';
 import { createStyles, type StyleRecord } from '@/utils/createStyles';
+import { formatReminderTime } from '@/utils/taskUtils';
 
 interface OtherTaskListItemProps extends Task {
   recurrenceText?: string;
@@ -44,11 +44,7 @@ const OtherTaskListItem = ({
           : recurrenceText
       }
       left={() => <Text style={styles.listIcon}>{icon}</Text>}
-      right={() => (
-        <Text style={styles.otherTaskTime}>
-          {dayjs().hour(reminderTime.hour).minute(reminderTime.minute).format('HH:mm')}
-        </Text>
-      )}
+      right={() => <Text style={styles.otherTaskTime}>{formatReminderTime(reminderTime)}</Text>}
       style={styles.otherTaskItem}
       titleStyle={styles.listItemTitle}
       descriptionStyle={styles.recurrenceDesc}

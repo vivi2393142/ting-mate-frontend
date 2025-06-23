@@ -2,9 +2,10 @@
   "Add Task": "Add Task",
   "Cancel": "Cancel",
   "Edit Task": "Edit Task",
-  "Hour": "Hour",
   "Icon": "Icon",
-  "Minute": "Minute",
+  "Repeat": "Repeat",
   "Save": "Save",
-  "Task Title": "Task Title"
+  "Task": "Task",
+  "Time": "Time",
+  "Title": "Title"
 }

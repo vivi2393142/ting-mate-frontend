@@ -15,7 +15,7 @@ export type CustomMenuItemProps<T extends Value> = Omit<MenuItemProps, 'title'> 
   render?: (value: T) => ReactNode;
   value: T;
 };
-interface SelectProps<V extends Value, T extends CustomMenuItemProps<V>> {
+export interface SelectProps<V extends Value, T extends CustomMenuItemProps<V>> {
   displayValue: ReactNode;
   options: T[];
   onSelect: (option: T) => void;

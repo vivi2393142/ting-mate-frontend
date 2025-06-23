@@ -1,4 +1,3 @@
-import dayjs from 'dayjs';
 import { useMemo } from 'react';
 
 import { List, Text } from 'react-native-paper';
@@ -10,6 +9,7 @@ import type { Task } from '@/types/task';
 import { UserTextSize } from '@/types/user';
 import colorWithAlpha from '@/utils/colorWithAlpha';
 import { createStyles, type StyleRecord } from '@/utils/createStyles';
+import { formatReminderTime } from '@/utils/taskUtils';
 
 import ThemedCheckbox from '@/components/atoms/ThemedCheckbox';
 import ThemedView from '@/components/atoms/ThemedView';
@@ -53,7 +53,7 @@ const TaskListItem = ({
       right={() => (
         <ThemedView style={styles.timeAndCheckContainer}>
           <Text style={[styles.timeText, isMissed && styles.timeTextMissed]} variant="titleSmall">
-            {dayjs().hour(reminderTime.hour).minute(reminderTime.minute).format('HH:mm')}
+            {formatReminderTime(reminderTime)}
           </Text>
           <ThemedCheckbox status={completed ? 'checked' : 'unchecked'} onPress={onCheck} />
         </ThemedView>

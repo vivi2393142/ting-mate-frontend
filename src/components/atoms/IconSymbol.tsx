@@ -24,7 +24,13 @@ const MAPPING: IconMapping = {
   'person.2.fill': 'people',
   'chevron.up.chevron.down': 'unfold-more',
   plus: 'add',
+  'text.justify.leading': 'notes',
+  'face.smiling': 'insert-emoticon',
+  clock: 'access-time',
+  repeat: 'repeat',
 } as IconMapping;
+
+export type IconName = SymbolViewProps['name'];
 
 /**
  * An icon component that uses native SF Symbols on iOS, and Material Icons on Android and web.
@@ -37,7 +43,7 @@ const IconSymbol = ({
   color,
   style,
 }: {
-  name: SymbolViewProps['name'];
+  name: IconName;
   size?: number;
   color: string;
   style?: StyleProp<TextStyle>;
