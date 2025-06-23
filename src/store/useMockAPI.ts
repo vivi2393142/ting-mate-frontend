@@ -393,6 +393,44 @@ const mockTasks: TaskTemplate[] = [
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
   },
+  {
+    id: 'task-5',
+    title: 'Drink water',
+    icon: '💧',
+    recurrence: {
+      frequency: RecurrenceFrequency.DAILY,
+    },
+    reminders: [
+      {
+        id: 'reminder-5-1',
+        reminderTime: { hour: 10, minute: 0 },
+        completed: false,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      },
+    ],
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+  },
+  {
+    id: 'task-6',
+    title: 'Exercise',
+    icon: '🏃‍♂️',
+    recurrence: {
+      frequency: RecurrenceFrequency.DAILY,
+    },
+    reminders: [
+      {
+        id: 'reminder-6-1',
+        reminderTime: { hour: 19, minute: 0 },
+        completed: false,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      },
+    ],
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+  },
 ];
 
 const mockLinkedUsers: User[] = [

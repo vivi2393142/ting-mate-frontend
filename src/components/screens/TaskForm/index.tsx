@@ -6,6 +6,7 @@ import { useTranslation } from 'react-i18next';
 import { Alert, Button, Platform } from 'react-native';
 
 import { Divider } from 'react-native-paper';
+import EmojiPicker from 'rn-emoji-keyboard';
 
 import useAppTheme from '@/hooks/useAppTheme';
 import { useMockTasks } from '@/store/useMockAPI';
@@ -94,6 +95,7 @@ const TaskForm = () => {
   const [initFormData, setInitFormData] = useState<TaskFormData | null>(null);
   const [formData, setFormData] = useState<TaskFormData | null>(null);
   const [showTimePicker, setShowTimePicker] = useState(false);
+  const [showEmojiKeyboard, setShowEmojiKeyboard] = useState(false);
 
   const reminder = formData?.reminderTimeList?.[0];
   const reminderDate = useMemo(() => {
@@ -109,6 +111,11 @@ const TaskForm = () => {
   const handleInputChange = (field: keyof TaskFormData) => (value: string) => {
     setFormData((prev) => prev && { ...prev, [field]: value });
   };
+
+  const handleEmojiSelect = useCallback((emoji: { emoji: string }) => {
+    setFormData((prev) => prev && { ...prev, icon: emoji.emoji });
+    setShowEmojiKeyboard(false);
+  }, []);
 
   const handleTimeChange = useCallback((_: DateTimePickerEvent, selectedDate?: Date) => {
     setShowTimePicker(false);
@@ -250,12 +257,21 @@ const TaskForm = () => {
             onChangeValue={handleInputChange('title')}
             placeholder={t('Add task title')}
           />
-          {/* TODO: add selects for the following inputs */}
           <FormInput
             label={t('Icon')}
             icon="face.smiling"
             value={formData?.icon || ''}
-            onChangeValue={handleInputChange('icon')}
+            onPress={() => setShowEmojiKeyboard(true)}
+            placeholder={t('Select Icon')}
+            readOnly
+            rightIconName="chevron.up.chevron.down"
+          />
+          <EmojiPicker
+            // TODO: auto select related emoji when user input
+            open={showEmojiKeyboard}
+            onEmojiSelected={handleEmojiSelect}
+            onClose={() => setShowEmojiKeyboard(false)}
+            enableSearchBar // TODO: if i18n is supported, this need to be localized
           />
           <FormInput
             label={t('Time')}
@@ -277,6 +293,7 @@ const TaskForm = () => {
             />
           )}
           <Divider />
+          {/* TODO: add selects for the following inputs */}
           <FormInput
             label={t('Repeat')}
             icon="repeat"

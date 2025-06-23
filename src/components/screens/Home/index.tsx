@@ -213,7 +213,7 @@ const HomeScreen = () => {
         </Fragment>
       )}
       {userDisplayMode === UserDisplayMode.FULL && (
-        <ThemedButton onPress={handleAddTask} icon={'plus'}>
+        <ThemedButton onPress={handleAddTask} icon={'plus'} style={styles.addTaskButton}>
           {t('Add Task')}
         </ThemedButton>
       )}
@@ -228,7 +228,7 @@ interface StyleParams {
 }
 
 const getStyles = createStyles<
-  StyleRecord<'root' | 'listSection' | 'divider', 'headline'>,
+  StyleRecord<'root' | 'listSection' | 'divider' | 'addTaskButton', 'headline'>,
   StyleParams
 >({
   root: {
@@ -243,5 +243,8 @@ const getStyles = createStyles<
   },
   divider: {
     marginVertical: StaticTheme.spacing.xs,
+  },
+  addTaskButton: {
+    marginTop: StaticTheme.spacing.xs,
   },
 });

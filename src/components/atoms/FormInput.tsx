@@ -220,7 +220,7 @@ const getStyles = createStyles<
     backgroundColor: 'transparent',
     paddingHorizontal: 0,
     textAlign: 'left',
-    height: 48,
+    height: (_, { userTextSize }) => (userTextSize === UserTextSize.LARGE ? 60 : 48),
   },
   inputAlignRight: {
     flex: 0,
@@ -233,7 +233,7 @@ const getStyles = createStyles<
   pressableInputButton: {
     borderRadius: 0,
     flex: 1,
-    height: 48,
+    height: (_, { userTextSize }) => (userTextSize === UserTextSize.LARGE ? 60 : 48),
   },
   pressableInputButtonLabel: {
     fontSize: ({ fonts }) => fonts.bodyLarge.fontSize,
