@@ -205,10 +205,10 @@ const getStyles = createStyles<
   },
   contentStyle: {
     paddingHorizontal: 0,
+    paddingLeft: StaticTheme.spacing.xs,
   },
   pressableInputButton: {
     borderRadius: 0,
-    borderWidth: 1,
     flex: 1,
     height: 44,
   },
@@ -217,10 +217,11 @@ const getStyles = createStyles<
     fontWeight: ({ fonts }) => fonts.bodyLarge.fontWeight,
     color: ({ colors }) => colors.onSurface,
     marginRight: 'auto',
-    marginLeft: 0,
+    marginLeft: StaticTheme.spacing.xs,
   },
   pressableInputButtonContent: {
     flexDirection: 'row-reverse',
     justifyContent: 'flex-end',
+    height: '100%',
   },
 });

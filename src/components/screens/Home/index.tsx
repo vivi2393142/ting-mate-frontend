@@ -154,7 +154,7 @@ const HomeScreen = () => {
       <List.Section style={styles.listSection}>
         {sortedTasks.map((task, idx) => {
           const isMissed = !task.completed && isTaskMissed(task.reminderTime, currentTime);
-          const isLastCompleted = task.completed && !sortedTasks?.[idx + 1].completed;
+          const isLastCompleted = task.completed && !sortedTasks?.[idx + 1]?.completed;
           const taskTemplate = tasks.find((t) => t.id === task.taskId);
           const recurrenceText = taskTemplate ? tRecurrenceText(taskTemplate.recurrence) : '';
           const shouldShowRecurrence =
