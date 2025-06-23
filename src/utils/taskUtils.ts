@@ -1,6 +1,6 @@
 import { default as dayjs } from 'dayjs';
 
-import type { TaskTemplate } from '@/types/task';
+import type { ReminderTime, TaskTemplate } from '@/types/task';
 import { RecurrenceFrequency } from '@/types/task';
 
 // Helper function to determine if a task should appear today based on its recurrence rule
@@ -97,4 +97,15 @@ export const getNextOccurrenceDate = (task: TaskTemplate): dayjs.Dayjs | null =>
     default:
       return null;
   }
+};
+
+// Helper function to determine if a task is missed based on current time
+export const isTaskMissed = (reminderTime: ReminderTime, currentTime: Date): boolean => {
+  const currentHour = currentTime.getHours();
+  const currentMinute = currentTime.getMinutes();
+
+  const currentTimeInMinutes = currentHour * 60 + currentMinute;
+  const reminderTimeInMinutes = reminderTime.hour * 60 + reminderTime.minute;
+
+  return currentTimeInMinutes > reminderTimeInMinutes;
 };
