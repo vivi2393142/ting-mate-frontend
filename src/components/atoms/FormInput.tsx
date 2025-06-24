@@ -125,7 +125,7 @@ const FormInput = ({
         <ThemedView
           style={[
             styles.labelContainer,
-            rest.valueAlign == 'right' && styles.labelContainerAlignRight,
+            rest.valueAlign === 'right' && styles.labelContainerAlignRight,
           ]}
         >
           <Text style={styles.label}>{label}</Text>
@@ -196,7 +196,7 @@ const getStyles = createStyles<
     paddingLeft: StaticTheme.spacing.md,
   },
   labelContainer: {
-    minWidth: 90,
+    minWidth: 72,
     flexShrink: 0,
     alignContent: 'stretch',
     marginRight: StaticTheme.spacing.md,

@@ -13,22 +13,22 @@ const useDayOfWeekTranslation = (): useDayOfWeekTranslationResponse => {
   const tDayOfWeek = useCallback(
     (dayOfWeek: DayOfWeek, isShort?: boolean) => {
       const mapping: Record<DayOfWeek, string> = {
-        [DayOfWeek.MONDAY]: t('dayOfWeek.Monday'),
-        [DayOfWeek.TUESDAY]: t('dayOfWeek.Tuesday'),
-        [DayOfWeek.WEDNESDAY]: t('dayOfWeek.Wednesday'),
-        [DayOfWeek.THURSDAY]: t('dayOfWeek.Thursday'),
-        [DayOfWeek.FRIDAY]: t('dayOfWeek.Friday'),
-        [DayOfWeek.SATURDAY]: t('dayOfWeek.Saturday'),
-        [DayOfWeek.SUNDAY]: t('dayOfWeek.Sunday'),
+        [0]: t('dayOfWeek.Monday'),
+        [1]: t('dayOfWeek.Tuesday'),
+        [2]: t('dayOfWeek.Wednesday'),
+        [3]: t('dayOfWeek.Thursday'),
+        [4]: t('dayOfWeek.Friday'),
+        [5]: t('dayOfWeek.Saturday'),
+        [6]: t('dayOfWeek.Sunday'),
       };
       const shortMapping: Record<DayOfWeek, string> = {
-        [DayOfWeek.MONDAY]: t('dayOfWeek.Mon'),
-        [DayOfWeek.TUESDAY]: t('dayOfWeek.Tue'),
-        [DayOfWeek.WEDNESDAY]: t('dayOfWeek.Wed'),
-        [DayOfWeek.THURSDAY]: t('dayOfWeek.Thu'),
-        [DayOfWeek.FRIDAY]: t('dayOfWeek.Fri'),
-        [DayOfWeek.SATURDAY]: t('dayOfWeek.Sat'),
-        [DayOfWeek.SUNDAY]: t('dayOfWeek.Sun'),
+        [0]: t('dayOfWeek.Mon'),
+        [1]: t('dayOfWeek.Tue'),
+        [2]: t('dayOfWeek.Wed'),
+        [3]: t('dayOfWeek.Thu'),
+        [4]: t('dayOfWeek.Fri'),
+        [5]: t('dayOfWeek.Sat'),
+        [6]: t('dayOfWeek.Sun'),
       };
       return isShort ? shortMapping[dayOfWeek] : mapping[dayOfWeek];
     },

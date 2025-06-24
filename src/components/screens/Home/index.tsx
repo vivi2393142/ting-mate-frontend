@@ -157,10 +157,7 @@ const HomeScreen = () => {
           const isLastCompleted = task.completed && !sortedTasks?.[idx + 1]?.completed;
           const taskTemplate = tasks.find((t) => t.id === task.taskId);
           const recurrenceText = taskTemplate ? tRecurrenceText(taskTemplate.recurrence) : '';
-          const shouldShowRecurrence =
-            taskTemplate &&
-            taskTemplate.recurrence.frequency !== 'DAILY' &&
-            taskTemplate.recurrence.frequency !== 'ONCE';
+          const shouldShowRecurrence = taskTemplate && !!taskTemplate.recurrence.interval;
           return (
             <Fragment key={`${task.taskId}-${task.reminderId}`}>
               <TaskListItem

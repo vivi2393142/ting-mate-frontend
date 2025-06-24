@@ -1,25 +1,25 @@
-export enum RecurrenceFrequency {
-  ONCE = 'ONCE',
-  DAILY = 'DAILY',
-  WEEKLY = 'WEEKLY',
-  MONTHLY = 'MONTHLY',
+export enum RecurrenceUnit {
+  DAY = 'DAY',
+  WEEK = 'WEEK',
+  MONTH = 'MONTH',
 }
 
-export enum DayOfWeek {
-  MONDAY = 0,
-  TUESDAY = 1,
-  WEDNESDAY = 2,
-  THURSDAY = 3,
-  FRIDAY = 4,
-  SATURDAY = 5,
-  SUNDAY = 6,
-}
+export const dayOfWeek = {
+  MONDAY: 0,
+  TUESDAY: 1,
+  WEDNESDAY: 2,
+  THURSDAY: 3,
+  FRIDAY: 4,
+  SATURDAY: 5,
+  SUNDAY: 6,
+} as const;
+export type DayOfWeek = (typeof dayOfWeek)[keyof typeof dayOfWeek];
 
 export interface RecurrenceRule {
-  frequency: RecurrenceFrequency;
-  interval?: number; // WEEKLY & MONTHLY: number of units between recurrences
-  daysOfWeek?: DayOfWeek[]; // WEEKLY: days of week to repeat on
-  dayOfMonth?: number; // MONTHLY: day of month to repeat on
+  interval: number; // number of units between recurrences
+  unit: RecurrenceUnit;
+  daysOfWeek?: DayOfWeek[]; // WEEK: days of week to repeat on
+  daysOfMonth?: number[]; // MONTH: day of month to repeat on
 }
 
 export interface ReminderTime {
@@ -34,8 +34,8 @@ export interface TaskTemplate {
   icon: string; // emoji
   createdAt: string; // ISO timestamp
   updatedAt: string; // ISO timestamp
-  recurrence: RecurrenceRule;
   reminders: TaskReminder[];
+  recurrence?: RecurrenceRule;
 }
 
 // Task reminder - each reminder time corresponds to a reminder with completion status
@@ -46,6 +46,7 @@ export interface TaskReminder {
   createdAt: string; // ISO timestamp
   updatedAt: string; // ISO timestamp
   completedAt?: string; // ISO timestamp - completion time
+  completedBy?: string; // user email - completion user email
 }
 
 // Type for updating task template

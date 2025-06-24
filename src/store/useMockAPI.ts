@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 
 import type { ReminderTime, TaskTemplate } from '@/types/task';
-import { RecurrenceFrequency } from '@/types/task';
+import { RecurrenceUnit } from '@/types/task';
 import type { User } from '@/types/user';
 import { Role, UserDisplayMode, UserTextSize } from '@/types/user';
 
@@ -96,7 +96,7 @@ const useMockAPI = create<MockAPIState>((set, get) => ({
 
   linkAccount: (email: string) => {
     const newLinkedUser: User = {
-      email: email,
+      email,
       name: 'New Linked User',
       role: Role.CAREGIVER,
       settings: {
@@ -319,7 +319,8 @@ const mockTasks: TaskTemplate[] = [
     title: 'Take medication',
     icon: '💊',
     recurrence: {
-      frequency: RecurrenceFrequency.DAILY,
+      interval: 1,
+      unit: RecurrenceUnit.DAY,
     },
     reminders: [
       {
@@ -338,7 +339,8 @@ const mockTasks: TaskTemplate[] = [
     title: 'Measure blood pressure & blood sugar',
     icon: '🩺',
     recurrence: {
-      frequency: RecurrenceFrequency.DAILY,
+      interval: 1,
+      unit: RecurrenceUnit.DAY,
     },
     reminders: [
       {
@@ -358,7 +360,8 @@ const mockTasks: TaskTemplate[] = [
     title: 'Walk',
     icon: '🚶',
     recurrence: {
-      frequency: RecurrenceFrequency.WEEKLY,
+      interval: 1,
+      unit: RecurrenceUnit.WEEK,
       daysOfWeek: [1, 3, 5], // Monday, Wednesday, Friday
     },
     reminders: [
@@ -378,8 +381,9 @@ const mockTasks: TaskTemplate[] = [
     title: 'See doctor',
     icon: '👨‍⚕️',
     recurrence: {
-      frequency: RecurrenceFrequency.MONTHLY,
-      dayOfMonth: 15,
+      interval: 1,
+      unit: RecurrenceUnit.MONTH,
+      daysOfMonth: [15],
     },
     reminders: [
       {
@@ -398,7 +402,8 @@ const mockTasks: TaskTemplate[] = [
     title: 'Drink water',
     icon: '💧',
     recurrence: {
-      frequency: RecurrenceFrequency.DAILY,
+      interval: 1,
+      unit: RecurrenceUnit.DAY,
     },
     reminders: [
       {
@@ -417,7 +422,8 @@ const mockTasks: TaskTemplate[] = [
     title: 'Exercise',
     icon: '🏃‍♂️',
     recurrence: {
-      frequency: RecurrenceFrequency.DAILY,
+      interval: 1,
+      unit: RecurrenceUnit.DAY,
     },
     reminders: [
       {

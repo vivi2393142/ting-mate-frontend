@@ -1,36 +1,46 @@
 import { useCallback } from 'react';
 
 import useDayOfWeekTranslation from '@/hooks/useDayOfWeekTranslation';
-import useRecurrenceFrequencyTranslation from '@/hooks/useRecurrenceFrequencyTranslation';
-import { RecurrenceFrequency, type RecurrenceRule } from '@/types/task';
+import useRecurrenceUnitTranslation from '@/hooks/useRecurrenceUnitTranslation';
+import { type RecurrenceRule, RecurrenceUnit } from '@/types/task';
+import { useTranslation } from 'react-i18next';
 
 const useRecurrenceText = () => {
-  const { tRecurrenceFrequency } = useRecurrenceFrequencyTranslation();
+  const { tRecurrenceUnit } = useRecurrenceUnitTranslation();
   const { tDayOfWeek } = useDayOfWeekTranslation();
+  const { t } = useTranslation('common');
 
   const tRecurrenceText = useCallback(
-    (recurrence: RecurrenceRule) => {
-      switch (recurrence.frequency) {
-        case RecurrenceFrequency.DAILY:
-        case RecurrenceFrequency.ONCE:
-          return tRecurrenceFrequency(recurrence.frequency);
-        case RecurrenceFrequency.WEEKLY:
-          if (!recurrence.daysOfWeek || recurrence.daysOfWeek.length === 0) {
-            return tRecurrenceFrequency(RecurrenceFrequency.WEEKLY);
-          }
-          return `${tRecurrenceFrequency(RecurrenceFrequency.WEEKLY)} ${recurrence.daysOfWeek
-            .map((d) => tDayOfWeek(d, true))
-            .join(', ')}`;
-        case RecurrenceFrequency.MONTHLY:
-          if (!recurrence.dayOfMonth) {
-            return tRecurrenceFrequency(RecurrenceFrequency.MONTHLY);
-          }
-          return `${tRecurrenceFrequency(RecurrenceFrequency.MONTHLY)} ${recurrence.dayOfMonth}`;
-        default:
-          return '';
+    ({ interval, unit, ...other }: RecurrenceRule) => {
+      if (!interval) return '';
+
+      // Special cases
+      if (interval === 1 && unit === RecurrenceUnit.DAY) {
+        return t('Daily');
       }
+
+      // Day case
+      if (unit === RecurrenceUnit.DAY) {
+        return t('recurrenceText_day', {
+          interval,
+          unit: tRecurrenceUnit(unit, { count: interval, lowerCase: true }),
+        });
+      }
+
+      // Week and Month case
+      const daysText =
+        unit === RecurrenceUnit.WEEK
+          ? other?.daysOfWeek?.map((d) => tDayOfWeek(d, true)).join(', ')
+          : other?.daysOfMonth?.join(', ');
+
+      // return text;
+      return t('recurrenceText_week_month', {
+        interval,
+        unit: tRecurrenceUnit(unit, { count: interval, lowerCase: true }),
+        days: daysText || '',
+      });
     },
-    [tRecurrenceFrequency, tDayOfWeek],
+    [tRecurrenceUnit, tDayOfWeek, t],
   );
 
   return { tRecurrenceText };

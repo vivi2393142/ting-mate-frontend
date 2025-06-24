@@ -1,7 +1,8 @@
 import { default as dayjs } from 'dayjs';
 
 import type { ReminderTime, TaskTemplate } from '@/types/task';
-import { RecurrenceFrequency } from '@/types/task';
+
+import { RecurrenceUnit } from '@/types/task';
 
 // Helper function to determine if a task should appear today based on its recurrence rule
 export const shouldTaskAppearToday = ({ recurrence, createdAt }: TaskTemplate): boolean => {
@@ -9,90 +10,109 @@ export const shouldTaskAppearToday = ({ recurrence, createdAt }: TaskTemplate): 
   const dayOfWeek = today.day(); // 0 = Sunday, 1 = Monday, ..., 6 = Saturday
   const dayOfMonth = today.date();
 
-  switch (recurrence.frequency) {
-    case RecurrenceFrequency.DAILY:
-      return true;
+  if (!recurrence) return false;
 
-    case RecurrenceFrequency.WEEKLY: {
+  // If interval is 0, only show on the created day
+  if (recurrence.interval === 0) {
+    return today.isSame(dayjs(createdAt), 'day');
+  }
+
+  let daysSinceStart: number;
+  let weeksSinceStart: number;
+  let monthsSinceStart: number;
+  switch (recurrence.unit) {
+    case RecurrenceUnit.DAY:
+      // Appear every interval days, using createdAt as the start point
+      daysSinceStart = today.diff(dayjs(createdAt), 'day');
+      return daysSinceStart % recurrence.interval === 0;
+
+    case RecurrenceUnit.WEEK:
       if (!recurrence.daysOfWeek || recurrence.daysOfWeek.length === 0) return false;
-      return recurrence.daysOfWeek.includes(dayOfWeek);
-    }
+      // Appear every interval weeks, and today must be one of the specified days of week
+      weeksSinceStart = today.diff(dayjs(createdAt), 'week');
+      return (
+        weeksSinceStart % recurrence.interval === 0 && recurrence.daysOfWeek.includes(dayOfWeek)
+      );
 
-    case RecurrenceFrequency.MONTHLY:
-      if (!recurrence.dayOfMonth) return false;
-      return dayOfMonth === recurrence.dayOfMonth;
-
-    case RecurrenceFrequency.ONCE: {
-      // Check if it was created today
-      // TODO: for expired tasks, BE should not return them
-      const taskCreatedDate = dayjs(createdAt);
-      return taskCreatedDate.isSame(today, 'day');
-    }
+    case RecurrenceUnit.MONTH:
+      if (!recurrence.daysOfMonth || recurrence.daysOfMonth.length === 0) return false;
+      // Appear every interval months, and today must be one of the specified days of month
+      monthsSinceStart = today.diff(dayjs(createdAt), 'month');
+      return (
+        monthsSinceStart % recurrence.interval === 0 && recurrence.daysOfMonth.includes(dayOfMonth)
+      );
 
     default:
       return false;
   }
 };
 
-// Helper function to get next occurrence date for a task
 export const getNextOccurrenceDate = (task: TaskTemplate): dayjs.Dayjs | null => {
+  const { recurrence, createdAt } = task;
   const today = dayjs();
-  const dayOfWeek = today.day();
 
-  switch (task.recurrence.frequency) {
-    case RecurrenceFrequency.DAILY:
-      return today.add(1, 'day');
+  if (!recurrence || recurrence.interval === 0) return null;
 
-    case RecurrenceFrequency.WEEKLY: {
-      if (!task.recurrence.daysOfWeek || task.recurrence.daysOfWeek.length === 0) {
-        return null;
-      }
-
-      // Find the next occurrence day
-      const adjustedDayOfWeek = dayOfWeek === 0 ? 7 : dayOfWeek;
-      const sortedDays = [...task.recurrence.daysOfWeek].sort((a, b) => a - b);
-
-      // Find the next day this week
-      const nextDayThisWeek = sortedDays.find((day) => day > adjustedDayOfWeek);
-      if (nextDayThisWeek) {
-        const daysToAdd = nextDayThisWeek - adjustedDayOfWeek;
-        return today.add(daysToAdd, 'day');
-      }
-
-      // If no day this week, find the first day next week
-      const firstDayNextWeek = sortedDays[0];
-      const daysToAdd = 7 - adjustedDayOfWeek + firstDayNextWeek;
+  switch (recurrence.unit) {
+    case RecurrenceUnit.DAY: {
+      // Calculate days until next occurrence
+      const daysSinceStart = today.diff(dayjs(createdAt), 'day');
+      const daysToAdd = recurrence.interval - (daysSinceStart % recurrence.interval);
       return today.add(daysToAdd, 'day');
     }
 
-    case RecurrenceFrequency.MONTHLY: {
-      if (!task.recurrence.dayOfMonth) {
-        return null;
+    case RecurrenceUnit.WEEK: {
+      if (!recurrence.daysOfWeek || recurrence.daysOfWeek.length === 0) return null;
+      // Find the nearest specified day of week in the next cycle
+      const weeksSinceStart = today.diff(dayjs(createdAt), 'week');
+      const isThisWeek = weeksSinceStart % recurrence.interval === 0;
+      const todayDay = today.day();
+      const sortedDays = [...recurrence.daysOfWeek].sort((a, b) => a - b);
+
+      // Check remaining days in current week
+      if (isThisWeek) {
+        const nextDay = sortedDays.find((d) => d > todayDay);
+        if (nextDay !== undefined) {
+          return today.add(nextDay - todayDay, 'day');
+        }
       }
-
-      const currentMonth = today.month();
-      const currentYear = today.year();
-
-      // Try next month
-      let nextDate = dayjs()
-        .year(currentYear)
-        .month(currentMonth + 1)
-        .date(task.recurrence.dayOfMonth);
-
-      // If the day doesn't exist in next month (e.g., 31st in February),
-      // get the last day of that month
-      if (!nextDate.isValid()) {
-        nextDate = dayjs()
-          .year(currentYear)
-          .month(currentMonth + 1)
-          .endOf('month');
-      }
-
-      return nextDate;
+      // Get first specified day in next cycle
+      const weeksToAdd =
+        recurrence.interval - (weeksSinceStart % recurrence.interval) || recurrence.interval;
+      const firstDay = sortedDays[0];
+      const daysToAdd = 7 * weeksToAdd + ((firstDay - todayDay + 7) % 7);
+      return today.add(daysToAdd, 'day');
     }
 
-    case RecurrenceFrequency.ONCE:
-      return null;
+    case RecurrenceUnit.MONTH: {
+      if (!recurrence.daysOfMonth || recurrence.daysOfMonth.length === 0) return null;
+      // Find the nearest specified day of month in the next cycle
+      const monthsSinceStart = today.diff(dayjs(createdAt), 'month');
+      const isThisMonth = monthsSinceStart % recurrence.interval === 0;
+      const todayDate = today.date();
+      const sortedDays = [...recurrence.daysOfMonth].sort((a, b) => a - b);
+
+      // Check remaining days in current month
+      if (isThisMonth) {
+        const nextDay = sortedDays.find((d) => d > todayDate);
+        if (nextDay !== undefined) {
+          let nextDate = today.date(nextDay);
+          if (!nextDate.isValid()) {
+            nextDate = today.endOf('month');
+          }
+          return nextDate;
+        }
+      }
+      // Get first specified day in next cycle
+      const monthsToAdd =
+        recurrence.interval - (monthsSinceStart % recurrence.interval) || recurrence.interval;
+      const firstDay = sortedDays[0];
+      let nextDate = today.add(monthsToAdd, 'month').date(firstDay);
+      if (!nextDate.isValid()) {
+        nextDate = today.add(monthsToAdd, 'month').endOf('month');
+      }
+      return nextDate;
+    }
 
     default:
       return null;

@@ -1,5 +1,6 @@
 {
   "Connect": "Connect",
+  "Daily": "Daily",
   "Go to home screen!": "Go to home screen!",
   "Home": "Home",
   "Oops!": "Oops!",
@@ -22,11 +23,15 @@
     "Sun": "Sun",
     "Sunday": "Sunday"
   },
-  "recurrenceFrequency": {
-    "Once": "Once",
-    "Daily": "Daily",
-    "Weekly": "Weekly",
-    "Monthly": "Monthly"
+  "recurrenceText_day": "Every {{interval}} {{unit}}",
+  "recurrenceText_week_month": "Every {{interval}} {{unit}} on {{days}}",
+  "recurrenceUnit": {
+    "Day_one": "Day",
+    "Day_other": "Days",
+    "Week_one": "Week",
+    "Week_other": "Weeks",
+    "Month_one": "Month",
+    "Month_other": "Months"
   },
   "userDisplayMode": {
     "Full": "Full",

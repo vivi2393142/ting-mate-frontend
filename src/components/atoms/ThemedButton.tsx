@@ -13,7 +13,7 @@ import IconSymbol, { type IconName } from '@/components/atoms/IconSymbol';
 interface ThemedButtonProps
   extends Omit<ButtonProps, 'icon' | 'color' | 'buttonColor' | 'textColor'> {
   icon?: IconName;
-  color?: 'primary' | 'secondary' | 'error';
+  color?: 'primary' | 'secondary' | 'error' | 'onSurface' | 'outline' | 'outlineVariant';
 }
 
 const ThemedButton = ({

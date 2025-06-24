@@ -45,7 +45,7 @@ const SettingsScreen = () => {
   const textSizeOptions = useMemo(
     () =>
       Object.values(UserTextSize).map((value) => ({
-        value: value,
+        value,
         title: tUserTextSize(value),
       })),
     [tUserTextSize],
@@ -54,7 +54,7 @@ const SettingsScreen = () => {
   const displayModeOptions = useMemo(
     () =>
       Object.values(UserDisplayMode).map((value) => ({
-        value: value,
+        value,
         title: tUserDisplayMode(value),
       })),
     [tUserDisplayMode],
@@ -140,9 +140,9 @@ const getStyles = createStyles({
   },
   subheader: {
     color: (theme: Theme) => theme.colors.outline,
+    textTransform: 'uppercase',
     paddingTop: StaticTheme.spacing.sm,
     paddingVertical: StaticTheme.spacing.xs,
-    textTransform: 'uppercase',
   },
 });
 

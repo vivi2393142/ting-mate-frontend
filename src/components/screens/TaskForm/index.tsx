@@ -9,10 +9,11 @@ import { Divider } from 'react-native-paper';
 import EmojiPicker from 'rn-emoji-keyboard';
 
 import useAppTheme from '@/hooks/useAppTheme';
+import useRecurrenceText from '@/hooks/useRecurrenceText';
 import { useMockTasks } from '@/store/useMockAPI';
 import { useUserTextSize } from '@/store/useUserStore';
 import { StaticTheme } from '@/theme';
-import { RecurrenceFrequency, type ReminderTime, type TaskTemplate } from '@/types/task';
+import { RecurrenceRule, RecurrenceUnit, type ReminderTime, type TaskTemplate } from '@/types/task';
 import { UserTextSize } from '@/types/user';
 import { createStyles, type StyleRecord } from '@/utils/createStyles';
 import { formatReminderTime } from '@/utils/taskUtils';
@@ -21,15 +22,20 @@ import FormInput from '@/components/atoms/FormInput';
 import ScreenContainer from '@/components/atoms/ScreenContainer';
 import ThemedButton from '@/components/atoms/ThemedButton';
 import ThemedView from '@/components/atoms/ThemedView';
+import RecurrenceSelector from '@/components/screens/TaskForm/RecurrenceSelector';
 
 const now = new Date();
 const nextHour = now.getMinutes() === 0 ? now.getHours() : now.getHours() + 1;
+
+const defaultRecurrence: RecurrenceRule = {
+  interval: 1,
+  unit: RecurrenceUnit.DAY,
+};
+
 const defaultTaskFormData: TaskFormData = {
   title: '',
   icon: '📝',
-  recurrence: {
-    frequency: RecurrenceFrequency.DAILY,
-  },
+  recurrence: defaultRecurrence,
   reminderTimeList: [{ reminderTime: { hour: nextHour, minute: 0 } }],
 };
 
@@ -41,14 +47,16 @@ const checkHasChanges = (initFormData: TaskFormData | null, formData: TaskFormDa
     return true;
   }
 
-  // Check recurrence
-  const { recurrence: initRecurrence } = initFormData;
-  const { recurrence: currentRecurrence } = formData;
+  // Check recurrence (deep compare)
+  const a = initFormData.recurrence;
+  const b = formData.recurrence;
+  if (!a || !b) return true; // If either is undefined, consider it changed
+
   if (
-    initRecurrence.frequency !== currentRecurrence.frequency ||
-    initRecurrence.interval !== currentRecurrence.interval ||
-    initRecurrence.daysOfWeek !== currentRecurrence.daysOfWeek ||
-    initRecurrence.dayOfMonth !== currentRecurrence.dayOfMonth
+    a.interval !== b.interval ||
+    a.unit !== b.unit ||
+    JSON.stringify(a.daysOfWeek ?? []) !== JSON.stringify(b.daysOfWeek ?? []) ||
+    JSON.stringify(a.daysOfMonth ?? []) !== JSON.stringify(b.daysOfMonth ?? [])
   ) {
     return true;
   }
@@ -72,12 +80,19 @@ const checkIsFormValid = (formData: TaskFormData | null) => {
   return formData.title !== '' && formData.icon !== '' && formData.reminderTimeList.length > 0;
 };
 
-interface TaskFormData extends Pick<TaskTemplate, 'title' | 'icon' | 'recurrence'> {
+interface TaskFormData extends Pick<TaskTemplate, 'title' | 'icon'> {
+  recurrence: RecurrenceRule;
   reminderTimeList: { id?: string; reminderTime: ReminderTime }[];
 }
 
+// TODO: check validation
+// TODO: check 'no recurrence rule' when 'off' instead of checking "interval === 0"
+// TODO: make "repeat" display text not being hidden when too long
+// TODO: hing "not valid" input
 const TaskForm = () => {
   const { t } = useTranslation('taskForm');
+  const { tRecurrenceText } = useRecurrenceText();
+
   const router = useRouter();
   const params = useLocalSearchParams();
   const userTextSize = useUserTextSize();
@@ -96,6 +111,8 @@ const TaskForm = () => {
   const [formData, setFormData] = useState<TaskFormData | null>(null);
   const [showTimePicker, setShowTimePicker] = useState(false);
   const [showEmojiKeyboard, setShowEmojiKeyboard] = useState(false);
+  const [showRecurrenceSelector, setShowRecurrenceSelector] = useState(false);
+  const [isRecurring, setIsRecurring] = useState(true);
 
   const reminder = formData?.reminderTimeList?.[0];
   const reminderDate = useMemo(() => {
@@ -122,7 +139,6 @@ const TaskForm = () => {
     if (selectedDate) {
       setFormData((prev) => {
         if (!prev) return null;
-
         return {
           ...prev,
           reminderTimeList: [
@@ -134,6 +150,43 @@ const TaskForm = () => {
               },
             },
           ],
+        };
+      });
+    }
+  }, []);
+
+  // Recurrence handlers
+  const handleRecurrenceChange = useCallback((recurrence: RecurrenceRule) => {
+    setFormData((prev) => {
+      if (!prev) return null;
+      return {
+        ...prev,
+        recurrence,
+      };
+    });
+  }, []);
+
+  const handleRecurringToggle = useCallback((value: boolean) => {
+    setIsRecurring(value);
+    if (!value) {
+      // Set to non-recurring (interval = 0)
+      setFormData((prev) => {
+        if (!prev) return null;
+        return {
+          ...prev,
+          recurrence: {
+            ...prev.recurrence,
+            interval: 0,
+          },
+        };
+      });
+    } else {
+      // Set to default recurring (every 1 day)
+      setFormData((prev) => {
+        if (!prev) return null;
+        return {
+          ...prev,
+          recurrence: defaultRecurrence,
         };
       });
     }
@@ -205,6 +258,15 @@ const TaskForm = () => {
 
   const isFormValid = useMemo(() => checkIsFormValid(formData), [formData]);
 
+  // Get recurrence display text
+  const recurrenceText = useMemo(() => {
+    if (!formData) return '';
+    if (formData.recurrence.interval === 0) {
+      return t('Once');
+    }
+    return tRecurrenceText(formData.recurrence);
+  }, [formData, tRecurrenceText, t]);
+
   // Initialize form data
   useEffect(() => {
     if (formData != null) return;
@@ -216,12 +278,15 @@ const TaskForm = () => {
       const newFormData: TaskFormData = {
         title: editingTask.title,
         icon: editingTask.icon,
-        recurrence: editingTask.recurrence,
+        recurrence: editingTask.recurrence || defaultRecurrence,
         reminderTimeList: editingTask.reminders.map(({ id, reminderTime }) => ({
           id,
           reminderTime,
         })),
       };
+
+      // Set recurring state based on interval
+      setIsRecurring(newFormData.recurrence.interval > 0);
       setInitFormData(newFormData);
       setFormData(newFormData);
     } else {
@@ -248,7 +313,7 @@ const TaskForm = () => {
           ),
         }}
       />
-      <ScreenContainer isRoot={false} style={styles.screenContainer}>
+      <ScreenContainer isRoot={false} style={styles.screenContainer} scrollable>
         <ThemedView>
           <FormInput
             label={t('Title')}
@@ -262,7 +327,7 @@ const TaskForm = () => {
             icon="face.smiling"
             value={formData?.icon || ''}
             onPress={() => setShowEmojiKeyboard(true)}
-            placeholder={t('Select Icon')}
+            placeholder={t('Select icon')}
             readOnly
             rightIconName="chevron.up.chevron.down"
           />
@@ -292,15 +357,30 @@ const TaskForm = () => {
               style={styles.timePicker}
             />
           )}
-          <Divider />
-          {/* TODO: add selects for the following inputs */}
+          {showTimePicker && <Divider />}
+          {/* Recurrence Section */}
           <FormInput
             label={t('Repeat')}
             icon="repeat"
-            value={formData?.recurrence.frequency || ''}
-            onChangeValue={handleInputChange('recurrence')}
+            value={recurrenceText}
+            onPress={() => setShowRecurrenceSelector((prev) => !prev)}
+            placeholder={t('Select recurrence')}
+            rightIconName="chevron.up.chevron.down"
             divider={false}
+            readOnly
           />
+          {showRecurrenceSelector && formData && (
+            <Fragment>
+              <RecurrenceSelector
+                recurrence={formData.recurrence}
+                onChange={handleRecurrenceChange}
+                isRecurring={isRecurring}
+                onRecurringToggle={handleRecurringToggle}
+                style={styles.recurrenceSelector}
+              />
+              <Divider style={styles.divider} />
+            </Fragment>
+          )}
         </ThemedView>
         {isEditMode && (
           <ThemedButton
@@ -325,7 +405,7 @@ interface StyleParams {
 }
 
 const getStyles = createStyles<
-  StyleRecord<'screenContainer' | 'deleteButton' | 'timePicker'>,
+  StyleRecord<'screenContainer' | 'deleteButton' | 'timePicker' | 'recurrenceSelector' | 'divider'>,
   StyleParams
 >({
   screenContainer: {
@@ -336,7 +416,12 @@ const getStyles = createStyles<
     alignSelf: 'center',
   },
   deleteButton: {
-    backgroundColor: 'transparent',
-    marginTop: StaticTheme.spacing.xs,
+    marginTop: StaticTheme.spacing.md,
+  },
+  recurrenceSelector: {
+    marginTop: StaticTheme.spacing.sm,
+  },
+  divider: {
+    marginVertical: StaticTheme.spacing.sm,
   },
 });
