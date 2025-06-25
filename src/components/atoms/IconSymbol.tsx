@@ -28,6 +28,7 @@ const MAPPING: IconMapping = {
   'face.smiling': 'insert-emoticon',
   clock: 'access-time',
   repeat: 'repeat',
+  microphone: 'mic',
 } as IconMapping;
 
 export type IconName = SymbolViewProps['name'];

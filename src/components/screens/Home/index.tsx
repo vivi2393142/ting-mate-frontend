@@ -2,6 +2,7 @@ import { useRouter } from 'expo-router';
 import { Fragment, useCallback, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
+import { View } from 'react-native';
 import { Divider, List, Text } from 'react-native-paper';
 
 import useAppTheme from '@/hooks/useAppTheme';
@@ -218,6 +219,8 @@ const HomeScreen = () => {
           {t('Add Task')}
         </ThemedButton>
       )}
+      {/* Spacer to avoid overlapping with the voice command button */}
+      <View style={styles.bottomSpacer} />
     </ScreenContainer>
   );
 };
@@ -229,7 +232,7 @@ interface StyleParams {
 }
 
 const getStyles = createStyles<
-  StyleRecord<'root' | 'listSection' | 'divider' | 'addTaskButton', 'headline'>,
+  StyleRecord<'root' | 'listSection' | 'divider' | 'addTaskButton' | 'bottomSpacer', 'headline'>,
   StyleParams
 >({
   root: {
@@ -247,5 +250,9 @@ const getStyles = createStyles<
   },
   addTaskButton: {
     marginTop: StaticTheme.spacing.xs,
+  },
+  bottomSpacer: {
+    backgroundColor: 'transparent',
+    height: (_, { userTextSize }) => (userTextSize === UserTextSize.LARGE ? 48 : 36),
   },
 });
