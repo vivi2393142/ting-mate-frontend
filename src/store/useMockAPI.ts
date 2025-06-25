@@ -437,6 +437,23 @@ const mockTasks: TaskTemplate[] = [
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
   },
+  {
+    id: 'task-7',
+    title: 'Call Ruby',
+    icon: '📞',
+    recurrence: undefined,
+    reminders: [
+      {
+        id: 'reminder-7-1',
+        reminderTime: { hour: 18, minute: 30 },
+        completed: false,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      },
+    ],
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+  },
 ];
 
 const mockLinkedUsers: User[] = [

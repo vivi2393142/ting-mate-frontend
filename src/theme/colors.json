@@ -79,7 +79,7 @@
       "onError": "#B71C1C",
       "errorContainer": "#D32F2F",
       "onErrorContainer": "#FF9999",
-      "background": "#1E100C",
+      "background": "#000000",
       "onBackground": "#FADCD4",
       "surface": "#141312",
       "onSurface": "#E6E2DF",

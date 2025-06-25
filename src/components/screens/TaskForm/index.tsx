@@ -3,8 +3,9 @@ import dayjs from 'dayjs';
 import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
 import { Fragment, useCallback, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Alert, Button, Platform } from 'react-native';
+import { z } from 'zod';
 
+import { Alert, Button, Platform } from 'react-native';
 import { Divider } from 'react-native-paper';
 import EmojiPicker from 'rn-emoji-keyboard';
 
@@ -27,6 +28,7 @@ import RecurrenceSelector from '@/components/screens/TaskForm/RecurrenceSelector
 const now = new Date();
 const nextHour = now.getMinutes() === 0 ? now.getHours() : now.getHours() + 1;
 
+// Default recurrence rule is 'Daily'
 const defaultRecurrence: RecurrenceRule = {
   interval: 1,
   unit: RecurrenceUnit.DAY,
@@ -39,19 +41,62 @@ const defaultTaskFormData: TaskFormData = {
   reminderTimeList: [{ reminderTime: { hour: nextHour, minute: 0 } }],
 };
 
+// Zod schema for TaskFormData
+const ReminderTimeSchema = z.object({
+  hour: z.number().int().min(0).max(23),
+  minute: z.number().int().min(0).max(59),
+});
+
+const RecurrenceRuleSchema = z
+  .object({
+    interval: z.number().int().min(1), // must be > 0
+    unit: z.nativeEnum(RecurrenceUnit),
+    daysOfWeek: z.array(z.number().int().min(0).max(6)).optional(),
+    daysOfMonth: z.array(z.number().int().min(1).max(31)).optional(),
+  })
+  .superRefine((val, ctx) => {
+    if (val.unit === RecurrenceUnit.WEEK && !val?.daysOfWeek?.length) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: 'Weekly recurrence must specify daysOfWeek',
+        path: ['daysOfWeek'],
+      });
+    }
+    if (val.unit === RecurrenceUnit.MONTH && !val?.daysOfMonth?.length) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: 'Monthly recurrence must specify daysOfMonth',
+        path: ['daysOfMonth'],
+      });
+    }
+  });
+
+export const TaskFormDataSchema = z.object({
+  title: z.string().min(1, 'Title is required'),
+  icon: z.string().min(1, 'Icon is required'),
+  recurrence: RecurrenceRuleSchema.optional(), // undefined means no recurrence
+  reminderTimeList: z
+    .array(
+      z.object({
+        id: z.string().optional(),
+        reminderTime: ReminderTimeSchema,
+      }),
+    )
+    .min(1, 'At least one reminder time is required'),
+});
+
 const checkHasChanges = (initFormData: TaskFormData | null, formData: TaskFormData | null) => {
   if (!initFormData || !formData) return false;
 
   // Check basic fields
-  if (initFormData.title !== formData.title || initFormData.icon !== formData.icon) {
-    return true;
-  }
+  if (initFormData.title !== formData.title || initFormData.icon !== formData.icon) return true;
 
   // Check recurrence (deep compare)
   const a = initFormData.recurrence;
   const b = formData.recurrence;
-  if (!a || !b) return true; // If either is undefined, consider it changed
-
+  if (!a && !b) return false; // If both are undefined (both non-recurring), no change
+  if (!a || !b) return true; // One is recurring, one is non-recurring, changed
+  // Both are recurring, compare details
   if (
     a.interval !== b.interval ||
     a.unit !== b.unit ||
@@ -64,29 +109,24 @@ const checkHasChanges = (initFormData: TaskFormData | null, formData: TaskFormDa
   // Check reminder time
   const initReminder = initFormData.reminderTimeList?.[0];
   const currentReminder = formData.reminderTimeList?.[0];
-  if (
+  const hasReminderChanged =
     initReminder?.id !== currentReminder?.id ||
     initReminder?.reminderTime.hour !== currentReminder?.reminderTime.hour ||
-    initReminder?.reminderTime.minute !== currentReminder?.reminderTime.minute
-  ) {
-    return true;
-  }
-
-  return false;
+    initReminder?.reminderTime.minute !== currentReminder?.reminderTime.minute;
+  return hasReminderChanged;
 };
 
 const checkIsFormValid = (formData: TaskFormData | null) => {
   if (!formData) return false;
-  return formData.title !== '' && formData.icon !== '' && formData.reminderTimeList.length > 0;
+  const result = TaskFormDataSchema.safeParse(formData);
+  return result.success;
 };
 
 interface TaskFormData extends Pick<TaskTemplate, 'title' | 'icon'> {
-  recurrence: RecurrenceRule;
+  recurrence?: RecurrenceRule;
   reminderTimeList: { id?: string; reminderTime: ReminderTime }[];
 }
 
-// TODO: check validation
-// TODO: check 'no recurrence rule' when 'off' instead of checking "interval === 0"
 // TODO: make "repeat" display text not being hidden when too long
 // TODO: hing "not valid" input
 const TaskForm = () => {
@@ -112,7 +152,6 @@ const TaskForm = () => {
   const [showTimePicker, setShowTimePicker] = useState(false);
   const [showEmojiKeyboard, setShowEmojiKeyboard] = useState(false);
   const [showRecurrenceSelector, setShowRecurrenceSelector] = useState(false);
-  const [isRecurring, setIsRecurring] = useState(true);
 
   const reminder = formData?.reminderTimeList?.[0];
   const reminderDate = useMemo(() => {
@@ -125,38 +164,53 @@ const TaskForm = () => {
       .toDate();
   }, [reminder]);
 
-  const handleInputChange = (field: keyof TaskFormData) => (value: string) => {
-    setFormData((prev) => prev && { ...prev, [field]: value });
-  };
+  const handleTitleChange = useCallback((value: string) => {
+    setFormData((prev) => prev && { ...prev, title: value });
+  }, []);
+
+  const handleOpenEmojiKeyboard = useCallback(() => {
+    setShowEmojiKeyboard(true);
+  }, []);
+
+  const handleCloseEmojiKeyboard = useCallback(() => {
+    setShowEmojiKeyboard(false);
+  }, []);
 
   const handleEmojiSelect = useCallback((emoji: { emoji: string }) => {
     setFormData((prev) => prev && { ...prev, icon: emoji.emoji });
     setShowEmojiKeyboard(false);
   }, []);
 
+  const handleToggleTimePicker = useCallback(() => {
+    setShowTimePicker((prev) => !prev);
+  }, []);
+
   const handleTimeChange = useCallback((_: DateTimePickerEvent, selectedDate?: Date) => {
     setShowTimePicker(false);
-    if (selectedDate) {
-      setFormData((prev) => {
-        if (!prev) return null;
-        return {
-          ...prev,
-          reminderTimeList: [
-            {
-              id: prev.reminderTimeList?.[0]?.id,
-              reminderTime: {
-                hour: selectedDate.getHours(),
-                minute: selectedDate.getMinutes(),
-              },
+    if (!selectedDate) return;
+    setFormData((prev) => {
+      if (!prev) return null;
+      return {
+        ...prev,
+        reminderTimeList: [
+          {
+            id: prev.reminderTimeList?.[0]?.id,
+            reminderTime: {
+              hour: selectedDate.getHours(),
+              minute: selectedDate.getMinutes(),
             },
-          ],
-        };
-      });
-    }
+          },
+        ],
+      };
+    });
   }, []);
 
   // Recurrence handlers
-  const handleRecurrenceChange = useCallback((recurrence: RecurrenceRule) => {
+  const handleToggleRecurrenceSelector = useCallback(() => {
+    setShowRecurrenceSelector((prev) => !prev);
+  }, []);
+
+  const handleRecurrenceChange = useCallback((recurrence?: RecurrenceRule) => {
     setFormData((prev) => {
       if (!prev) return null;
       return {
@@ -166,30 +220,14 @@ const TaskForm = () => {
     });
   }, []);
 
-  const handleRecurringToggle = useCallback((value: boolean) => {
-    setIsRecurring(value);
-    if (!value) {
-      // Set to non-recurring (interval = 0)
-      setFormData((prev) => {
-        if (!prev) return null;
-        return {
-          ...prev,
-          recurrence: {
-            ...prev.recurrence,
-            interval: 0,
-          },
-        };
-      });
-    } else {
-      // Set to default recurring (every 1 day)
-      setFormData((prev) => {
-        if (!prev) return null;
-        return {
-          ...prev,
-          recurrence: defaultRecurrence,
-        };
-      });
-    }
+  const handleRecurringToggle = useCallback((recurrence?: RecurrenceRule) => {
+    setFormData((prev) => {
+      if (!prev) return null;
+      return {
+        ...prev,
+        recurrence: recurrence ? undefined : defaultRecurrence,
+      };
+    });
   }, []);
 
   const handleSave = useCallback(() => {
@@ -200,7 +238,6 @@ const TaskForm = () => {
       icon: formData.icon,
       recurrence: formData.recurrence,
     };
-
     if (isEditMode) {
       updateTask(editTaskId, {
         ...taskData,
@@ -221,7 +258,6 @@ const TaskForm = () => {
 
   const handleCancel = useCallback(() => {
     const hasChanges = checkHasChanges(initFormData, formData);
-
     if (hasChanges) {
       Alert.alert(t('Discard Changes'), t('Are you sure you want to discard your changes?'), [
         {
@@ -261,9 +297,7 @@ const TaskForm = () => {
   // Get recurrence display text
   const recurrenceText = useMemo(() => {
     if (!formData) return '';
-    if (formData.recurrence.interval === 0) {
-      return t('Once');
-    }
+    if (!formData.recurrence) return t('Once');
     return tRecurrenceText(formData.recurrence);
   }, [formData, tRecurrenceText, t]);
 
@@ -278,15 +312,12 @@ const TaskForm = () => {
       const newFormData: TaskFormData = {
         title: editingTask.title,
         icon: editingTask.icon,
-        recurrence: editingTask.recurrence || defaultRecurrence,
+        recurrence: editingTask.recurrence,
         reminderTimeList: editingTask.reminders.map(({ id, reminderTime }) => ({
           id,
           reminderTime,
         })),
       };
-
-      // Set recurring state based on interval
-      setIsRecurring(newFormData.recurrence.interval > 0);
       setInitFormData(newFormData);
       setFormData(newFormData);
     } else {
@@ -318,34 +349,34 @@ const TaskForm = () => {
           <FormInput
             label={t('Title')}
             icon="text.justify.leading"
-            value={formData?.title || ''}
-            onChangeValue={handleInputChange('title')}
             placeholder={t('Add task title')}
+            value={formData?.title || ''}
+            onChangeValue={handleTitleChange}
           />
           <FormInput
             label={t('Icon')}
             icon="face.smiling"
             value={formData?.icon || ''}
-            onPress={() => setShowEmojiKeyboard(true)}
+            onPress={handleOpenEmojiKeyboard}
             placeholder={t('Select icon')}
-            readOnly
             rightIconName="chevron.up.chevron.down"
+            readOnly
           />
           <EmojiPicker
             // TODO: auto select related emoji when user input
             open={showEmojiKeyboard}
             onEmojiSelected={handleEmojiSelect}
-            onClose={() => setShowEmojiKeyboard(false)}
+            onClose={handleCloseEmojiKeyboard}
             enableSearchBar // TODO: if i18n is supported, this need to be localized
           />
           <FormInput
             label={t('Time')}
             icon="clock"
-            value={reminder ? formatReminderTime(reminder.reminderTime) : ''}
-            onPress={() => setShowTimePicker((prev) => !prev)}
-            placeholder={t('Select time')}
-            readOnly
             rightIconName="chevron.up.chevron.down"
+            placeholder={t('Select time')}
+            value={reminder ? formatReminderTime(reminder.reminderTime) : ''}
+            readOnly
+            onPress={handleToggleTimePicker}
           />
           {showTimePicker && (
             <DateTimePicker
@@ -362,19 +393,18 @@ const TaskForm = () => {
           <FormInput
             label={t('Repeat')}
             icon="repeat"
-            value={recurrenceText}
-            onPress={() => setShowRecurrenceSelector((prev) => !prev)}
-            placeholder={t('Select recurrence')}
             rightIconName="chevron.up.chevron.down"
+            placeholder={t('Select recurrence')}
             divider={false}
             readOnly
+            value={recurrenceText}
+            onPress={handleToggleRecurrenceSelector}
           />
           {showRecurrenceSelector && formData && (
             <Fragment>
               <RecurrenceSelector
                 recurrence={formData.recurrence}
                 onChange={handleRecurrenceChange}
-                isRecurring={isRecurring}
                 onRecurringToggle={handleRecurringToggle}
                 style={styles.recurrenceSelector}
               />
@@ -422,6 +452,6 @@ const getStyles = createStyles<
     marginTop: StaticTheme.spacing.sm,
   },
   divider: {
-    marginVertical: StaticTheme.spacing.sm,
+    marginVertical: StaticTheme.spacing.md,
   },
 });

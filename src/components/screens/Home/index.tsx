@@ -68,7 +68,9 @@ const HomeScreen = () => {
         if (shouldAppearToday) {
           today.push(taskItem);
         } else {
-          const recurrenceText = tRecurrenceText(taskTemplate.recurrence);
+          const recurrenceText = taskTemplate?.recurrence
+            ? tRecurrenceText(taskTemplate.recurrence)
+            : '';
           const nextOccurrence = getNextOccurrenceDate(taskTemplate);
           other.push({
             task: taskItem,
@@ -156,8 +158,10 @@ const HomeScreen = () => {
           const isMissed = !task.completed && isTaskMissed(task.reminderTime, currentTime);
           const isLastCompleted = task.completed && !sortedTasks?.[idx + 1]?.completed;
           const taskTemplate = tasks.find((t) => t.id === task.taskId);
-          const recurrenceText = taskTemplate ? tRecurrenceText(taskTemplate.recurrence) : '';
-          const shouldShowRecurrence = taskTemplate && !!taskTemplate.recurrence.interval;
+          const recurrenceText = taskTemplate?.recurrence
+            ? tRecurrenceText(taskTemplate.recurrence)
+            : '';
+          const shouldShowRecurrence = taskTemplate && !!taskTemplate?.recurrence;
           return (
             <Fragment key={`${task.taskId}-${task.reminderId}`}>
               <TaskListItem

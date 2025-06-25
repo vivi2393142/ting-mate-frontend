@@ -10,12 +10,8 @@ export const shouldTaskAppearToday = ({ recurrence, createdAt }: TaskTemplate): 
   const dayOfWeek = today.day(); // 0 = Sunday, 1 = Monday, ..., 6 = Saturday
   const dayOfMonth = today.date();
 
-  if (!recurrence) return false;
-
-  // If interval is 0, only show on the created day
-  if (recurrence.interval === 0) {
-    return today.isSame(dayjs(createdAt), 'day');
-  }
+  // If no recurrence, only show on the created day (once task)
+  if (!recurrence) return today.isSame(dayjs(createdAt), 'day');
 
   let daysSinceStart: number;
   let weeksSinceStart: number;
@@ -25,7 +21,6 @@ export const shouldTaskAppearToday = ({ recurrence, createdAt }: TaskTemplate): 
       // Appear every interval days, using createdAt as the start point
       daysSinceStart = today.diff(dayjs(createdAt), 'day');
       return daysSinceStart % recurrence.interval === 0;
-
     case RecurrenceUnit.WEEK:
       if (!recurrence.daysOfWeek || recurrence.daysOfWeek.length === 0) return false;
       // Appear every interval weeks, and today must be one of the specified days of week
@@ -33,7 +28,6 @@ export const shouldTaskAppearToday = ({ recurrence, createdAt }: TaskTemplate): 
       return (
         weeksSinceStart % recurrence.interval === 0 && recurrence.daysOfWeek.includes(dayOfWeek)
       );
-
     case RecurrenceUnit.MONTH:
       if (!recurrence.daysOfMonth || recurrence.daysOfMonth.length === 0) return false;
       // Appear every interval months, and today must be one of the specified days of month
@@ -41,7 +35,6 @@ export const shouldTaskAppearToday = ({ recurrence, createdAt }: TaskTemplate): 
       return (
         monthsSinceStart % recurrence.interval === 0 && recurrence.daysOfMonth.includes(dayOfMonth)
       );
-
     default:
       return false;
   }
@@ -52,7 +45,6 @@ export const getNextOccurrenceDate = (task: TaskTemplate): dayjs.Dayjs | null =>
   const today = dayjs();
 
   if (!recurrence || recurrence.interval === 0) return null;
-
   switch (recurrence.unit) {
     case RecurrenceUnit.DAY: {
       // Calculate days until next occurrence
@@ -60,7 +52,6 @@ export const getNextOccurrenceDate = (task: TaskTemplate): dayjs.Dayjs | null =>
       const daysToAdd = recurrence.interval - (daysSinceStart % recurrence.interval);
       return today.add(daysToAdd, 'day');
     }
-
     case RecurrenceUnit.WEEK: {
       if (!recurrence.daysOfWeek || recurrence.daysOfWeek.length === 0) return null;
       // Find the nearest specified day of week in the next cycle
@@ -76,6 +67,7 @@ export const getNextOccurrenceDate = (task: TaskTemplate): dayjs.Dayjs | null =>
           return today.add(nextDay - todayDay, 'day');
         }
       }
+
       // Get first specified day in next cycle
       const weeksToAdd =
         recurrence.interval - (weeksSinceStart % recurrence.interval) || recurrence.interval;
@@ -83,7 +75,6 @@ export const getNextOccurrenceDate = (task: TaskTemplate): dayjs.Dayjs | null =>
       const daysToAdd = 7 * weeksToAdd + ((firstDay - todayDay + 7) % 7);
       return today.add(daysToAdd, 'day');
     }
-
     case RecurrenceUnit.MONTH: {
       if (!recurrence.daysOfMonth || recurrence.daysOfMonth.length === 0) return null;
       // Find the nearest specified day of month in the next cycle
@@ -103,6 +94,7 @@ export const getNextOccurrenceDate = (task: TaskTemplate): dayjs.Dayjs | null =>
           return nextDate;
         }
       }
+
       // Get first specified day in next cycle
       const monthsToAdd =
         recurrence.interval - (monthsSinceStart % recurrence.interval) || recurrence.interval;

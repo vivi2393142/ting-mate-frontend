@@ -1,3 +1,20 @@
+// Task reminder - each reminder time corresponds to a reminder with completion status
+export interface TaskReminder {
+  id: string;
+  reminderTime: ReminderTime; // corresponding reminder time
+  completed: boolean;
+  createdAt: string; // ISO timestamp
+  updatedAt: string; // ISO timestamp
+  completedAt?: string; // ISO timestamp - completion time
+  completedBy?: string; // user email - completion user email
+}
+
+export interface ReminderTime {
+  hour: number; // 0 ~ 23
+  minute: number; // 0 ~ 59
+}
+
+// Recurrence rule - defines how to repeat a task
 export enum RecurrenceUnit {
   DAY = 'DAY',
   WEEK = 'WEEK',
@@ -16,15 +33,10 @@ export const dayOfWeek = {
 export type DayOfWeek = (typeof dayOfWeek)[keyof typeof dayOfWeek];
 
 export interface RecurrenceRule {
-  interval: number; // number of units between recurrences
+  interval: number; // number of units between recurrences, should be greater than 0
   unit: RecurrenceUnit;
   daysOfWeek?: DayOfWeek[]; // WEEK: days of week to repeat on
   daysOfMonth?: number[]; // MONTH: day of month to repeat on
-}
-
-export interface ReminderTime {
-  hour: number; // 0 ~ 23
-  minute: number; // 0 ~ 59
 }
 
 // Task template - defines basic task information and reminder times
@@ -35,18 +47,7 @@ export interface TaskTemplate {
   createdAt: string; // ISO timestamp
   updatedAt: string; // ISO timestamp
   reminders: TaskReminder[];
-  recurrence?: RecurrenceRule;
-}
-
-// Task reminder - each reminder time corresponds to a reminder with completion status
-export interface TaskReminder {
-  id: string;
-  reminderTime: ReminderTime; // corresponding reminder time
-  completed: boolean;
-  createdAt: string; // ISO timestamp
-  updatedAt: string; // ISO timestamp
-  completedAt?: string; // ISO timestamp - completion time
-  completedBy?: string; // user email - completion user email
+  recurrence?: RecurrenceRule; // undefined if task is not recurring
 }
 
 // Type for updating task template

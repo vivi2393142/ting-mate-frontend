@@ -22,15 +22,13 @@ import {
 const INTERVAL_OPTIONS = Array.from({ length: 30 }, (_, i) => i + 1);
 
 interface RecurrenceSelectorProps {
-  isRecurring: boolean;
-  recurrence: RecurrenceRule;
-  onChange: (recurrence: RecurrenceRule) => void;
-  onRecurringToggle: (value: boolean) => void;
+  recurrence?: RecurrenceRule;
+  onChange: (recurrence?: RecurrenceRule) => void;
+  onRecurringToggle: (recurrence?: RecurrenceRule) => void;
   style?: ViewStyle;
 }
 
 const RecurrenceSelector = ({
-  isRecurring,
   recurrence,
   onChange,
   onRecurringToggle,
@@ -44,8 +42,11 @@ const RecurrenceSelector = ({
   const { t } = useTranslation('taskForm');
   const { tRecurrenceUnit } = useRecurrenceUnitTranslation();
 
+  const isRecurring = !!recurrence;
+
   const handleIntervalChange = useCallback(
     (interval: number) => {
+      if (!recurrence) return;
       onChange({
         ...recurrence,
         interval,
@@ -56,6 +57,7 @@ const RecurrenceSelector = ({
 
   const handleUnitChange = useCallback(
     (unit: RecurrenceUnit) => {
+      if (!recurrence) return;
       const newRecurrence: RecurrenceRule = {
         ...recurrence,
         unit,
@@ -69,6 +71,7 @@ const RecurrenceSelector = ({
 
   const handleDaysOfWeekChange = useCallback(
     (daysOfWeek: DayOfWeek[]) => {
+      if (!recurrence) return;
       onChange({
         ...recurrence,
         daysOfWeek,
@@ -79,6 +82,7 @@ const RecurrenceSelector = ({
 
   const handleDaysOfMonthChange = useCallback(
     (daysOfMonth: number[]) => {
+      if (!recurrence) return;
       onChange({
         ...recurrence,
         daysOfMonth,
@@ -86,6 +90,10 @@ const RecurrenceSelector = ({
     },
     [onChange, recurrence],
   );
+
+  const handleRecurringToggle = useCallback(() => {
+    onRecurringToggle(recurrence);
+  }, [onRecurringToggle, recurrence]);
 
   return (
     <ThemedView style={[styles.root, style]}>
@@ -97,7 +105,7 @@ const RecurrenceSelector = ({
         <Text style={styles.baseText}>{isRecurring ? t('Repeating') : t('Once')}</Text>
         <Switch
           value={isRecurring}
-          onValueChange={onRecurringToggle}
+          onValueChange={handleRecurringToggle}
           trackColor={{ false: theme.colors.outline, true: theme.colors.primary }}
           thumbColor={theme.colors.surface}
         />
