@@ -1,8 +1,8 @@
 import { default as dayjs } from 'dayjs';
 
-import type { ReminderTime, TaskTemplate } from '@/types/task';
-
-import { RecurrenceUnit } from '@/types/task';
+import type { ReminderTime, TaskFormData, TaskTemplate } from '@/types/task';
+import { RecurrenceUnit, type RecurrenceRule } from '@/types/task';
+import { TaskFormDataSchema } from '@/utils/validators';
 
 // Helper function to determine if a task should appear today based on its recurrence rule
 export const shouldTaskAppearToday = ({ recurrence, createdAt }: TaskTemplate): boolean => {
@@ -124,4 +124,63 @@ export const isTaskMissed = (reminderTime: ReminderTime, currentTime: Date): boo
 
 export const formatReminderTime = (reminderTime: ReminderTime): string => {
   return dayjs().hour(reminderTime.hour).minute(reminderTime.minute).format('HH:mm');
+};
+
+// Auto fill invalid task form data
+export const autoFillInvalidTaskFormData = (input: Partial<TaskFormData>): TaskFormData => {
+  const now = new Date();
+  const nextHour = now.getMinutes() === 0 ? now.getHours() : now.getHours() + 1;
+
+  // Default values
+  const defaultTitle = '(no title)';
+  const defaultIcon = '✅';
+  const defaultRecurrence: RecurrenceRule = { interval: 1, unit: RecurrenceUnit.DAY };
+  const defaultReminderTime: ReminderTime = { hour: nextHour, minute: 0 };
+
+  // Combine initial fallback
+  let filled: TaskFormData = {
+    title: input.title && input.title.length > 0 ? input.title : defaultTitle,
+    icon: input.icon && input.icon.length > 0 ? input.icon : defaultIcon,
+    recurrence: input.recurrence,
+    reminderTimeList:
+      input.reminderTimeList && input.reminderTimeList.length > 0
+        ? input.reminderTimeList
+        : [{ reminderTime: defaultReminderTime }],
+  };
+
+  // Use zod to validate
+  let result = TaskFormDataSchema.safeParse(filled);
+
+  // If recurrence is invalid, fill default
+  if (!result.success) {
+    // Check if recurrence is invalid
+    const recurrenceError = result.error.issues.find((issue) => issue.path[0] === 'recurrence');
+    if (recurrenceError) {
+      filled = { ...filled, recurrence: defaultRecurrence };
+      result = TaskFormDataSchema.safeParse(filled);
+    }
+    // If title/icon is still invalid, fill default
+    if (!result.success) {
+      if (result.error.issues.some((issue) => issue.path[0] === 'title')) {
+        filled.title = defaultTitle;
+      }
+      if (result.error.issues.some((issue) => issue.path[0] === 'icon')) {
+        filled.icon = defaultIcon;
+      }
+      // Validate again
+      result = TaskFormDataSchema.safeParse(filled);
+    }
+  }
+
+  if (!result.success) {
+    console.error('autoFillInvalidTaskFormData: Unable to produce valid TaskFormData');
+    return {
+      title: defaultTitle,
+      icon: defaultIcon,
+      recurrence: defaultRecurrence,
+      reminderTimeList: [{ reminderTime: defaultReminderTime }],
+    };
+  }
+
+  return result.data;
 };

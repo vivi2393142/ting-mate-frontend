@@ -3,7 +3,6 @@ import dayjs from 'dayjs';
 import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
 import { Fragment, useCallback, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { z } from 'zod';
 
 import { Alert, Button, Platform } from 'react-native';
 import { Divider } from 'react-native-paper';
@@ -14,10 +13,10 @@ import useRecurrenceText from '@/hooks/useRecurrenceText';
 import { useMockTasks } from '@/store/useMockAPI';
 import { useUserTextSize } from '@/store/useUserStore';
 import { StaticTheme } from '@/theme';
-import { RecurrenceRule, RecurrenceUnit, type ReminderTime, type TaskTemplate } from '@/types/task';
+import { type RecurrenceRule, RecurrenceUnit, type TaskFormData } from '@/types/task';
 import { UserTextSize } from '@/types/user';
 import { createStyles, type StyleRecord } from '@/utils/createStyles';
-import { formatReminderTime } from '@/utils/taskUtils';
+import { autoFillInvalidTaskFormData, formatReminderTime } from '@/utils/taskUtils';
 
 import FormInput from '@/components/atoms/FormInput';
 import ScreenContainer from '@/components/atoms/ScreenContainer';
@@ -36,54 +35,10 @@ const defaultRecurrence: RecurrenceRule = {
 
 const defaultTaskFormData: TaskFormData = {
   title: '',
-  icon: '📝',
+  icon: '✅',
   recurrence: defaultRecurrence,
   reminderTimeList: [{ reminderTime: { hour: nextHour, minute: 0 } }],
 };
-
-// Zod schema for TaskFormData
-const ReminderTimeSchema = z.object({
-  hour: z.number().int().min(0).max(23),
-  minute: z.number().int().min(0).max(59),
-});
-
-const RecurrenceRuleSchema = z
-  .object({
-    interval: z.number().int().min(1), // must be > 0
-    unit: z.nativeEnum(RecurrenceUnit),
-    daysOfWeek: z.array(z.number().int().min(0).max(6)).optional(),
-    daysOfMonth: z.array(z.number().int().min(1).max(31)).optional(),
-  })
-  .superRefine((val, ctx) => {
-    if (val.unit === RecurrenceUnit.WEEK && !val?.daysOfWeek?.length) {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        message: 'Weekly recurrence must specify daysOfWeek',
-        path: ['daysOfWeek'],
-      });
-    }
-    if (val.unit === RecurrenceUnit.MONTH && !val?.daysOfMonth?.length) {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        message: 'Monthly recurrence must specify daysOfMonth',
-        path: ['daysOfMonth'],
-      });
-    }
-  });
-
-export const TaskFormDataSchema = z.object({
-  title: z.string().min(1, 'Title is required'),
-  icon: z.string().min(1, 'Icon is required'),
-  recurrence: RecurrenceRuleSchema.optional(), // undefined means no recurrence
-  reminderTimeList: z
-    .array(
-      z.object({
-        id: z.string().optional(),
-        reminderTime: ReminderTimeSchema,
-      }),
-    )
-    .min(1, 'At least one reminder time is required'),
-});
 
 const checkHasChanges = (initFormData: TaskFormData | null, formData: TaskFormData | null) => {
   if (!initFormData || !formData) return false;
@@ -116,19 +71,7 @@ const checkHasChanges = (initFormData: TaskFormData | null, formData: TaskFormDa
   return hasReminderChanged;
 };
 
-const checkIsFormValid = (formData: TaskFormData | null) => {
-  if (!formData) return false;
-  const result = TaskFormDataSchema.safeParse(formData);
-  return result.success;
-};
-
-interface TaskFormData extends Pick<TaskTemplate, 'title' | 'icon'> {
-  recurrence?: RecurrenceRule;
-  reminderTimeList: { id?: string; reminderTime: ReminderTime }[];
-}
-
 // TODO: make "repeat" display text not being hidden when too long
-// TODO: hing "not valid" input
 const TaskForm = () => {
   const { t } = useTranslation('taskForm');
   const { tRecurrenceText } = useRecurrenceText();
@@ -232,16 +175,16 @@ const TaskForm = () => {
 
   const handleSave = useCallback(() => {
     if (!formData) return;
-
+    const validFormData = autoFillInvalidTaskFormData(formData);
     const taskData = {
-      title: formData.title,
-      icon: formData.icon,
-      recurrence: formData.recurrence,
+      title: validFormData.title,
+      icon: validFormData.icon,
+      recurrence: validFormData.recurrence,
     };
     if (isEditMode) {
       updateTask(editTaskId, {
         ...taskData,
-        reminderTimeList: formData.reminderTimeList.map(({ id, reminderTime }) => ({
+        reminderTimeList: validFormData.reminderTimeList.map(({ id, reminderTime }) => ({
           id,
           reminderTime,
         })),
@@ -249,10 +192,9 @@ const TaskForm = () => {
     } else {
       createTask({
         ...taskData,
-        reminderTimeList: formData.reminderTimeList.map(({ reminderTime }) => reminderTime),
+        reminderTimeList: validFormData.reminderTimeList.map(({ reminderTime }) => reminderTime),
       });
     }
-
     router.back();
   }, [editTaskId, formData, isEditMode, router, updateTask, createTask]);
 
@@ -291,8 +233,6 @@ const TaskForm = () => {
       },
     ]);
   }, [editTaskId, router, t, deleteTask]);
-
-  const isFormValid = useMemo(() => checkIsFormValid(formData), [formData]);
 
   // Get recurrence display text
   const recurrenceText = useMemo(() => {
@@ -339,7 +279,6 @@ const TaskForm = () => {
               color={theme.colors.primary}
               onPress={handleSave}
               title={isEditMode ? t('Save') : t('Done')}
-              disabled={!isFormValid}
             />
           ),
         }}

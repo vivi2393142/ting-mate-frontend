@@ -83,3 +83,9 @@ export interface Task
   reminderId: string;
   taskId: string;
 }
+
+// Form type for TaskForm screen
+export interface TaskFormData extends Pick<TaskTemplate, 'title' | 'icon'> {
+  recurrence?: RecurrenceRule;
+  reminderTimeList: { id?: string; reminderTime: ReminderTime }[];
+}
