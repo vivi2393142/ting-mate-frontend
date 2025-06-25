@@ -1,7 +1,7 @@
-import type { ViewStyle } from 'react-native';
-
-import { ReactNode } from 'react';
-import { Button, Text, TextInput, type TextInputProps } from 'react-native-paper';
+import type { ReactNode } from 'react';
+import type { GestureResponderEvent, ViewStyle } from 'react-native';
+import { View } from 'react-native';
+import { Text, TextInput, TouchableRipple, type TextInputProps } from 'react-native-paper';
 
 import useAppTheme from '@/hooks/useAppTheme';
 import { useUserTextSize } from '@/store/useUserStore';
@@ -12,13 +12,54 @@ import { createStyles, type StyleRecord } from '@/utils/createStyles';
 import IconSymbol, { type IconName } from '@/components/atoms/IconSymbol';
 import ThemedView from '@/components/atoms/ThemedView';
 
-type FormInputProps = Omit<TextInputProps, 'mode' | 'value' | 'style'> & {
+interface MultiLineButtonProps {
+  onPress: (e: GestureResponderEvent) => void;
+  icon?: IconName;
+  disabled?: boolean;
+  multiline?: boolean; // true: text wrap, false: ellipsis
+  children: ReactNode;
+}
+
+const MultiLineButton = ({
+  onPress,
+  icon,
+  children,
+  disabled = false,
+  multiline = true,
+}: MultiLineButtonProps) => {
+  const theme = useAppTheme();
+  const styles = getMultiLineButtonStyles(theme);
+
+  const textProps = multiline ? {} : { numberOfLines: 1 as const, ellipsizeMode: 'tail' as const };
+  return (
+    <TouchableRipple
+      onPress={onPress}
+      disabled={disabled}
+      style={[styles.button, disabled && styles.disabledButton]}
+      rippleColor={theme.colors.primary + '22'}
+      accessibilityRole="button"
+    >
+      <View style={styles.content}>
+        <View style={styles.textContainer}>
+          <Text style={styles.text} {...textProps}>
+            {children}
+          </Text>
+        </View>
+        {icon && <IconSymbol name={icon} size={16} color={theme.colors.onSurface} />}
+      </View>
+    </TouchableRipple>
+  );
+};
+
+type FormInputProps = Omit<TextInputProps, 'mode' | 'value' | 'style' | 'onPress'> & {
   label: string;
   divider?: boolean;
   dense?: boolean;
   icon?: IconName;
   rightIconName?: IconName;
   style?: ViewStyle;
+  multiline?: boolean;
+  onPress?: (e: GestureResponderEvent) => void;
 } & (
     | {
         value: string;
@@ -49,6 +90,7 @@ const Input = ({
   valueAlign = 'left',
   placeholder,
   rightIconName,
+  multiline,
   onPress,
   onChangeValue,
   render,
@@ -59,25 +101,11 @@ const Input = ({
   const styles = getStyles(theme, { userTextSize });
 
   if (render) return render();
-  if (onPress) {
-    return (
-      <Button
-        compact
-        onPress={onPress}
-        style={styles.pressableInputButton}
-        contentStyle={styles.pressableInputButtonContent}
-        labelStyle={styles.pressableInputButtonLabel}
-        icon={
-          rightIconName
-            ? ({ color }) => <IconSymbol name={rightIconName} color={color} size={16} />
-            : undefined
-        }
-      >
-        {value}
-      </Button>
-    );
-  }
-  return (
+  return onPress ? (
+    <MultiLineButton onPress={onPress} icon={rightIconName} multiline={multiline}>
+      {value}
+    </MultiLineButton>
+  ) : (
     <TextInput
       dense
       value={value}
@@ -141,6 +169,37 @@ const FormInput = ({
 
 export default FormInput;
 
+const getMultiLineButtonStyles = createStyles<
+  StyleRecord<'content' | 'button' | 'disabledButton' | 'textContainer', 'text'>
+>({
+  button: {
+    alignItems: 'center',
+    flexDirection: 'row',
+    flex: 1,
+    minHeight: 48,
+    paddingHorizontal: StaticTheme.spacing.xs,
+  },
+  content: {
+    alignItems: 'center',
+    flexDirection: 'row',
+    flex: 1,
+  },
+  disabledButton: {
+    opacity: 0.5,
+  },
+  text: {
+    alignItems: 'center',
+    flexWrap: 'wrap',
+    marginVertical: 'auto',
+    color: ({ colors }) => colors.onSurface,
+    fontSize: ({ fonts }) => fonts.bodyLarge.fontSize,
+    fontWeight: ({ fonts }) => fonts.bodyLarge.fontWeight,
+  },
+  textContainer: {
+    flex: 1,
+  },
+});
+
 interface StyleParams {
   userTextSize: UserTextSize;
 }
@@ -153,15 +212,8 @@ const getStyles = createStyles<
     | 'inputContainerNoDivider'
     | 'inputContainerDense'
     | 'labelContainer'
-    | 'labelContainerAlignRight'
-    | 'pressableInputButton'
-    | 'pressableInputButtonContent',
-    | 'label'
-    | 'input'
-    | 'inputAlignRight'
-    | 'contentStyle'
-    | 'helperText'
-    | 'pressableInputButtonLabel'
+    | 'labelContainerAlignRight',
+    'label' | 'input' | 'inputAlignRight' | 'contentStyle' | 'helperText'
   >,
   StyleParams
 >({
@@ -229,22 +281,5 @@ const getStyles = createStyles<
   contentStyle: {
     paddingHorizontal: 0,
     paddingLeft: StaticTheme.spacing.xs,
-  },
-  pressableInputButton: {
-    borderRadius: 0,
-    flex: 1,
-    height: (_, { userTextSize }) => (userTextSize === UserTextSize.LARGE ? 60 : 48),
-  },
-  pressableInputButtonLabel: {
-    fontSize: ({ fonts }) => fonts.bodyLarge.fontSize,
-    fontWeight: ({ fonts }) => fonts.bodyLarge.fontWeight,
-    color: ({ colors }) => colors.onSurface,
-    marginRight: 'auto',
-    marginLeft: StaticTheme.spacing.xs,
-  },
-  pressableInputButtonContent: {
-    flexDirection: 'row-reverse',
-    justifyContent: 'flex-end',
-    height: '100%',
   },
 });

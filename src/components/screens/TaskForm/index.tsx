@@ -71,7 +71,6 @@ const checkHasChanges = (initFormData: TaskFormData | null, formData: TaskFormDa
   return hasReminderChanged;
 };
 
-// TODO: make "repeat" display text not being hidden when too long
 const TaskForm = () => {
   const { t } = useTranslation('taskForm');
   const { tRecurrenceText } = useRecurrenceText();
@@ -299,7 +298,6 @@ const TaskForm = () => {
             onPress={handleOpenEmojiKeyboard}
             placeholder={t('Select icon')}
             rightIconName="chevron.up.chevron.down"
-            readOnly
           />
           <EmojiPicker
             // TODO: auto select related emoji when user input
@@ -314,7 +312,6 @@ const TaskForm = () => {
             rightIconName="chevron.up.chevron.down"
             placeholder={t('Select time')}
             value={reminder ? formatReminderTime(reminder.reminderTime) : ''}
-            readOnly
             onPress={handleToggleTimePicker}
           />
           {showTimePicker && (
@@ -335,7 +332,6 @@ const TaskForm = () => {
             rightIconName="chevron.up.chevron.down"
             placeholder={t('Select recurrence')}
             divider={false}
-            readOnly
             value={recurrenceText}
             onPress={handleToggleRecurrenceSelector}
           />
