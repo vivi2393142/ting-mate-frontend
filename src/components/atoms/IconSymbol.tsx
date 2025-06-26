@@ -29,6 +29,7 @@ const MAPPING: IconMapping = {
   clock: 'access-time',
   repeat: 'repeat',
   microphone: 'mic',
+  stop: 'stop',
 } as IconMapping;
 
 export type IconName = SymbolViewProps['name'];

@@ -1,5 +1,17 @@
 export default {
   expo: {
+    name: 'Ting Mate',
+    scheme: 'tingmate',
+    slug: 'ting-mate',
+    owner: 'vivi2393142',
+    userInterfaceStyle: 'automatic',
+    version: '1.0.0',
+    icon: './src/assets/images/icon.png',
+    newArchEnabled: true,
+    orientation: 'portrait',
+    ios: {
+      supportsTablet: true,
+    },
     android: {
       adaptiveIcon: {
         backgroundColor: '#FFFFFF',
@@ -7,18 +19,22 @@ export default {
       },
       edgeToEdgeEnabled: true,
     },
+    web: {
+      bundler: 'metro',
+      favicon: './src/assets/images/favicon.png',
+      output: 'static',
+    },
     experiments: {
       typedRoutes: true,
     },
-    icon: './src/assets/images/icon.png',
-    ios: {
-      supportsTablet: true,
-    },
-    name: 'Ting Mate',
-    newArchEnabled: true,
-    orientation: 'portrait',
     plugins: [
       'expo-router',
+      [
+        'expo-audio',
+        {
+          microphonePermission: 'Allow Ting Mate to access your microphone.',
+        },
+      ],
       [
         'expo-splash-screen',
         {
@@ -29,14 +45,5 @@ export default {
         },
       ],
     ],
-    scheme: 'tingmate',
-    slug: 'ting-mate',
-    userInterfaceStyle: 'automatic',
-    version: '1.0.0',
-    web: {
-      bundler: 'metro',
-      favicon: './src/assets/images/favicon.png',
-      output: 'static',
-    },
   },
 };

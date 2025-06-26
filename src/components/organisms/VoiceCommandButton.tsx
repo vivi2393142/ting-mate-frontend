@@ -1,6 +1,7 @@
-import { useCallback } from 'react';
+import { AudioModule, RecordingPresets, useAudioRecorder } from 'expo-audio';
+import { useCallback, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Platform, StyleSheet, View, type ViewStyle } from 'react-native';
+import { Alert, Platform, StyleSheet, View, type ViewStyle } from 'react-native';
 import { IconButton, type IconButtonProps } from 'react-native-paper';
 
 import useAppTheme from '@/hooks/useAppTheme';
@@ -22,19 +23,54 @@ const sizes = {
 };
 
 interface VoiceCommandButtonProps extends Omit<IconButtonProps, 'icon'> {
+  onStopRecording: (soundUri: string | null) => void;
   style?: ViewStyle;
 }
 
-const VoiceCommandButton = ({ style, ...props }: VoiceCommandButtonProps) => {
+const VoiceCommandButton = ({ style, onStopRecording, ...props }: VoiceCommandButtonProps) => {
   const { t } = useTranslation('common');
-
   const userTextSize = useUserTextSize();
   const theme = useAppTheme();
   const { buttonSize, iconSize } = sizes[userTextSize];
 
-  const handlePress = useCallback(() => {
-    // TODO: Implement voice command recording
-  }, []);
+  const audioRecorder = useAudioRecorder(RecordingPresets.HIGH_QUALITY);
+  const [isRecording, setIsRecording] = useState(false);
+
+  const startRecording = useCallback(async () => {
+    try {
+      const status = await AudioModule.requestRecordingPermissionsAsync();
+      if (!status.granted) {
+        Alert.alert('Permission to access microphone was denied');
+      }
+
+      // Prepare then start recording
+      await audioRecorder.prepareToRecordAsync();
+      audioRecorder.record();
+      setIsRecording(true);
+    } catch (err) {
+      console.error('Failed to start recording:', err);
+    }
+  }, [audioRecorder]);
+
+  const stopRecording = useCallback(async () => {
+    try {
+      await audioRecorder.stop();
+      setIsRecording(false);
+      onStopRecording(audioRecorder.uri);
+    } catch (err) {
+      console.error('Failed to stop recording:', err);
+    }
+  }, [audioRecorder, onStopRecording]);
+
+  const handlePress = useCallback(async () => {
+    if (isRecording) {
+      await stopRecording();
+    } else {
+      await startRecording();
+    }
+  }, [isRecording, startRecording, stopRecording]);
+
+  const accessibilityLabel = isRecording ? t('Stop Voice Command') : t('Start Voice Command');
 
   return (
     <View
@@ -61,12 +97,16 @@ const VoiceCommandButton = ({ style, ...props }: VoiceCommandButtonProps) => {
       <IconButton
         mode="contained"
         iconColor={theme.colors.onPrimary}
-        containerColor={theme.colors.primary}
+        containerColor={isRecording ? theme.colors.error : theme.colors.primary}
         icon={(iconProps) => (
-          <IconSymbol name="microphone" size={iconSize} color={iconProps.color} />
+          <IconSymbol
+            name={isRecording ? 'stop' : 'microphone'}
+            size={iconSize}
+            color={iconProps.color}
+          />
         )}
         size={buttonSize}
-        accessibilityLabel={t('Start Voice Command')}
+        accessibilityLabel={accessibilityLabel}
         onPress={handlePress}
         style={[
           styles.button,

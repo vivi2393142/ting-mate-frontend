@@ -53,7 +53,24 @@ const TabLayout = () => {
               tabBarAccessibilityLabel: showVoiceButton ? '' : t(titleKey),
               tabBarIcon: ({ color }) =>
                 showVoiceButton ? (
-                  <VoiceCommandButton style={styles.floatingButton} />
+                  <VoiceCommandButton
+                    style={styles.floatingButton}
+                    onStopRecording={() => {
+                      // TODO: send audio to backend
+                      // const formData = new FormData();
+                      // formData.append('audio', {
+                      //   uri,
+                      //   type: 'audio/m4a',
+                      //   name: 'recording.m4a',
+                      // });
+                      // const response = await fetch('YOUR_BACKEND_API', {
+                      //   method: 'POST',
+                      //   body: formData,
+                      // });
+                      // const { transcript, result } = await response.json();
+                      // console.log({ transcript, result });
+                    }}
+                  />
                 ) : (
                   <IconSymbol name={iconName} color={color} size={24} />
                 ),
