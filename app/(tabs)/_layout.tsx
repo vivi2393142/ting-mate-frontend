@@ -5,7 +5,7 @@ import { StyleSheet } from 'react-native';
 import useAppTheme from '@/hooks/useAppTheme';
 
 import IconSymbol from '@/components/atoms/IconSymbol';
-import VoiceCommandButton from '@/components/organisms/VoiceCommandButton';
+import VoiceCommandButton from '@/components/screens/Home/VoiceCommandButton';
 
 const tabScreensSettings = [
   {

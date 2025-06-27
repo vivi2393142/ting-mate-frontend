@@ -30,6 +30,7 @@ const MAPPING: IconMapping = {
   repeat: 'repeat',
   microphone: 'mic',
   stop: 'stop',
+  'xmark.circle': 'closecircleo',
 } as IconMapping;
 
 export type IconName = SymbolViewProps['name'];

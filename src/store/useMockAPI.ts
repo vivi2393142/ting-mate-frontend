@@ -14,6 +14,25 @@ interface CreateTaskRequest extends Pick<TaskTemplate, 'title' | 'icon' | 'recur
   reminderTimeList: ReminderTime[];
 }
 
+enum VoiceCommandStatus {
+  CONFIRMED = 'CONFIRMED',
+  INCOMPLETE = 'INCOMPLETE',
+  UNKNOWN = 'UNKNOWN',
+}
+
+interface VoiceCommandRequest {
+  conversationId?: string;
+  sound: File | Blob | string; // multipart/form-data
+  userId: string; // Can be replaced by token
+}
+
+interface VoiceCommandResponse {
+  conversationId: string;
+  status: VoiceCommandStatus;
+  message: string;
+  transcript?: string;
+}
+
 interface MockAPIState {
   // Mock data storage
   currentUser: User | null;
@@ -38,6 +57,9 @@ interface MockAPIState {
   updateTask: (taskId: string, newTask: Partial<UpdateTaskRequest>) => TaskTemplate | null;
   completeTaskReminder: (taskId: string, reminderId: string, completed: boolean) => void;
   deleteTask: (taskId: string) => void;
+
+  // Voice command mock API
+  mockVoiceCommand: (params: VoiceCommandRequest) => Promise<VoiceCommandResponse>;
 
   // Utility methods
   clearMockData: () => void;
@@ -246,6 +268,43 @@ const useMockAPI = create<MockAPIState>((set, get) => ({
     const updatedTasks = tasks.filter((task) => task.id !== taskId);
     set({ tasks: updatedTasks });
   },
+
+  // Voice command mock API
+  mockVoiceCommand: (() => {
+    // Keep track of conversation state in memory
+    let selectedIdx: number | null = null;
+    let step = 0;
+    let lastConvId: string | null = null;
+    return async ({ conversationId }) => {
+      // If new conversation, pick a random scenario
+      let convId = conversationId;
+      if (!convId) {
+        selectedIdx = Math.floor(Math.random() * mockConversations.length);
+        step = 0;
+        convId = 'conv-' + Date.now();
+        lastConvId = convId;
+      } else if (convId !== lastConvId) {
+        // If conversationId changed, reset
+        selectedIdx = Math.floor(Math.random() * mockConversations.length);
+        step = 0;
+        lastConvId = convId;
+      }
+      const scenario = mockConversations[selectedIdx ?? 0];
+      const current = scenario[step];
+      let status = VoiceCommandStatus.INCOMPLETE;
+      const message = current.system;
+      const transcript = current.user;
+      // If last step, return completed
+      if (step === scenario.length - 1) {
+        status = VoiceCommandStatus.CONFIRMED;
+      }
+      // Prepare response
+      const response = { conversationId: convId, status, message, transcript };
+      // Move to next step for next call
+      if (step < scenario.length - 1) step++;
+      return new Promise((resolve) => setTimeout(() => resolve(response), 800));
+    };
+  })(),
 
   // Utility methods
   clearMockData: () => {
@@ -495,4 +554,32 @@ const mockLinkedUsers: User[] = [
     },
     linked: ['user-1'],
   },
+];
+
+const mockConversations = [
+  [
+    {
+      user: 'I have finished drinking water.',
+      system: 'You have completed the 10:00 water task. Do you want to confirm completion?',
+    },
+    { user: 'Yes', system: 'Task completed.' },
+  ],
+  [
+    {
+      user: 'I want to change the call Ruby task to once a week.',
+      system: 'Which days of the week do you want to schedule this task?',
+    },
+    {
+      user: 'Every Wednesday and Saturday',
+      system: 'Do you want to update the call Ruby task to every Wednesday and Saturday?',
+    },
+    { user: 'Yes', system: 'Task updated.' },
+  ],
+  [
+    {
+      user: 'I want to delete the daily exercise task.',
+      system: 'Do you want to confirm deleting the daily 19:00 exercise task?',
+    },
+    { user: 'Yes', system: 'Task deleted.' },
+  ],
 ];

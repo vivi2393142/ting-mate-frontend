@@ -60,7 +60,7 @@ export default [
       '@typescript-eslint/no-require-imports': [
         'error',
         {
-          allow: ['\\.(png|jpg|jpeg|gif|svg|ttf)$'],
+          allow: ['\\.(png|jpg|jpeg|gif|svg|ttf|mp3)$'],
         },
       ],
       'no-restricted-imports': [
