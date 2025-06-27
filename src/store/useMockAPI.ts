@@ -14,7 +14,7 @@ interface CreateTaskRequest extends Pick<TaskTemplate, 'title' | 'icon' | 'recur
   reminderTimeList: ReminderTime[];
 }
 
-enum VoiceCommandStatus {
+export enum VoiceCommandStatus {
   CONFIRMED = 'CONFIRMED',
   INCOMPLETE = 'INCOMPLETE',
   UNKNOWN = 'UNKNOWN',

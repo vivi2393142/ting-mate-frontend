@@ -50,7 +50,8 @@
     "rn-emoji-keyboard": "^1.7.0",
     "zod": "^3.25.67",
     "zustand": "^5.0.5",
-    "expo-audio": "~0.4.6"
+    "expo-audio": "~0.4.6",
+    "expo-speech": "~13.1.7"
   },
   "devDependencies": {
     "@babel/core": "^7.25.2",
