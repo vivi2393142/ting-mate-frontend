@@ -1,19 +1,3 @@
-// Task reminder - each reminder time corresponds to a reminder with completion status
-export interface TaskReminder {
-  id: string;
-  reminderTime: ReminderTime; // corresponding reminder time
-  completed: boolean;
-  createdAt: string; // ISO timestamp
-  updatedAt: string; // ISO timestamp
-  completedAt?: string; // ISO timestamp - completion time
-  completedBy?: string; // user email - completion user email
-}
-
-export interface ReminderTime {
-  hour: number; // 0 ~ 23
-  minute: number; // 0 ~ 59
-}
-
 // Recurrence rule - defines how to repeat a task
 export enum RecurrenceUnit {
   DAY = 'DAY',
@@ -39,35 +23,35 @@ export interface RecurrenceRule {
   daysOfMonth?: number[]; // MONTH: day of month to repeat on
 }
 
-// Task template - defines basic task information and reminder times
-export interface TaskTemplate {
+export interface ReminderTime {
+  hour: number; // 0 ~ 23
+  minute: number; // 0 ~ 59
+}
+
+// Task - defines basic task information and reminder times
+export interface Task {
   id: string;
   title: string;
   icon: string; // emoji
+  reminderTime: ReminderTime;
+  recurrence?: RecurrenceRule; // undefined if task is not recurring
+  completed: boolean;
   createdAt: string; // ISO timestamp
   updatedAt: string; // ISO timestamp
-  reminders: TaskReminder[];
-  recurrence?: RecurrenceRule; // undefined if task is not recurring
+  completedAt?: string; // ISO timestamp - completion time
+  completedBy?: string; // user email - completion user email
 }
 
-// Type for updating task template
-export interface UpdateTaskTemplateRequest {
-  templateId: string;
-  updates: Partial<TaskTemplate>;
+// Type for updating task
+export interface UpdateTaskRequest {
+  id: string;
+  updates: Partial<Task>;
 }
 
-// Type for completing task reminder
-export interface UpdateTaskReminderStatusRequest {
-  templateId: string;
-  reminderId: string;
+// Type for completing task
+export interface UpdateTaskStatusRequest {
+  id: string;
   completed: boolean;
-}
-
-// Type for getting task reminders
-export interface GetTaskRemindersRequest {
-  templateId?: string;
-  date?: string; // ISO date string (YYYY-MM-DD)
-  completed?: boolean;
 }
 
 // Task type for display
@@ -77,15 +61,5 @@ export enum TaskType {
   MISSED = 'MISSED',
 }
 
-export interface Task
-  extends Pick<TaskTemplate, 'title' | 'icon'>,
-    Pick<TaskReminder, 'reminderTime' | 'completed'> {
-  reminderId: string;
-  taskId: string;
-}
-
 // Form type for TaskForm screen
-export interface TaskFormData extends Pick<TaskTemplate, 'title' | 'icon'> {
-  recurrence?: RecurrenceRule;
-  reminderTimeList: { id?: string; reminderTime: ReminderTime }[];
-}
+export type TaskFormData = Pick<Task, 'title' | 'icon' | 'recurrence' | 'reminderTime'>;

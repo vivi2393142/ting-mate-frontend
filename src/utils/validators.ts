@@ -39,12 +39,5 @@ export const TaskFormDataSchema = z.object({
   title: z.string().min(1, 'Title is required'),
   icon: z.string().min(1, 'Icon is required'),
   recurrence: RecurrenceRuleSchema.optional(), // undefined means no recurrence
-  reminderTimeList: z
-    .array(
-      z.object({
-        id: z.string().optional(),
-        reminderTime: ReminderTimeSchema,
-      }),
-    )
-    .min(1, 'At least one reminder time is required'),
+  reminderTime: ReminderTimeSchema,
 });

@@ -23,6 +23,7 @@ import ScreenContainer from '@/components/atoms/ScreenContainer';
 import ThemedButton from '@/components/atoms/ThemedButton';
 import ThemedView from '@/components/atoms/ThemedView';
 import RecurrenceSelector from '@/components/screens/TaskForm/RecurrenceSelector';
+import NotificationService from '@/services/notification';
 
 const now = new Date();
 const nextHour = now.getMinutes() === 0 ? now.getHours() : now.getHours() + 1;
@@ -37,7 +38,7 @@ const defaultTaskFormData: TaskFormData = {
   title: '',
   icon: '✅',
   recurrence: defaultRecurrence,
-  reminderTimeList: [{ reminderTime: { hour: nextHour, minute: 0 } }],
+  reminderTime: { hour: nextHour, minute: 0 },
 };
 
 const checkHasChanges = (initFormData: TaskFormData | null, formData: TaskFormData | null) => {
@@ -62,12 +63,10 @@ const checkHasChanges = (initFormData: TaskFormData | null, formData: TaskFormDa
   }
 
   // Check reminder time
-  const initReminder = initFormData.reminderTimeList?.[0];
-  const currentReminder = formData.reminderTimeList?.[0];
+  const initReminder = initFormData.reminderTime;
+  const currentReminder = formData.reminderTime;
   const hasReminderChanged =
-    initReminder?.id !== currentReminder?.id ||
-    initReminder?.reminderTime.hour !== currentReminder?.reminderTime.hour ||
-    initReminder?.reminderTime.minute !== currentReminder?.reminderTime.minute;
+    initReminder.hour !== currentReminder.hour || initReminder.minute !== currentReminder.minute;
   return hasReminderChanged;
 };
 
@@ -87,7 +86,7 @@ const TaskForm = () => {
   const editTaskId = params.id as string;
 
   // TODO: remove mock tasks
-  const { getTask, deleteTask, updateTask, createTask } = useMockTasks();
+  const { getTask, deleteTask, updateTask, createTask, getTasks } = useMockTasks();
 
   const [initFormData, setInitFormData] = useState<TaskFormData | null>(null);
   const [formData, setFormData] = useState<TaskFormData | null>(null);
@@ -95,16 +94,15 @@ const TaskForm = () => {
   const [showEmojiKeyboard, setShowEmojiKeyboard] = useState(false);
   const [showRecurrenceSelector, setShowRecurrenceSelector] = useState(false);
 
-  const reminder = formData?.reminderTimeList?.[0];
   const reminderDate = useMemo(() => {
-    if (!reminder) return dayjs().toDate();
+    if (!formData?.reminderTime) return dayjs().toDate();
     return dayjs()
-      .hour(reminder.reminderTime.hour)
-      .minute(reminder.reminderTime.minute)
+      .hour(formData.reminderTime.hour)
+      .minute(formData.reminderTime.minute)
       .second(0)
       .millisecond(0)
       .toDate();
-  }, [reminder]);
+  }, [formData?.reminderTime]);
 
   const handleTitleChange = useCallback((value: string) => {
     setFormData((prev) => prev && { ...prev, title: value });
@@ -134,15 +132,10 @@ const TaskForm = () => {
       if (!prev) return null;
       return {
         ...prev,
-        reminderTimeList: [
-          {
-            id: prev.reminderTimeList?.[0]?.id,
-            reminderTime: {
-              hour: selectedDate.getHours(),
-              minute: selectedDate.getMinutes(),
-            },
-          },
-        ],
+        reminderTime: {
+          hour: selectedDate.getHours(),
+          minute: selectedDate.getMinutes(),
+        },
       };
     });
   }, []);
@@ -172,30 +165,22 @@ const TaskForm = () => {
     });
   }, []);
 
-  const handleSave = useCallback(() => {
+  const handleSave = useCallback(async () => {
     if (!formData) return;
     const validFormData = autoFillInvalidTaskFormData(formData);
-    const taskData = {
-      title: validFormData.title,
-      icon: validFormData.icon,
-      recurrence: validFormData.recurrence,
-    };
+
     if (isEditMode) {
-      updateTask(editTaskId, {
-        ...taskData,
-        reminderTimeList: validFormData.reminderTimeList.map(({ id, reminderTime }) => ({
-          id,
-          reminderTime,
-        })),
-      });
+      updateTask(editTaskId, validFormData);
     } else {
-      createTask({
-        ...taskData,
-        reminderTimeList: validFormData.reminderTimeList.map(({ reminderTime }) => reminderTime),
-      });
+      createTask(validFormData);
     }
+
+    // Reinitialize all next notifications after task changes
+    const updatedTasks = getTasks();
+    await NotificationService.reinitializeAllNextNotifications(updatedTasks);
+
     router.back();
-  }, [editTaskId, formData, isEditMode, router, updateTask, createTask]);
+  }, [editTaskId, formData, isEditMode, router, updateTask, createTask, getTasks]);
 
   const handleCancel = useCallback(() => {
     const hasChanges = checkHasChanges(initFormData, formData);
@@ -216,7 +201,7 @@ const TaskForm = () => {
     }
   }, [formData, initFormData, router, t]);
 
-  const handleDeleteTask = useCallback(() => {
+  const handleDeleteTask = useCallback(async () => {
     Alert.alert(t('Delete Task'), t('Are you sure you want to delete this task?'), [
       {
         text: t('Cancel'),
@@ -225,13 +210,18 @@ const TaskForm = () => {
       {
         text: t('Delete'),
         style: 'destructive',
-        onPress: () => {
+        onPress: async () => {
           deleteTask(editTaskId);
+
+          // Reinitialize all next notifications after task deletion
+          const updatedTasks = getTasks();
+          await NotificationService.reinitializeAllNextNotifications(updatedTasks);
+
           router.back();
         },
       },
     ]);
-  }, [editTaskId, router, t, deleteTask]);
+  }, [editTaskId, router, t, deleteTask, getTasks]);
 
   // Get recurrence display text
   const recurrenceText = useMemo(() => {
@@ -252,10 +242,7 @@ const TaskForm = () => {
         title: editingTask.title,
         icon: editingTask.icon,
         recurrence: editingTask.recurrence,
-        reminderTimeList: editingTask.reminders.map(({ id, reminderTime }) => ({
-          id,
-          reminderTime,
-        })),
+        reminderTime: editingTask.reminderTime,
       };
       setInitFormData(newFormData);
       setFormData(newFormData);
@@ -311,7 +298,7 @@ const TaskForm = () => {
             icon="clock"
             rightIconName="chevron.up.chevron.down"
             placeholder={t('Select time')}
-            value={reminder ? formatReminderTime(reminder.reminderTime) : ''}
+            value={formData?.reminderTime ? formatReminderTime(formData.reminderTime) : ''}
             onPress={handleToggleTimePicker}
           />
           {showTimePicker && (

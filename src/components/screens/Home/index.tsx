@@ -21,6 +21,7 @@ import ThemedButton from '@/components/atoms/ThemedButton';
 import ExpandableSectionHeader from '@/components/screens/Home/ExpandableSectionHeader';
 import OtherTaskListItem from '@/components/screens/Home/OtherTaskListItem';
 import TaskListItem from '@/components/screens/Home/TaskListItem';
+import NotificationService from '@/services/notification';
 
 const HomeScreen = () => {
   const { t } = useTranslation('home');
@@ -30,7 +31,7 @@ const HomeScreen = () => {
   const userDisplayMode = useUserDisplayMode();
 
   // TODO: remove useMockTasks after the API is implemented
-  const { getTasks, completeTaskReminder } = useMockTasks();
+  const { getTasks, completeTask } = useMockTasks();
 
   const theme = useAppTheme();
   const styleParams = useMemo(() => ({ userTextSize }), [userTextSize]);
@@ -53,33 +54,19 @@ const HomeScreen = () => {
       nextOccurrence: string | null;
     }> = [];
 
-    tasks?.forEach((taskTemplate) => {
-      const shouldAppearToday = shouldTaskAppearToday(taskTemplate);
-
-      taskTemplate.reminders?.forEach(({ id: reminderId, reminderTime, completed }) => {
-        const taskItem = {
-          reminderId,
-          taskId: taskTemplate.id,
-          title: taskTemplate.title,
-          icon: taskTemplate.icon,
-          reminderTime,
-          completed,
-        };
-
-        if (shouldAppearToday) {
-          today.push(taskItem);
-        } else {
-          const recurrenceText = taskTemplate?.recurrence
-            ? tRecurrenceText(taskTemplate.recurrence)
-            : '';
-          const nextOccurrence = getNextOccurrenceDate(taskTemplate);
-          other.push({
-            task: taskItem,
-            recurrenceText,
-            nextOccurrence: nextOccurrence ? nextOccurrence.format('MM/DD') : null,
-          });
-        }
-      });
+    tasks?.forEach((task) => {
+      const shouldAppearToday = shouldTaskAppearToday(task);
+      if (shouldAppearToday) {
+        today.push(task);
+      } else {
+        const recurrenceText = task?.recurrence ? tRecurrenceText(task.recurrence) : '';
+        const nextOccurrence = getNextOccurrenceDate(task);
+        other.push({
+          task,
+          recurrenceText,
+          nextOccurrence: nextOccurrence ? nextOccurrence.format('MM/DD') : null,
+        });
+      }
     });
 
     return { todayTasks: today, otherTasks: other };
@@ -101,15 +88,24 @@ const HomeScreen = () => {
     return result;
   }, [todayTasks]);
 
-  const handleUpdateTaskStatus = (taskId: string, reminderId: string, newStatus: boolean) => {
-    completeTaskReminder(taskId, reminderId, newStatus);
-  };
+  const handleUpdateTaskStatus = useCallback(
+    async (taskId: string, newStatus: boolean) => {
+      // Update task status in store
+      completeTask(taskId, newStatus);
 
-  const handleListItemPress = (taskId: string, reminderId: string) => () => {
+      // Reinitialize all notifications after task status change
+      if (newStatus) {
+        const updatedTasks = getTasks();
+        await NotificationService.reinitializeAllNextNotifications(updatedTasks);
+      }
+    },
+    [completeTask, getTasks],
+  );
+
+  const handleListItemPress = (taskId: string) => () => {
     const task = tasks.find((t) => t.id === taskId);
-    const reminder = task?.reminders.find((r) => r.id === reminderId);
+    if (!task) return;
 
-    if (!task || !reminder) return;
     if (userDisplayMode === UserDisplayMode.FULL) {
       router.push({
         pathname: '/edit-task',
@@ -117,12 +113,12 @@ const HomeScreen = () => {
           id: task.id,
           title: task.title,
           icon: task.icon,
-          hour: reminder.reminderTime.hour.toString(),
-          minute: reminder.reminderTime.minute.toString(),
+          hour: task.reminderTime.hour.toString(),
+          minute: task.reminderTime.minute.toString(),
         },
       });
     } else {
-      handleUpdateTaskStatus(taskId, reminderId, !reminder.completed);
+      handleUpdateTaskStatus(taskId, !task.completed);
     }
   };
 
@@ -130,9 +126,9 @@ const HomeScreen = () => {
     setIsStackExpanded((prev) => !prev);
   }, []);
 
-  const handleCheckboxPress = (taskId: string, reminderId: string, newStatus: boolean) => () => {
+  const handleCheckboxPress = (taskId: string, newStatus: boolean) => () => {
     if (isStackExpanded) {
-      handleUpdateTaskStatus(taskId, reminderId, newStatus);
+      handleUpdateTaskStatus(taskId, newStatus);
     } else {
       handleStackPress();
     }
@@ -158,13 +154,13 @@ const HomeScreen = () => {
         {sortedTasks.map((task, idx) => {
           const isMissed = !task.completed && isTaskMissed(task.reminderTime, currentTime);
           const isLastCompleted = task.completed && !sortedTasks?.[idx + 1]?.completed;
-          const taskTemplate = tasks.find((t) => t.id === task.taskId);
+          const taskTemplate = tasks.find((t) => t.id === task.id);
           const recurrenceText = taskTemplate?.recurrence
             ? tRecurrenceText(taskTemplate.recurrence)
             : '';
           const shouldShowRecurrence = taskTemplate && !!taskTemplate?.recurrence;
           return (
-            <Fragment key={`${task.taskId}-${task.reminderId}`}>
+            <Fragment key={task.id}>
               <TaskListItem
                 {...task}
                 isMissed={isMissed}
@@ -172,8 +168,8 @@ const HomeScreen = () => {
                 isStackExpanded={isStackExpanded}
                 recurrenceText={recurrenceText}
                 shouldShowRecurrence={shouldShowRecurrence}
-                onPress={handleListItemPress(task.taskId, task.reminderId)}
-                onCheck={handleCheckboxPress(task.taskId, task.reminderId, !task.completed)}
+                onPress={handleListItemPress(task.id)}
+                onCheck={handleCheckboxPress(task.id, !task.completed)}
                 onStackPress={handleStackPress}
               />
               {isLastCompleted && isStackExpanded && (
@@ -203,11 +199,11 @@ const HomeScreen = () => {
             {isOtherTasksExpanded &&
               otherTasks.map(({ task, recurrenceText, nextOccurrence }) => (
                 <OtherTaskListItem
-                  key={`${task.taskId}-${task.reminderId}`}
+                  key={task.id}
                   {...task}
                   recurrenceText={recurrenceText}
                   nextOccurrence={nextOccurrence ?? undefined}
-                  onPress={handleListItemPress(task.taskId, task.reminderId)}
+                  onPress={handleListItemPress(task.id)}
                   disabled={userDisplayMode === UserDisplayMode.SIMPLE}
                 />
               ))}

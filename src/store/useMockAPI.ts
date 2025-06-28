@@ -1,18 +1,8 @@
 import { create } from 'zustand';
 
-import type { ReminderTime, TaskTemplate } from '@/types/task';
-import { RecurrenceUnit } from '@/types/task';
+import { RecurrenceUnit, type Task, type TaskFormData } from '@/types/task';
 import type { User } from '@/types/user';
 import { Role, UserDisplayMode, UserTextSize } from '@/types/user';
-
-// TODO: remove the whole file after the API is implemented
-interface UpdateTaskRequest extends Pick<TaskTemplate, 'title' | 'icon' | 'recurrence'> {
-  reminderTimeList: { id?: string; reminderTime: ReminderTime }[];
-}
-
-interface CreateTaskRequest extends Pick<TaskTemplate, 'title' | 'icon' | 'recurrence'> {
-  reminderTimeList: ReminderTime[];
-}
 
 export enum VoiceCommandStatus {
   CONFIRMED = 'CONFIRMED',
@@ -37,7 +27,7 @@ interface MockAPIState {
   // Mock data storage
   currentUser: User | null;
   authToken: string | null;
-  tasks: TaskTemplate[];
+  tasks: Task[];
   linkedUsers: User[];
 
   // Auth API methods
@@ -51,12 +41,12 @@ interface MockAPIState {
   getLinkedAccounts: () => User[];
 
   // Task API methods
-  getTasks: () => TaskTemplate[];
-  getTask: (taskId: string) => TaskTemplate | null;
-  createTask: (task: CreateTaskRequest) => TaskTemplate;
-  updateTask: (taskId: string, newTask: Partial<UpdateTaskRequest>) => TaskTemplate | null;
-  completeTaskReminder: (taskId: string, reminderId: string, completed: boolean) => void;
-  deleteTask: (taskId: string) => void;
+  getTasks: () => Task[];
+  getTask: (id: string) => Task | null;
+  createTask: (task: TaskFormData) => Task;
+  updateTask: (id: string, newTask: Partial<TaskFormData>) => Task | null;
+  completeTask: (id: string, completed: boolean) => void;
+  deleteTask: (id: string) => void;
 
   // Voice command mock API
   mockVoiceCommand: (params: VoiceCommandRequest) => Promise<VoiceCommandResponse>;
@@ -158,19 +148,11 @@ const useMockAPI = create<MockAPIState>((set, get) => ({
     return tasks.find((task) => task.id === taskId) || null;
   },
 
-  createTask: (task: CreateTaskRequest) => {
-    const newTask: TaskTemplate = {
+  createTask: (task: TaskFormData) => {
+    const newTask: Task = {
       id: 'task-' + Date.now(),
-      title: task.title,
-      icon: task.icon,
-      recurrence: task.recurrence,
-      reminders: task.reminderTimeList.map((reminderTime) => ({
-        id: 'reminder-' + Date.now() + '-' + Math.random().toString(36).substr(2, 9),
-        reminderTime,
-        completed: false,
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-      })),
+      ...task,
+      completed: false,
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
     };
@@ -182,43 +164,18 @@ const useMockAPI = create<MockAPIState>((set, get) => ({
     return newTask;
   },
 
-  updateTask: (taskId: string, newTask: Partial<UpdateTaskRequest>) => {
+  updateTask: (id: string, newTask: Partial<TaskFormData>) => {
     const { tasks } = get();
-    const targetTaskIdx = tasks.findIndex((task) => task.id === taskId);
+    const targetTaskIdx = tasks.findIndex((task) => task.id === id);
     if (targetTaskIdx === -1) return null;
 
     const targetTask = tasks[targetTaskIdx];
-    const updatedTask: TaskTemplate = {
+    const updatedTask: Task = {
       ...targetTask,
       ...(newTask.title && { title: newTask.title }),
       ...(newTask.icon && { icon: newTask.icon }),
       ...(newTask.recurrence && { recurrence: newTask.recurrence }),
-      ...(newTask.reminderTimeList && {
-        reminders: newTask.reminderTimeList.map((newReminder) => {
-          const originReminder = targetTask.reminders.find(
-            (reminder) => reminder.id === newReminder?.id,
-          );
-          if (originReminder) {
-            const hasChanged =
-              newReminder.reminderTime.hour !== originReminder.reminderTime.hour ||
-              newReminder.reminderTime.minute !== originReminder.reminderTime.minute;
-            return {
-              id: originReminder.id,
-              reminderTime: newReminder.reminderTime,
-              completed: hasChanged ? false : originReminder.completed,
-              createdAt: originReminder.createdAt,
-              updatedAt: new Date().toISOString(),
-            };
-          }
-          return {
-            id: 'reminder-' + Date.now() + '-' + Math.random().toString(36).substr(2, 9),
-            reminderTime: newReminder.reminderTime,
-            completed: false,
-            createdAt: new Date().toISOString(),
-            updatedAt: new Date().toISOString(),
-          };
-        }),
-      }),
+      ...(newTask.reminderTime && { reminderTime: newTask.reminderTime }),
       updatedAt: new Date().toISOString(),
     };
 
@@ -229,43 +186,27 @@ const useMockAPI = create<MockAPIState>((set, get) => ({
     return updatedTask;
   },
 
-  completeTaskReminder: (taskId: string, reminderId: string, completed: boolean) => {
+  completeTask: (id: string, completed: boolean) => {
     const { tasks } = get();
-    const taskIndex = tasks.findIndex((task) => task.id === taskId);
+    const taskIndex = tasks.findIndex((task) => task.id === id);
 
-    if (taskIndex === -1) {
-      return;
-    }
-
+    if (taskIndex === -1) return;
     const task = tasks[taskIndex];
-    const reminderIndex = task.reminders.findIndex((reminder) => reminder.id === reminderId);
-
-    if (reminderIndex === -1) {
-      return;
-    }
-
     const updatedTasks = [...tasks];
-    const updatedReminders = [...updatedTasks[taskIndex].reminders];
-
-    updatedReminders[reminderIndex] = {
-      ...updatedReminders[reminderIndex],
-      completed,
-      completedAt: completed ? new Date().toISOString() : undefined,
-      updatedAt: new Date().toISOString(),
-    };
 
     updatedTasks[taskIndex] = {
-      ...updatedTasks[taskIndex],
-      reminders: updatedReminders,
+      ...task,
+      completed,
+      completedAt: completed ? new Date().toISOString() : undefined,
       updatedAt: new Date().toISOString(),
     };
 
     set({ tasks: updatedTasks });
   },
 
-  deleteTask: (taskId: string) => {
+  deleteTask: (id: string) => {
     const { tasks } = get();
-    const updatedTasks = tasks.filter((task) => task.id !== taskId);
+    const updatedTasks = tasks.filter((task) => task.id !== id);
     set({ tasks: updatedTasks });
   },
 
@@ -346,9 +287,8 @@ export const useMockLinkedAccounts = () => {
 };
 
 export const useMockTasks = () => {
-  const { getTask, getTasks, createTask, updateTask, completeTaskReminder, deleteTask } =
-    useMockAPI();
-  return { getTask, getTasks, createTask, updateTask, completeTaskReminder, deleteTask };
+  const { getTask, getTasks, createTask, updateTask, completeTask, deleteTask } = useMockAPI();
+  return { getTask, getTasks, createTask, updateTask, completeTask, deleteTask };
 };
 
 // Mock data generators
@@ -372,7 +312,7 @@ const mockUser = {
   linked: [],
 };
 
-const mockTasks: TaskTemplate[] = [
+const mockTasks: Task[] = [
   {
     id: 'task-1',
     title: 'Take medication',
@@ -381,15 +321,9 @@ const mockTasks: TaskTemplate[] = [
       interval: 1,
       unit: RecurrenceUnit.DAY,
     },
-    reminders: [
-      {
-        id: 'reminder-1-1',
-        reminderTime: { hour: 8, minute: 0 },
-        completed: true,
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-      },
-    ],
+    reminderTime: { hour: 8, minute: 0 },
+    completed: true,
+    completedAt: new Date().toISOString(),
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
   },
@@ -401,16 +335,9 @@ const mockTasks: TaskTemplate[] = [
       interval: 1,
       unit: RecurrenceUnit.DAY,
     },
-    reminders: [
-      {
-        id: 'reminder-2-1',
-        reminderTime: { hour: 9, minute: 0 },
-        completed: true,
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-        completedAt: new Date().toISOString(),
-      },
-    ],
+    reminderTime: { hour: 9, minute: 0 },
+    completed: true,
+    completedAt: new Date().toISOString(),
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
   },
@@ -423,15 +350,8 @@ const mockTasks: TaskTemplate[] = [
       unit: RecurrenceUnit.WEEK,
       daysOfWeek: [1, 3, 5], // Monday, Wednesday, Friday
     },
-    reminders: [
-      {
-        id: 'reminder-3-1',
-        reminderTime: { hour: 16, minute: 30 },
-        completed: false,
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-      },
-    ],
+    reminderTime: { hour: 16, minute: 30 },
+    completed: false,
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
   },
@@ -444,15 +364,8 @@ const mockTasks: TaskTemplate[] = [
       unit: RecurrenceUnit.MONTH,
       daysOfMonth: [15],
     },
-    reminders: [
-      {
-        id: 'reminder-4-1',
-        reminderTime: { hour: 10, minute: 0 },
-        completed: false,
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-      },
-    ],
+    reminderTime: { hour: 10, minute: 0 },
+    completed: false,
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
   },
@@ -464,15 +377,8 @@ const mockTasks: TaskTemplate[] = [
       interval: 1,
       unit: RecurrenceUnit.DAY,
     },
-    reminders: [
-      {
-        id: 'reminder-5-1',
-        reminderTime: { hour: 10, minute: 0 },
-        completed: false,
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-      },
-    ],
+    reminderTime: { hour: 10, minute: 0 },
+    completed: false,
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
   },
@@ -484,15 +390,8 @@ const mockTasks: TaskTemplate[] = [
       interval: 1,
       unit: RecurrenceUnit.DAY,
     },
-    reminders: [
-      {
-        id: 'reminder-6-1',
-        reminderTime: { hour: 19, minute: 0 },
-        completed: false,
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-      },
-    ],
+    reminderTime: { hour: 19, minute: 26 },
+    completed: false,
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
   },
@@ -501,15 +400,8 @@ const mockTasks: TaskTemplate[] = [
     title: 'Call Ruby',
     icon: '📞',
     recurrence: undefined,
-    reminders: [
-      {
-        id: 'reminder-7-1',
-        reminderTime: { hour: 18, minute: 30 },
-        completed: false,
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-      },
-    ],
+    reminderTime: { hour: 18, minute: 30 },
+    completed: false,
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
   },
