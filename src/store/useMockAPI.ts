@@ -324,7 +324,7 @@ const mockTasks: Task[] = [
     reminderTime: { hour: 8, minute: 0 },
     completed: true,
     completedAt: new Date().toISOString(),
-    createdAt: new Date().toISOString(),
+    createdAt: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString(),
     updatedAt: new Date().toISOString(),
   },
   {
@@ -338,7 +338,7 @@ const mockTasks: Task[] = [
     reminderTime: { hour: 9, minute: 0 },
     completed: true,
     completedAt: new Date().toISOString(),
-    createdAt: new Date().toISOString(),
+    createdAt: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString(),
     updatedAt: new Date().toISOString(),
   },
   {
@@ -352,7 +352,7 @@ const mockTasks: Task[] = [
     },
     reminderTime: { hour: 16, minute: 30 },
     completed: false,
-    createdAt: new Date().toISOString(),
+    createdAt: new Date(Date.now() - 14 * 24 * 60 * 60 * 1000).toISOString(),
     updatedAt: new Date().toISOString(),
   },
   {
@@ -366,7 +366,7 @@ const mockTasks: Task[] = [
     },
     reminderTime: { hour: 10, minute: 0 },
     completed: false,
-    createdAt: new Date().toISOString(),
+    createdAt: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString(),
     updatedAt: new Date().toISOString(),
   },
   {
@@ -379,7 +379,7 @@ const mockTasks: Task[] = [
     },
     reminderTime: { hour: 10, minute: 0 },
     completed: false,
-    createdAt: new Date().toISOString(),
+    createdAt: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString(),
     updatedAt: new Date().toISOString(),
   },
   {
@@ -392,7 +392,7 @@ const mockTasks: Task[] = [
     },
     reminderTime: { hour: 19, minute: 26 },
     completed: false,
-    createdAt: new Date().toISOString(),
+    createdAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
     updatedAt: new Date().toISOString(),
   },
   {
@@ -402,7 +402,7 @@ const mockTasks: Task[] = [
     recurrence: undefined,
     reminderTime: { hour: 18, minute: 30 },
     completed: false,
-    createdAt: new Date().toISOString(),
+    createdAt: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString(),
     updatedAt: new Date().toISOString(),
   },
 ];

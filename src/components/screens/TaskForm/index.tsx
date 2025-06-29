@@ -3,13 +3,13 @@ import dayjs from 'dayjs';
 import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
 import { Fragment, useCallback, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-
 import { Alert, Button, Platform } from 'react-native';
 import { Divider } from 'react-native-paper';
 import EmojiPicker from 'rn-emoji-keyboard';
 
 import useAppTheme from '@/hooks/useAppTheme';
 import useRecurrenceText from '@/hooks/useRecurrenceText';
+import { NotificationService } from '@/services/notification';
 import { useMockTasks } from '@/store/useMockAPI';
 import { useUserTextSize } from '@/store/useUserStore';
 import { StaticTheme } from '@/theme';
@@ -23,7 +23,6 @@ import ScreenContainer from '@/components/atoms/ScreenContainer';
 import ThemedButton from '@/components/atoms/ThemedButton';
 import ThemedView from '@/components/atoms/ThemedView';
 import RecurrenceSelector from '@/components/screens/TaskForm/RecurrenceSelector';
-import NotificationService from '@/services/notification';
 
 const now = new Date();
 const nextHour = now.getMinutes() === 0 ? now.getHours() : now.getHours() + 1;
@@ -177,7 +176,7 @@ const TaskForm = () => {
 
     // Reinitialize all next notifications after task changes
     const updatedTasks = getTasks();
-    await NotificationService.reinitializeAllNextNotifications(updatedTasks);
+    await NotificationService.reinitializeAllLocalNotifications(updatedTasks);
 
     router.back();
   }, [editTaskId, formData, isEditMode, router, updateTask, createTask, getTasks]);
@@ -215,7 +214,7 @@ const TaskForm = () => {
 
           // Reinitialize all next notifications after task deletion
           const updatedTasks = getTasks();
-          await NotificationService.reinitializeAllNextNotifications(updatedTasks);
+          await NotificationService.reinitializeAllLocalNotifications(updatedTasks);
 
           router.back();
         },

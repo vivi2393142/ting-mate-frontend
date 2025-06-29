@@ -8,20 +8,20 @@ import { Divider, List, Text } from 'react-native-paper';
 import useAppTheme from '@/hooks/useAppTheme';
 import useCurrentTime from '@/hooks/useCurrentTime';
 import useRecurrenceText from '@/hooks/useRecurrenceText';
+import { NotificationService } from '@/services/notification';
 import { useMockTasks } from '@/store/useMockAPI';
 import { useUserDisplayMode, useUserTextSize } from '@/store/useUserStore';
 import { StaticTheme } from '@/theme';
 import type { Task } from '@/types/task';
 import { UserDisplayMode, UserTextSize } from '@/types/user';
 import { createStyles, type StyleRecord } from '@/utils/createStyles';
-import { getNextOccurrenceDate, isTaskMissed, shouldTaskAppearToday } from '@/utils/taskUtils';
+import { getNextNotificationTime, isTaskMissed, shouldTaskAppearToday } from '@/utils/taskUtils';
 
 import ScreenContainer from '@/components/atoms/ScreenContainer';
 import ThemedButton from '@/components/atoms/ThemedButton';
 import ExpandableSectionHeader from '@/components/screens/Home/ExpandableSectionHeader';
 import OtherTaskListItem from '@/components/screens/Home/OtherTaskListItem';
 import TaskListItem from '@/components/screens/Home/TaskListItem';
-import NotificationService from '@/services/notification';
 
 const HomeScreen = () => {
   const { t } = useTranslation('home');
@@ -60,7 +60,7 @@ const HomeScreen = () => {
         today.push(task);
       } else {
         const recurrenceText = task?.recurrence ? tRecurrenceText(task.recurrence) : '';
-        const nextOccurrence = getNextOccurrenceDate(task);
+        const nextOccurrence = getNextNotificationTime(task);
         other.push({
           task,
           recurrenceText,
@@ -96,7 +96,7 @@ const HomeScreen = () => {
       // Reinitialize all notifications after task status change
       if (newStatus) {
         const updatedTasks = getTasks();
-        await NotificationService.reinitializeAllNextNotifications(updatedTasks);
+        await NotificationService.reinitializeAllLocalNotifications(updatedTasks);
       }
     },
     [completeTask, getTasks],

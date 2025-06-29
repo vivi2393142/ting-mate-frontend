@@ -10,6 +10,7 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 import useColorScheme from '@/hooks/useColorScheme';
 import '@/i18n';
+import { NotificationService } from '@/services/notification';
 import useMockAPI from '@/store/useMockAPI';
 import { useUserTextSize } from '@/store/useUserStore';
 import {
@@ -48,17 +49,42 @@ const CombinedThemeProvider = ({ children }: { children: ReactNode }) => {
 
 const RootLayout = () => {
   const colorScheme = useColorScheme();
-  const { initializeMockData } = useMockAPI();
+  const { initializeMockData, getTasks } = useMockAPI();
   const [loaded] = useFonts({
     SpaceMono: require('../src/assets/fonts/SpaceMono-Regular.ttf'),
   });
 
   const { t } = useTranslation('common');
 
-  // Initialize mock data when the app starts
+  // Initialize mock data and notifications when the app starts
   useEffect(() => {
-    initializeMockData();
-  }, [initializeMockData]);
+    (async () => {
+      // Initialize mock data
+      initializeMockData();
+
+      // Initialize notifications
+      try {
+        const { localNotificationsEnabled } = await NotificationService.initialize();
+        if (localNotificationsEnabled) {
+          const tasks = getTasks();
+          await NotificationService.reinitializeAllLocalNotifications(tasks);
+        }
+
+        // Setup notification listeners
+        NotificationService.setupPushNotificationListeners({
+          onReceive: () => {
+            // TODO: Handle notification received
+          },
+          onRespond: () => {
+            // TODO: Handle notification response
+          },
+        });
+      } catch (error) {
+        if (__DEV__) console.error('Failed to initialize notifications:', error);
+      }
+    })();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // Only run once on mount
 
   // Async font loading only occurs in development.
   if (!loaded) return null;

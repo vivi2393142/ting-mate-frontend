@@ -5,6 +5,7 @@ import type { ViewStyle } from 'react-native';
 import { Picker } from '@react-native-picker/picker';
 import { Switch, Text } from 'react-native-paper';
 
+import { MAX_RECURRENCE_INTERVAL } from '@/constants';
 import useAppTheme from '@/hooks/useAppTheme';
 import useRecurrenceUnitTranslation from '@/hooks/useRecurrenceUnitTranslation';
 import { useUserTextSize } from '@/store/useUserStore';
@@ -19,7 +20,7 @@ import {
   DaysOfWeekSelector,
 } from '@/components/screens/TaskForm/DaysOfSelector';
 
-const INTERVAL_OPTIONS = Array.from({ length: 30 }, (_, i) => i + 1);
+const INTERVAL_OPTIONS = Array.from({ length: MAX_RECURRENCE_INTERVAL }, (_, i) => i + 1);
 
 interface RecurrenceSelectorProps {
   recurrence?: RecurrenceRule;
