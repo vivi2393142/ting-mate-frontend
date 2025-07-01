@@ -93,6 +93,7 @@ const HomeScreen = () => {
       // Update task status in store
       completeTask(taskId, newStatus);
 
+      // TODO: notification - update too many notifications cause performance issue, change it to update only the changed task
       // Reinitialize all notifications after task status change
       if (newStatus) {
         const updatedTasks = getTasks();

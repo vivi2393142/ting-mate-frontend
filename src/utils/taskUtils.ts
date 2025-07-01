@@ -220,7 +220,6 @@ export const autoFillInvalidTaskFormData = (input: Partial<TaskFormData>): TaskF
 
   // Validate and fix any issues
   let result = TaskFormDataSchema.safeParse(filled);
-
   if (!result.success) {
     // If recurrence is invalid, use default
     if (result.error.issues.some((issue) => issue.path[0] === 'recurrence')) {

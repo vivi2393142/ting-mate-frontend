@@ -67,6 +67,7 @@ const RootLayout = () => {
         const { localNotificationsEnabled } = await NotificationService.initialize();
         if (localNotificationsEnabled) {
           const tasks = getTasks();
+          // TODO: notification - update too many notifications cause performance issue, change it to update only the changed task
           await NotificationService.reinitializeAllLocalNotifications(tasks);
         }
 

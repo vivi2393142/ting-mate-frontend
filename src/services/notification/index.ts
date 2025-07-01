@@ -3,7 +3,6 @@ import * as Notifications from 'expo-notifications';
 import { LocalNotificationService } from '@/services/notification/localNotifications';
 import { PushNotificationService } from '@/services/notification/pushNotifications';
 import { isNotificationData } from '@/services/notification/types';
-import type { Task } from '@/types/task';
 
 // ============================================================================
 // Main Notification Service
@@ -48,37 +47,6 @@ export const NotificationService = {
 
   setupPushNotificationListeners: PushNotificationService.setupNotificationListeners,
   removePushNotificationListeners: PushNotificationService.removeNotificationListeners,
-
-  // ============================================================================
-  // Combined Operations
-  // ============================================================================
-
-  /** Complete app startup notification setup */
-  async setupAppNotifications(tasks: Task[]): Promise<{
-    localNotificationsEnabled: boolean;
-    pushToken: string | null;
-    scheduledNotificationCount: number;
-  }> {
-    // Initialize all notification services
-    const { localNotificationsEnabled, pushToken } = await this.initialize();
-
-    // Reinitialize all local notifications
-    const scheduledNotificationIds = await this.reinitializeAllLocalNotifications(tasks);
-
-    return {
-      localNotificationsEnabled,
-      pushToken,
-      scheduledNotificationCount: scheduledNotificationIds.length,
-    };
-  },
-
-  /** Complete app shutdown notification cleanup */
-  async cleanupAppNotifications(): Promise<void> {
-    // Cancel all local notifications
-    await this.cancelAllLocalNotifications();
-
-    // TODO: Push notification listeners should be removed in component unmount
-  },
 };
 
 // ============================================================================

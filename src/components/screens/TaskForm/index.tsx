@@ -9,7 +9,6 @@ import EmojiPicker from 'rn-emoji-keyboard';
 
 import useAppTheme from '@/hooks/useAppTheme';
 import useRecurrenceText from '@/hooks/useRecurrenceText';
-import { NotificationService } from '@/services/notification';
 import { useMockTasks } from '@/store/useMockAPI';
 import { useUserTextSize } from '@/store/useUserStore';
 import { StaticTheme } from '@/theme';
@@ -85,7 +84,7 @@ const TaskForm = () => {
   const editTaskId = params.id as string;
 
   // TODO: remove mock tasks
-  const { getTask, deleteTask, updateTask, createTask, getTasks } = useMockTasks();
+  const { getTask, deleteTask, updateTask, createTask } = useMockTasks();
 
   const [initFormData, setInitFormData] = useState<TaskFormData | null>(null);
   const [formData, setFormData] = useState<TaskFormData | null>(null);
@@ -174,12 +173,12 @@ const TaskForm = () => {
       createTask(validFormData);
     }
 
+    // TODO: notification - update too many notifications cause performance issue, change it to update only the changed task
     // Reinitialize all next notifications after task changes
-    const updatedTasks = getTasks();
-    await NotificationService.reinitializeAllLocalNotifications(updatedTasks);
-
+    // const updatedTasks = getTasks();
+    // await NotificationService.reinitializeAllLocalNotifications(updatedTasks);
     router.back();
-  }, [editTaskId, formData, isEditMode, router, updateTask, createTask, getTasks]);
+  }, [editTaskId, formData, isEditMode, router, updateTask, createTask]);
 
   const handleCancel = useCallback(() => {
     const hasChanges = checkHasChanges(initFormData, formData);
@@ -212,15 +211,16 @@ const TaskForm = () => {
         onPress: async () => {
           deleteTask(editTaskId);
 
+          // TODO: notification - update too many notifications cause performance issue, change it to update only the changed task
           // Reinitialize all next notifications after task deletion
-          const updatedTasks = getTasks();
-          await NotificationService.reinitializeAllLocalNotifications(updatedTasks);
+          // const updatedTasks = getTasks();
+          // await NotificationService.reinitializeAllLocalNotifications(updatedTasks);
 
           router.back();
         },
       },
     ]);
-  }, [editTaskId, router, t, deleteTask, getTasks]);
+  }, [editTaskId, router, t, deleteTask]);
 
   // Get recurrence display text
   const recurrenceText = useMemo(() => {
