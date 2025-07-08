@@ -67,7 +67,6 @@ Notifications.setNotificationHandler({
     const data = notification.request.content.data;
 
     const getNotificationSettings = (enable: boolean) => ({
-      shouldShowAlert: enable,
       shouldPlaySound: enable,
       shouldSetBadge: enable,
       shouldShowBanner: enable,
