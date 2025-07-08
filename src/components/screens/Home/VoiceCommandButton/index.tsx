@@ -45,7 +45,9 @@ const VoiceCommandButton = ({ style, ...props }: VoiceCommandButtonProps) => {
   const [isVoiceModalOpen, setVoiceModalOpen] = useState(false);
   const [conversation, setConversation] = useState<{ role: ConversationRole; text: string }[]>([]);
 
+  // TODO: change to real API
   const mockVoiceCommand = useMockAPI((state) => state.mockVoiceCommand);
+  const [isConfirming] = useState(false);
 
   // Helper function to add message to conversation with sound and speech
   const addMessageToConversation = useCallback(
@@ -164,6 +166,10 @@ const VoiceCommandButton = ({ style, ...props }: VoiceCommandButtonProps) => {
     }
   }, [isRecording, startRecording, stopRecording]);
 
+  const handleConfirm = useCallback(() => {
+    // TODO: Call API to confirm task
+  }, []);
+
   useEffect(() => {
     if (isRecording) {
       const isAutoStop = (recorderState.durationMillis || 0) >= MAX_RECORDING_DURATION_MS;
@@ -172,7 +178,13 @@ const VoiceCommandButton = ({ style, ...props }: VoiceCommandButtonProps) => {
   }, [isRecording, stopRecording, recorderState.durationMillis]);
 
   return !isVoiceModalOpen ? (
-    <VoiceButton isRecording={false} onPress={handleVoiceButtonPress} style={style} {...props} />
+    <VoiceButton
+      isRecording={false}
+      onPress={handleVoiceButtonPress}
+      disabled={isConfirming}
+      style={style}
+      {...props}
+    />
   ) : (
     <VoiceModal
       isVisible={isVoiceModalOpen}
@@ -183,6 +195,8 @@ const VoiceCommandButton = ({ style, ...props }: VoiceCommandButtonProps) => {
       onClose={handleCloseVoiceModal}
       onVoiceButtonPress={handleModalVoiceButtonPress}
       voiceButtonProps={props}
+      isConfirming={isConfirming}
+      onConfirm={handleConfirm}
     />
   );
 };

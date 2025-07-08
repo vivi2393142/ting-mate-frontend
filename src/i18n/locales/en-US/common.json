@@ -49,5 +49,8 @@
   "userTextSize": {
     "Standard": "Standard",
     "Large": "Large"
-  }
+  },
+  "Yes": "Yes",
+  "No": "No",
+  "Done!": "Done!"
 }

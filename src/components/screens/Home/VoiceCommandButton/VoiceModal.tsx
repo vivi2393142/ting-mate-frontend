@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Animated, FlatList, Modal, Text, TouchableOpacity, View } from 'react-native';
 
@@ -9,6 +9,7 @@ import { createStyles, StyleRecord } from '@/utils/createStyles';
 
 import EllipsisLoading from '@/components/atoms/EllipsisLoading';
 import IconSymbol from '@/components/atoms/IconSymbol';
+import ThemedButton from '@/components/atoms/ThemedButton';
 import ThemedView from '@/components/atoms/ThemedView';
 import VoiceButton, {
   type VoiceButtonProps,
@@ -27,10 +28,12 @@ interface VoiceModalProps {
   isVisible: boolean;
   isRecording: boolean;
   isProcessing: boolean;
+  isConfirming?: boolean;
   conversation: { role: ConversationRole; text: string }[];
   recorderState: { metering?: number; durationMillis?: number };
   onClose: () => void;
   onVoiceButtonPress: () => void;
+  onConfirm?: () => Promise<void> | void;
   voiceButtonProps: Omit<VoiceButtonProps, 'isRecording' | 'onPress'>;
 }
 
@@ -38,10 +41,12 @@ const VoiceModal = ({
   isVisible,
   isRecording,
   isProcessing,
+  isConfirming = false,
   conversation,
   recorderState,
   onClose,
   onVoiceButtonPress,
+  onConfirm,
   voiceButtonProps,
 }: VoiceModalProps) => {
   const { t } = useTranslation('common');
@@ -53,6 +58,24 @@ const VoiceModal = ({
     if (isProcessing) result.push({ role: ConversationRole.LOADING, text: '...' });
     return result;
   }, [conversation, isProcessing]);
+
+  const [isConfirmed, setIsConfirmed] = useState(false);
+  const [isConfirmLoading, setIsConfirmLoading] = useState(false);
+
+  const handleConfirm = useCallback(async () => {
+    setIsConfirmLoading(true);
+    try {
+      await onConfirm?.();
+      setIsConfirmed(true);
+      setTimeout(() => {
+        setIsConfirmed(false);
+        setIsConfirmLoading(false);
+        onClose();
+      }, 1200);
+    } catch {
+      setIsConfirmLoading(false);
+    }
+  }, [onConfirm, onClose]);
 
   return (
     <Modal transparent animationType="fade" visible={isVisible} onRequestClose={onClose}>
@@ -80,6 +103,34 @@ const VoiceModal = ({
             )
           }
         />
+        {/* Confirmation */}
+        {isConfirming && (
+          <View style={styles.confirmationContainer}>
+            {isConfirmed ? (
+              <Text style={styles.confirmationText}>{t('Done!')}</Text>
+            ) : (
+              <View style={styles.confirmationButtonRow}>
+                <ThemedButton
+                  mode="contained"
+                  color="primary"
+                  style={styles.confirmButton}
+                  onPress={handleConfirm}
+                  loading={isConfirmLoading}
+                >
+                  {t('Yes')}
+                </ThemedButton>
+                <ThemedButton
+                  mode="outlined"
+                  color="error"
+                  style={styles.confirmButton}
+                  onPress={onClose}
+                >
+                  {t('No')}
+                </ThemedButton>
+              </View>
+            )}
+          </View>
+        )}
         {/* VoiceButton on modal */}
         <View style={styles.modalVoiceButtonContainer}>
           {isRecording && (
@@ -129,8 +180,11 @@ const getStyles = createStyles<
     | 'conversationContent'
     | 'modalVoiceButtonContainer'
     | 'listeningContainer'
-    | 'listeningVolumeShape',
-    'conversationItem' | 'conversationItemUser' | 'listeningText'
+    | 'listeningVolumeShape'
+    | 'confirmationContainer'
+    | 'confirmationButtonRow'
+    | 'confirmButton',
+    'conversationItem' | 'conversationItemUser' | 'listeningText' | 'confirmationText'
   >
 >({
   modalView: {
@@ -145,6 +199,7 @@ const getStyles = createStyles<
   },
   conversationList: {
     paddingTop: StaticTheme.spacing.xl,
+    flexGrow: 0,
   },
   conversationContent: {
     padding: StaticTheme.spacing.lg,
@@ -190,5 +245,22 @@ const getStyles = createStyles<
     borderRadius: StaticTheme.borderRadius.round,
     backgroundColor: ({ colors }) => colors.tertiaryContainer,
     opacity: 0.8,
+  },
+  confirmationContainer: {
+    paddingHorizontal: StaticTheme.spacing.lg,
+    marginTop: StaticTheme.spacing.sm,
+  },
+  confirmationButtonRow: {
+    gap: StaticTheme.spacing.md,
+    marginLeft: StaticTheme.spacing.xxl * 2,
+  },
+  confirmButton: {
+    paddingVertical: StaticTheme.spacing.sm,
+  },
+  confirmationText: {
+    color: ({ colors }) => colors.primary,
+    fontSize: ({ fonts }) => fonts.headlineMedium.fontSize,
+    fontWeight: ({ fonts }) => fonts.headlineMedium.fontWeight,
+    marginVertical: StaticTheme.spacing.xl,
   },
 });
