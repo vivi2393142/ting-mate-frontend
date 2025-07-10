@@ -5,11 +5,10 @@ import { useTranslation } from 'react-i18next';
 import { View } from 'react-native';
 import { ActivityIndicator, Divider, List, Text } from 'react-native-paper';
 
-import { useGetTasks } from '@/api/tasks';
+import { useGetTasks, useUpdateTaskStatus } from '@/api/tasks';
 import useAppTheme from '@/hooks/useAppTheme';
 import useCurrentTime from '@/hooks/useCurrentTime';
 import useRecurrenceText from '@/hooks/useRecurrenceText';
-import { NotificationService } from '@/services/notification';
 import { useUserDisplayMode, useUserTextSize } from '@/store/useUserStore';
 import { StaticTheme } from '@/theme';
 import type { Task } from '@/types/task';
@@ -22,6 +21,7 @@ import ThemedButton from '@/components/atoms/ThemedButton';
 import ExpandableSectionHeader from '@/components/screens/Home/ExpandableSectionHeader';
 import OtherTaskListItem from '@/components/screens/Home/OtherTaskListItem';
 import TaskListItem from '@/components/screens/Home/TaskListItem';
+import { Alert } from 'react-native';
 
 const HomeScreen = () => {
   const { t } = useTranslation('home');
@@ -41,6 +41,7 @@ const HomeScreen = () => {
   const [isOtherTasksExpanded, setIsOtherTasksExpanded] = useState(false);
 
   const { data: tasks = [], isLoading } = useGetTasks();
+  const updateTaskStatusMutation = useUpdateTaskStatus();
 
   // Separate tasks that should appear today vs other tasks
   const { todayTasks, otherTasks } = useMemo(() => {
@@ -87,18 +88,24 @@ const HomeScreen = () => {
 
   const handleUpdateTaskStatus = useCallback(
     async (taskId: string, newStatus: boolean) => {
-      // TODO: Implement task completion API
-      // For now, we'll just update notifications
-      // completeTask(taskId, newStatus);
-
-      // TODO: notification - update too many notifications cause performance issue, change it to update only the changed task
-      // Reinitialize all notifications after task status change
-      if (newStatus) {
-        // const updatedTasks = getTasks();
-        await NotificationService.reinitializeAllLocalNotifications(tasks);
-      }
+      updateTaskStatusMutation.mutate(
+        {
+          taskId,
+          completed: newStatus,
+        },
+        {
+          onSuccess: async () => {
+            // TODO: notification - update too many notifications cause performance issue, change it to update only the changed task
+            // Reinitialize all notifications after task status change
+            // await NotificationService.reinitializeAllLocalNotifications(tasks);
+          },
+          onError: () => {
+            Alert.alert(t('Failed to update task status'));
+          },
+        },
+      );
     },
-    [tasks],
+    [updateTaskStatusMutation, t],
   );
 
   const handleListItemPress = (taskId: string) => () => {

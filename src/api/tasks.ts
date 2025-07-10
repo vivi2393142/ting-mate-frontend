@@ -240,3 +240,28 @@ export const useDeleteTask = () => {
     },
   });
 };
+
+export const useUpdateTaskStatus = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({
+      taskId,
+      completed,
+    }: {
+      taskId: string;
+      completed: boolean;
+    }): Promise<Task> => {
+      const res = await axiosClientWithAuth.put(`/tasks/${taskId}/status`, {
+        completed,
+      });
+      const validatedData = APITaskResponseSchema.parse(res.data);
+      return transformTaskFromAPI(validatedData.task);
+    },
+    onSuccess: (_, { taskId }) => {
+      // Invalidate and refetch tasks list
+      queryClient.invalidateQueries({ queryKey: ['tasks'] });
+      queryClient.invalidateQueries({ queryKey: ['task', taskId] });
+    },
+  });
+};
