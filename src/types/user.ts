@@ -34,8 +34,8 @@ export interface User {
   email: string;
   name: string;
   role: Role;
-  settings: UserSettings;
   /* A caregiver can only link to one carereceiver,
- while a carereceiver can link to multiple caregivers */
+  while a carereceiver can link to multiple caregivers */
   linked: string[];
+  settings: UserSettings;
 }

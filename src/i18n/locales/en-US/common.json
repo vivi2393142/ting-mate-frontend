@@ -2,11 +2,13 @@
   "Auto-stopped due to time limit": "Auto-stopped due to time limit",
   "Connect": "Connect",
   "Daily": "Daily",
+  "Done!": "Done!",
   "End Conversation": "End Conversation",
   "Failed to stop recording.": "Failed to stop recording.",
   "Go to home screen!": "Go to home screen!",
   "Home": "Home",
   "I'm listening": "I'm listening",
+  "No": "No",
   "No audio file found.": "No audio file found.",
   "Oops!": "Oops!",
   "Permission to access microphone was denied": "Permission to access microphone was denied",
@@ -15,6 +17,7 @@
   "Stop Voice Command": "Stop Voice Command",
   "Theme Test": "Theme Test",
   "This screen does not exist.": "This screen  does not exist.",
+  "Yes": "Yes",
   "[Voice message]": "[Voice message]",
   "dayOfWeek": {
     "Mon": "Mon",
@@ -49,8 +52,5 @@
   "userTextSize": {
     "Standard": "Standard",
     "Large": "Large"
-  },
-  "Yes": "Yes",
-  "No": "No",
-  "Done!": "Done!"
+  }
 }

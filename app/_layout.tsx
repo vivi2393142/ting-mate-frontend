@@ -3,16 +3,18 @@ import { type ReactNode, useEffect, useMemo } from 'react';
 import 'react-native-reanimated';
 
 import { ThemeProvider } from '@react-navigation/native';
+import { QueryClientProvider } from '@tanstack/react-query';
 import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { configureFonts, PaperProvider } from 'react-native-paper';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
+import queryClient from '@/api/queryClient';
 import useColorScheme from '@/hooks/useColorScheme';
 import '@/i18n';
 import { NotificationService } from '@/services/notification';
 import useMockAPI from '@/store/useMockAPI';
-import { useUserTextSize } from '@/store/useUserStore';
+import useUserStore, { useUserTextSize } from '@/store/useUserStore';
 import {
   customDarkTheme,
   iconSize as customIconSize,
@@ -56,6 +58,12 @@ const RootLayout = () => {
 
   const { t } = useTranslation('common');
 
+  // Initialize anonymousId and token on app start
+  useEffect(() => {
+    useUserStore.getState().initAnonymousId();
+    useUserStore.getState().initToken();
+  }, []);
+
   // Initialize mock data and notifications when the app starts
   useEffect(() => {
     (async () => {
@@ -91,13 +99,15 @@ const RootLayout = () => {
   if (!loaded) return null;
   return (
     <SafeAreaProvider>
-      <CombinedThemeProvider>
-        <Stack>
-          <Stack.Screen name="(tabs)" options={{ headerShown: false, title: t('Home') }} />
-          <Stack.Screen name="+not-found" />
-        </Stack>
-        <StatusBar style={colorScheme === 'dark' ? 'light' : 'dark'} />
-      </CombinedThemeProvider>
+      <QueryClientProvider client={queryClient}>
+        <CombinedThemeProvider>
+          <Stack>
+            <Stack.Screen name="(tabs)" options={{ headerShown: false, title: t('Home') }} />
+            <Stack.Screen name="+not-found" />
+          </Stack>
+          <StatusBar style={colorScheme === 'dark' ? 'light' : 'dark'} />
+        </CombinedThemeProvider>
+      </QueryClientProvider>
     </SafeAreaProvider>
   );
 };
