@@ -1,22 +1,56 @@
+import { axiosClient } from '@/api/axiosClient';
+import API_PATH from '@/api/path';
 import useUserStore from '@/store/useUserStore';
+import { Role } from '@/types/user';
 import { useMutation, type UseMutationOptions, useQueryClient } from '@tanstack/react-query';
 import { z } from 'zod';
 
-import { axiosClient } from '@/api/axiosClient';
-import API_PATH from '@/api/path';
-import { Role } from '@/types/user';
+/* =============================================================================
+ * Type Definitions
+ * ============================================================================= */
 
 interface LoginRequest {
   email: string;
   password: string;
 }
 
+interface RegisterRequest {
+  id: string;
+  email: string;
+  role: Role;
+  password: string;
+}
+
+/* =============================================================================
+ * API Schema Definitions
+ * ============================================================================= */
+
 const LoginResponseSchema = z.object({
   access_token: z.string(),
   anonymous_id: z.string(),
 });
 
+const RegisterResponseSchema = z.object({
+  message: z.string(),
+  user: z.object({
+    id: z.string(),
+    email: z.string(),
+    role: z.enum([Role.CARERECEIVER, Role.CAREGIVER]),
+  }),
+  access_token: z.string(),
+  anonymous_id: z.string(),
+});
+
+/* =============================================================================
+ * Type Inferences
+ * ============================================================================= */
+
 type LoginResponse = z.infer<typeof LoginResponseSchema>;
+type RegisterResponse = z.infer<typeof RegisterResponseSchema>;
+
+/* =============================================================================
+ * API Hooks
+ * ============================================================================= */
 
 export const useLogin = (
   options?: Omit<UseMutationOptions<LoginResponse, Error, LoginRequest>, 'mutationFn'>,
@@ -63,26 +97,6 @@ export const useLogout = () => {
     queryClient.invalidateQueries();
   };
 };
-
-interface RegisterRequest {
-  id: string;
-  email: string;
-  role: Role;
-  password: string;
-}
-
-const RegisterResponseSchema = z.object({
-  message: z.string(),
-  user: z.object({
-    id: z.string(),
-    email: z.string(),
-    role: z.enum([Role.CARERECEIVER, Role.CAREGIVER]),
-  }),
-  access_token: z.string(),
-  anonymous_id: z.string(),
-});
-
-type RegisterResponse = z.infer<typeof RegisterResponseSchema>;
 
 export const useRegister = (
   options?: Omit<UseMutationOptions<RegisterResponse, Error, RegisterRequest>, 'mutationFn'>,

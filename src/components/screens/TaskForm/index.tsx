@@ -7,6 +7,7 @@ import { Alert, Button, Platform } from 'react-native';
 import { Divider } from 'react-native-paper';
 import EmojiPicker from 'rn-emoji-keyboard';
 
+import { useCreateTask } from '@/api/tasks';
 import useAppTheme from '@/hooks/useAppTheme';
 import useRecurrenceText from '@/hooks/useRecurrenceText';
 import { useMockTasks } from '@/store/useMockAPI';
@@ -84,7 +85,9 @@ const TaskForm = () => {
   const editTaskId = params.id as string;
 
   // TODO: remove mock tasks
-  const { getTask, deleteTask, updateTask, createTask } = useMockTasks();
+  const { getTask, deleteTask, updateTask } = useMockTasks();
+
+  const createTaskMutation = useCreateTask();
 
   const [initFormData, setInitFormData] = useState<TaskFormData | null>(null);
   const [formData, setFormData] = useState<TaskFormData | null>(null);
@@ -170,15 +173,18 @@ const TaskForm = () => {
     if (isEditMode) {
       updateTask(editTaskId, validFormData);
     } else {
-      createTask(validFormData);
+      createTaskMutation.mutate(validFormData, {
+        onSuccess: () => {
+          router.back();
+          // TODO: notification - update too many notifications cause performance issue, change it to update only the changed task
+          // await NotificationService.reinitializeAllLocalNotifications(updatedTasks);
+        },
+        onError: () => {
+          Alert.alert('Error', t('Failed to create task. Please try again.'));
+        },
+      });
     }
-
-    // TODO: notification - update too many notifications cause performance issue, change it to update only the changed task
-    // Reinitialize all next notifications after task changes
-    // const updatedTasks = getTasks();
-    // await NotificationService.reinitializeAllLocalNotifications(updatedTasks);
-    router.back();
-  }, [editTaskId, formData, isEditMode, router, updateTask, createTask]);
+  }, [formData, isEditMode, updateTask, editTaskId, createTaskMutation, router, t]);
 
   const handleCancel = useCallback(() => {
     const hasChanges = checkHasChanges(initFormData, formData);

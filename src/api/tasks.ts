@@ -1,22 +1,27 @@
-import { useQuery, type UseQueryOptions } from '@tanstack/react-query';
-import { z } from 'zod';
-
 import { axiosClientWithAuth } from '@/api/axiosClient';
 import type { DayOfWeek, RecurrenceRule, RecurrenceUnit, ReminderTime, Task } from '@/types/task';
+import { useMutation, useQuery, useQueryClient, type UseQueryOptions } from '@tanstack/react-query';
+import { z } from 'zod';
 
-// API response types that match the backend structure
+/* =============================================================================
+ * API Schema Definitions
+ * ============================================================================= */
+
+// Reminder time schema
 const APIReminderTimeSchema = z.object({
   hour: z.number().min(0).max(23),
   minute: z.number().min(0).max(59),
 });
 
+// Recurrence rule schema
 const APIRecurrenceRuleSchema = z.object({
   interval: z.number().positive(),
   unit: z.enum(['DAY', 'WEEK', 'MONTH']),
-  days_of_week: z.array(z.number().min(0).max(6)).optional(),
-  days_of_month: z.array(z.number().min(1).max(31)).optional(),
+  days_of_week: z.array(z.number().min(0).max(6)).nullable().optional(),
+  days_of_month: z.array(z.number().min(1).max(31)).nullable().optional(),
 });
 
+// Task schema
 const APITaskSchema = z.object({
   id: z.string(),
   title: z.string(),
@@ -32,15 +37,28 @@ const APITaskSchema = z.object({
   completed_by: z.string().nullable().optional(), // user id
 });
 
-// Basic response schema that only validates the structure, not individual tasks
+// Task list response schema
 const APITaskListResponseSchema = z.object({
   tasks: z.array(z.unknown()), // Accept any array structure
 });
 
-// Type definitions for API responses
+/* =============================================================================
+ * Type Definitions
+ * ============================================================================= */
+
 type APIReminderTime = z.infer<typeof APIReminderTimeSchema>;
 type APIRecurrenceRule = z.infer<typeof APIRecurrenceRuleSchema>;
 type APITask = z.infer<typeof APITaskSchema>;
+type APICreateTaskRequest = {
+  title: string;
+  icon: string;
+  reminder_time: APIReminderTime;
+  recurrence: APIRecurrenceRule | null | undefined;
+};
+
+/* =============================================================================
+ * Data Transform Functions
+ * ============================================================================= */
 
 // Transform API reminder time to frontend ReminderTime
 const transformReminderTime = (apiReminderTime: APIReminderTime): ReminderTime => ({
@@ -52,8 +70,8 @@ const transformReminderTime = (apiReminderTime: APIReminderTime): ReminderTime =
 const transformRecurrenceRule = (apiRecurrence: APIRecurrenceRule): RecurrenceRule => ({
   interval: apiRecurrence.interval,
   unit: apiRecurrence.unit as RecurrenceUnit,
-  daysOfWeek: apiRecurrence.days_of_week as DayOfWeek[] | undefined,
-  daysOfMonth: apiRecurrence.days_of_month,
+  daysOfWeek: (apiRecurrence.days_of_week as DayOfWeek[]) || undefined,
+  daysOfMonth: apiRecurrence.days_of_month || undefined,
 });
 
 // Transform API task to frontend Task
@@ -70,6 +88,33 @@ const transformTaskFromAPI = (apiTask: APITask): Task => ({
   completedBy: apiTask.completed_by || undefined,
 });
 
+// Transform frontend TaskFormData to API request format
+const transformTaskFormDataToAPI = (formData: {
+  title: string;
+  icon: string;
+  reminderTime: ReminderTime;
+  recurrence?: RecurrenceRule;
+}): APICreateTaskRequest => ({
+  title: formData.title,
+  icon: formData.icon,
+  reminder_time: {
+    hour: formData.reminderTime.hour,
+    minute: formData.reminderTime.minute,
+  },
+  recurrence: formData.recurrence
+    ? {
+        interval: formData.recurrence.interval,
+        unit: formData.recurrence.unit,
+        days_of_week: formData.recurrence.daysOfWeek,
+        days_of_month: formData.recurrence.daysOfMonth,
+      }
+    : null,
+});
+
+/* =============================================================================
+ * Utility Functions
+ * ============================================================================= */
+
 // Safely validate and transform a single task
 const safeTransformTask = (rawTask: unknown): Task | null => {
   try {
@@ -80,6 +125,10 @@ const safeTransformTask = (rawTask: unknown): Task | null => {
     return null;
   }
 };
+
+/* =============================================================================
+ * API Hooks
+ * ============================================================================= */
 
 export const useGetTasks = (options?: Omit<UseQueryOptions<Task[]>, 'queryKey' | 'queryFn'>) =>
   useQuery<Task[]>({
@@ -98,3 +147,23 @@ export const useGetTasks = (options?: Omit<UseQueryOptions<Task[]>, 'queryKey' |
     },
     ...options,
   });
+
+export const useCreateTask = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (formData: {
+      title: string;
+      icon: string;
+      reminderTime: ReminderTime;
+      recurrence?: RecurrenceRule;
+    }): Promise<void> => {
+      const requestData = transformTaskFormDataToAPI(formData);
+      await axiosClientWithAuth.post('/tasks', requestData);
+    },
+    onSuccess: () => {
+      // Invalidate and refetch tasks list
+      queryClient.invalidateQueries({ queryKey: ['tasks'] });
+    },
+  });
+};

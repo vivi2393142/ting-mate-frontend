@@ -1,9 +1,12 @@
-import { useQuery, type UseQueryOptions } from '@tanstack/react-query';
-import { z } from 'zod';
-
 import { axiosClientWithAuth } from '@/api/axiosClient';
 import useUserStore from '@/store/useUserStore';
 import { type ReminderSettings, Role, UserDisplayMode, UserTextSize } from '@/types/user';
+import { useQuery, type UseQueryOptions } from '@tanstack/react-query';
+import { z } from 'zod';
+
+/* =============================================================================
+ * API Schema Definitions
+ * ============================================================================= */
 
 export const UserTextSizeSchema = z.nativeEnum(UserTextSize);
 export const UserDisplayModeSchema = z.nativeEnum(UserDisplayMode);
@@ -38,7 +41,25 @@ const UserSchema = z.object({
   settings: UserSettingsSchema,
 });
 
+/* =============================================================================
+ * Type Inferences
+ * ============================================================================= */
+
 type UserResponse = z.infer<typeof UserSchema>;
+
+/* =============================================================================
+ * Default Values
+ * ============================================================================= */
+
+const defaultReminderSettings: ReminderSettings = {
+  taskTimeReminder: true,
+  overdueReminder: { enabled: true, delayMinutes: 30, repeat: false },
+  safeZoneReminder: false,
+};
+
+/* =============================================================================
+ * API Hooks
+ * ============================================================================= */
 
 export const useCurrentUser = (
   options?: Omit<UseQueryOptions<UserResponse>, 'queryKey' | 'queryFn'>,
@@ -52,11 +73,9 @@ export const useCurrentUser = (
     ...options,
   });
 
-const defaultReminderSettings: ReminderSettings = {
-  taskTimeReminder: true,
-  overdueReminder: { enabled: true, delayMinutes: 30, repeat: false },
-  safeZoneReminder: false,
-};
+/* =============================================================================
+ * Utility Functions
+ * ============================================================================= */
 
 const updateUser = useUserStore.getState().setUser;
 export const syncCurrentUserToStore = (user: UserResponse) => {
