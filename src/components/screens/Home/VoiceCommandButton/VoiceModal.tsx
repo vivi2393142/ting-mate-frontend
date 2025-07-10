@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Animated, FlatList, Modal, Text, TouchableOpacity, View } from 'react-native';
 
@@ -14,6 +14,15 @@ import ThemedView from '@/components/atoms/ThemedView';
 import VoiceButton, {
   type VoiceButtonProps,
 } from '@/components/screens/Home/VoiceCommandButton/VoiceButton';
+
+const suggestions = [
+  'Remind me to take my pills at 2 every day',
+  'Change my pill reminder to 4 p.m.',
+  "Can you delete the 'take medicine' task?",
+];
+
+const suggestionHeight = 200;
+const animationDuration = 350;
 
 export enum ConversationRole {
   USER = 'USER',
@@ -77,9 +86,30 @@ const VoiceModal = ({
     }
   }, [onConfirm, onClose]);
 
+  // Animated height for suggestion area
+  const heightAnim = useRef(new Animated.Value(suggestionHeight)).current; // Adjust based on chip count and spacing
+  const hasConversation = useMemo(() => conversation.length > 0, [conversation]);
+
+  useEffect(() => {
+    Animated.timing(heightAnim, {
+      toValue: hasConversation ? 0 : suggestionHeight,
+      duration: animationDuration,
+      useNativeDriver: false, // height cannot use native driver
+    }).start();
+  }, [hasConversation, heightAnim]);
+
   return (
     <Modal transparent animationType="fade" visible={isVisible} onRequestClose={onClose}>
       <ThemedView isRoot style={styles.modalView}>
+        {/* Suggestions with animated height */}
+        <Animated.View style={[styles.suggestionWrapper, { height: heightAnim }]}>
+          <Text style={styles.suggestionTitle}>Try asking me...</Text>
+          {suggestions.map((q, i) => (
+            <Text key={i} style={styles.suggestionChip}>
+              {q}
+            </Text>
+          ))}
+        </Animated.View>
         {/* Conversation */}
         <FlatList
           data={mergedConversation}
@@ -183,8 +213,14 @@ const getStyles = createStyles<
     | 'listeningVolumeShape'
     | 'confirmationContainer'
     | 'confirmationButtonRow'
-    | 'confirmButton',
-    'conversationItem' | 'conversationItemUser' | 'listeningText' | 'confirmationText'
+    | 'confirmButton'
+    | 'suggestionWrapper',
+    | 'conversationItem'
+    | 'conversationItemUser'
+    | 'listeningText'
+    | 'confirmationText'
+    | 'suggestionTitle'
+    | 'suggestionChip'
   >
 >({
   modalView: {
@@ -209,7 +245,8 @@ const getStyles = createStyles<
     alignSelf: 'flex-start',
     backgroundColor: ({ colors }) => colors.background,
     borderRadius: StaticTheme.borderRadius.s,
-    padding: StaticTheme.spacing.md,
+    paddingHorizontal: StaticTheme.spacing.sm * 1.5,
+    paddingVertical: StaticTheme.spacing.sm,
     maxWidth: '80%',
     fontSize: ({ fonts }) => fonts.bodyLarge.fontSize,
     fontWeight: ({ fonts }) => fonts.bodyLarge.fontWeight,
@@ -262,5 +299,30 @@ const getStyles = createStyles<
     fontSize: ({ fonts }) => fonts.headlineMedium.fontSize,
     fontWeight: ({ fonts }) => fonts.headlineMedium.fontWeight,
     marginVertical: StaticTheme.spacing.xl,
+  },
+  suggestionWrapper: {
+    marginHorizontal: StaticTheme.spacing.lg,
+    alignSelf: 'stretch',
+    overflow: 'hidden',
+    gap: StaticTheme.spacing.sm * 1.5,
+  },
+  suggestionTitle: {
+    paddingTop: StaticTheme.spacing.md,
+    marginBottom: StaticTheme.spacing.xs,
+    color: ({ colors }) => colors.onPrimary,
+    fontSize: ({ fonts }) => fonts.titleMedium.fontSize,
+    fontWeight: ({ fonts }) => fonts.titleMedium.fontWeight,
+    lineHeight: ({ fonts }) => fonts.titleMedium.lineHeight,
+  },
+  suggestionChip: {
+    borderRadius: StaticTheme.borderRadius.s,
+    paddingHorizontal: StaticTheme.spacing.sm * 1.5,
+    paddingVertical: StaticTheme.spacing.sm,
+    alignSelf: 'flex-start',
+    backgroundColor: ({ colors }) => colors.tertiaryContainer,
+    color: ({ colors }) => colors.onSurfaceVariant,
+    fontSize: ({ fonts }) => fonts.bodyLarge.fontSize,
+    fontWeight: ({ fonts }) => fonts.bodyLarge.fontWeight,
+    lineHeight: ({ fonts }) => fonts.bodyLarge.lineHeight,
   },
 });
