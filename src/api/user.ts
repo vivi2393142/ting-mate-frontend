@@ -1,8 +1,9 @@
+import { useQuery, type UseQueryOptions } from '@tanstack/react-query';
+import { z } from 'zod';
+
 import { axiosClientWithAuth } from '@/api/axiosClient';
 import useUserStore from '@/store/useUserStore';
 import { type ReminderSettings, Role, UserDisplayMode, UserTextSize } from '@/types/user';
-import { useQuery, type UseQueryOptions } from '@tanstack/react-query';
-import { z } from 'zod';
 
 export const UserTextSizeSchema = z.nativeEnum(UserTextSize);
 export const UserDisplayModeSchema = z.nativeEnum(UserDisplayMode);

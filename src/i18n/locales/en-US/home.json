@@ -1,7 +1,10 @@
 {
   "Add Task": "Add Task",
+  "Add a task to get started!": "Add a task to get started!",
   "Collapse Completed": "Collapse Completed",
+  "Loading tasks...": "Loading tasks...",
   "Next Occurrence": "Next",
   "Other Tasks": "Other Tasks",
-  "Todays Tasks": "Today's Tasks"
+  "Todays Tasks": "Today's Tasks",
+  "You haven't added any tasks yet.": "You haven't added any tasks yet."
 }

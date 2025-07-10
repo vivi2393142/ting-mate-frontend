@@ -3,13 +3,13 @@ import { Fragment, useCallback, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import { View } from 'react-native';
-import { Divider, List, Text } from 'react-native-paper';
+import { ActivityIndicator, Divider, List, Text } from 'react-native-paper';
 
+import { useGetTasks } from '@/api/tasks';
 import useAppTheme from '@/hooks/useAppTheme';
 import useCurrentTime from '@/hooks/useCurrentTime';
 import useRecurrenceText from '@/hooks/useRecurrenceText';
 import { NotificationService } from '@/services/notification';
-import { useMockTasks } from '@/store/useMockAPI';
 import { useUserDisplayMode, useUserTextSize } from '@/store/useUserStore';
 import { StaticTheme } from '@/theme';
 import type { Task } from '@/types/task';
@@ -30,9 +30,6 @@ const HomeScreen = () => {
   const userTextSize = useUserTextSize();
   const userDisplayMode = useUserDisplayMode();
 
-  // TODO: remove useMockTasks after the API is implemented
-  const { getTasks, completeTask } = useMockTasks();
-
   const theme = useAppTheme();
   const styleParams = useMemo(() => ({ userTextSize }), [userTextSize]);
   const styles = getStyles(theme, styleParams);
@@ -43,7 +40,7 @@ const HomeScreen = () => {
   const [isStackExpanded, setIsStackExpanded] = useState(false);
   const [isOtherTasksExpanded, setIsOtherTasksExpanded] = useState(false);
 
-  const tasks = getTasks();
+  const { data: tasks = [], isLoading } = useGetTasks();
 
   // Separate tasks that should appear today vs other tasks
   const { todayTasks, otherTasks } = useMemo(() => {
@@ -90,17 +87,18 @@ const HomeScreen = () => {
 
   const handleUpdateTaskStatus = useCallback(
     async (taskId: string, newStatus: boolean) => {
-      // Update task status in store
-      completeTask(taskId, newStatus);
+      // TODO: Implement task completion API
+      // For now, we'll just update notifications
+      // completeTask(taskId, newStatus);
 
       // TODO: notification - update too many notifications cause performance issue, change it to update only the changed task
       // Reinitialize all notifications after task status change
       if (newStatus) {
-        const updatedTasks = getTasks();
-        await NotificationService.reinitializeAllLocalNotifications(updatedTasks);
+        // const updatedTasks = getTasks();
+        await NotificationService.reinitializeAllLocalNotifications(tasks);
       }
     },
-    [completeTask, getTasks],
+    [tasks],
   );
 
   const handleListItemPress = (taskId: string) => () => {
@@ -150,41 +148,57 @@ const HomeScreen = () => {
       <Text variant="headlineSmall" style={styles.headline}>
         {t('Todays Tasks')}
       </Text>
-      {/* Today's tasks */}
-      <List.Section style={styles.listSection}>
-        {sortedTasks.map((task, idx) => {
-          const isMissed = !task.completed && isTaskMissed(task.reminderTime, currentTime);
-          const isLastCompleted = task.completed && !sortedTasks?.[idx + 1]?.completed;
-          const taskTemplate = tasks.find((t) => t.id === task.id);
-          const recurrenceText = taskTemplate?.recurrence
-            ? tRecurrenceText(taskTemplate.recurrence)
-            : '';
-          const shouldShowRecurrence = taskTemplate && !!taskTemplate?.recurrence;
-          return (
-            <Fragment key={task.id}>
-              <TaskListItem
-                {...task}
-                isMissed={isMissed}
-                isLastCompleted={isLastCompleted}
-                isStackExpanded={isStackExpanded}
-                recurrenceText={recurrenceText}
-                shouldShowRecurrence={shouldShowRecurrence}
-                onPress={handleListItemPress(task.id)}
-                onCheck={handleCheckboxPress(task.id, !task.completed)}
-                onStackPress={handleStackPress}
-              />
-              {isLastCompleted && isStackExpanded && (
-                <ExpandableSectionHeader
-                  title={t('Collapse Completed')}
-                  chevronType="up"
-                  isExpanded={isStackExpanded}
-                  onPress={handleStackPress}
+      {isLoading && (
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator size={'small'} />
+          <Text style={[styles.hintText, { marginTop: StaticTheme.spacing.sm }]}>
+            {t('Loading tasks...')}
+          </Text>
+        </View>
+      )}
+      {!isLoading && sortedTasks.length === 0 && (
+        <View style={styles.emptyContainer}>
+          <Text style={styles.hintText}>{t("You haven't added any tasks yet.")}</Text>
+          <Text style={styles.hintText}>{t('Add a task to get started!')}</Text>
+        </View>
+      )}
+      {!isLoading && sortedTasks.length > 0 && (
+        /* Today's tasks */
+        <List.Section style={styles.listSection}>
+          {sortedTasks.map((task, idx) => {
+            const isMissed = !task.completed && isTaskMissed(task.reminderTime, currentTime);
+            const isLastCompleted = task.completed && !sortedTasks?.[idx + 1]?.completed;
+            const taskTemplate = tasks.find((t) => t.id === task.id);
+            const recurrenceText = taskTemplate?.recurrence
+              ? tRecurrenceText(taskTemplate.recurrence)
+              : '';
+            const shouldShowRecurrence = taskTemplate && !!taskTemplate?.recurrence;
+            return (
+              <Fragment key={task.id}>
+                <TaskListItem
+                  {...task}
+                  isMissed={isMissed}
+                  isLastCompleted={isLastCompleted}
+                  isStackExpanded={isStackExpanded}
+                  recurrenceText={recurrenceText}
+                  shouldShowRecurrence={shouldShowRecurrence}
+                  onPress={handleListItemPress(task.id)}
+                  onCheck={handleCheckboxPress(task.id, !task.completed)}
+                  onStackPress={handleStackPress}
                 />
-              )}
-            </Fragment>
-          );
-        })}
-      </List.Section>
+                {isLastCompleted && isStackExpanded && (
+                  <ExpandableSectionHeader
+                    title={t('Collapse Completed')}
+                    chevronType="up"
+                    isExpanded={isStackExpanded}
+                    onPress={handleStackPress}
+                  />
+                )}
+              </Fragment>
+            );
+          })}
+        </List.Section>
+      )}
       {/* Other tasks section */}
       {otherTasks.length > 0 && (
         <Fragment>
@@ -229,7 +243,16 @@ interface StyleParams {
 }
 
 const getStyles = createStyles<
-  StyleRecord<'root' | 'listSection' | 'divider' | 'addTaskButton' | 'bottomSpacer', 'headline'>,
+  StyleRecord<
+    | 'root'
+    | 'listSection'
+    | 'divider'
+    | 'addTaskButton'
+    | 'bottomSpacer'
+    | 'loadingContainer'
+    | 'emptyContainer',
+    'headline' | 'hintText'
+  >,
   StyleParams
 >({
   root: {
@@ -251,5 +274,23 @@ const getStyles = createStyles<
   bottomSpacer: {
     backgroundColor: 'transparent',
     height: (_, { userTextSize }) => (userTextSize === UserTextSize.LARGE ? 48 : 36),
+  },
+  loadingContainer: {
+    justifyContent: 'center',
+    alignItems: 'center',
+    gap: StaticTheme.spacing.md,
+    paddingVertical: StaticTheme.spacing.lg,
+  },
+  emptyContainer: {
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingVertical: StaticTheme.spacing.lg,
+    gap: StaticTheme.spacing.xs,
+  },
+  hintText: {
+    color: ({ colors }) => colors.onSurfaceVariant,
+    fontSize: ({ fonts }) => fonts.bodyLarge.fontSize,
+    fontWeight: ({ fonts }) => fonts.bodyLarge.fontWeight,
+    lineHeight: ({ fonts }) => fonts.bodyLarge.lineHeight,
   },
 });
