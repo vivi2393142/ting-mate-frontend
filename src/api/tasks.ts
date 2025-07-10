@@ -226,3 +226,17 @@ export const useUpdateTask = () => {
     },
   });
 };
+
+export const useDeleteTask = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (taskId: string): Promise<void> => {
+      await axiosClientWithAuth.delete(`/tasks/${taskId}`);
+    },
+    onSuccess: () => {
+      // Invalidate and refetch tasks list
+      queryClient.invalidateQueries({ queryKey: ['tasks'] });
+    },
+  });
+};

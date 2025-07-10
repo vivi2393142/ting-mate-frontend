@@ -7,10 +7,9 @@ import { ActivityIndicator, Alert, Button, Platform } from 'react-native';
 import { Divider } from 'react-native-paper';
 import EmojiPicker from 'rn-emoji-keyboard';
 
-import { useCreateTask, useGetTask, useUpdateTask } from '@/api/tasks';
+import { useCreateTask, useDeleteTask, useGetTask, useUpdateTask } from '@/api/tasks';
 import useAppTheme from '@/hooks/useAppTheme';
 import useRecurrenceText from '@/hooks/useRecurrenceText';
-import { useMockTasks } from '@/store/useMockAPI';
 import { useUserTextSize } from '@/store/useUserStore';
 import { StaticTheme } from '@/theme';
 import { type RecurrenceRule, RecurrenceUnit, type TaskFormData } from '@/types/task';
@@ -84,11 +83,9 @@ const TaskForm = () => {
   const isEditMode = params.id !== undefined;
   const editTaskId = params.id as string;
 
-  // TODO: remove mock tasks
-  const { deleteTask } = useMockTasks();
-
   const createTaskMutation = useCreateTask();
   const updateTaskMutation = useUpdateTask();
+  const deleteTaskMutation = useDeleteTask();
   const { data: editingTask, isLoading: isLoadingTask } = useGetTask(editTaskId, {
     enabled: isEditMode,
   });
@@ -234,18 +231,23 @@ const TaskForm = () => {
         text: t('Delete'),
         style: 'destructive',
         onPress: async () => {
-          deleteTask(editTaskId);
+          deleteTaskMutation.mutate(editTaskId, {
+            onSuccess: () => {
+              // TODO: notification - update too many notifications cause performance issue, change it to update only the changed task
+              // Reinitialize all next notifications after task deletion
+              // const updatedTasks = getTasks();
+              // await NotificationService.reinitializeAllLocalNotifications(updatedTasks);
 
-          // TODO: notification - update too many notifications cause performance issue, change it to update only the changed task
-          // Reinitialize all next notifications after task deletion
-          // const updatedTasks = getTasks();
-          // await NotificationService.reinitializeAllLocalNotifications(updatedTasks);
-
-          router.back();
+              router.back();
+            },
+            onError: () => {
+              Alert.alert('Error', t('Failed to delete task. Please try again.'));
+            },
+          });
         },
       },
     ]);
-  }, [editTaskId, router, t, deleteTask]);
+  }, [editTaskId, router, t, deleteTaskMutation]);
 
   // Get recurrence display text
   const recurrenceText = useMemo(() => {
