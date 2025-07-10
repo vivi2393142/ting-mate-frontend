@@ -3,11 +3,11 @@ import dayjs from 'dayjs';
 import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
 import { Fragment, useCallback, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Alert, Button, Platform } from 'react-native';
+import { ActivityIndicator, Alert, Button, Platform } from 'react-native';
 import { Divider } from 'react-native-paper';
 import EmojiPicker from 'rn-emoji-keyboard';
 
-import { useCreateTask } from '@/api/tasks';
+import { useCreateTask, useGetTask, useUpdateTask } from '@/api/tasks';
 import useAppTheme from '@/hooks/useAppTheme';
 import useRecurrenceText from '@/hooks/useRecurrenceText';
 import { useMockTasks } from '@/store/useMockAPI';
@@ -85,9 +85,13 @@ const TaskForm = () => {
   const editTaskId = params.id as string;
 
   // TODO: remove mock tasks
-  const { getTask, deleteTask, updateTask } = useMockTasks();
+  const { deleteTask } = useMockTasks();
 
   const createTaskMutation = useCreateTask();
+  const updateTaskMutation = useUpdateTask();
+  const { data: editingTask, isLoading: isLoadingTask } = useGetTask(editTaskId, {
+    enabled: isEditMode,
+  });
 
   const [initFormData, setInitFormData] = useState<TaskFormData | null>(null);
   const [formData, setFormData] = useState<TaskFormData | null>(null);
@@ -171,7 +175,22 @@ const TaskForm = () => {
     const validFormData = autoFillInvalidTaskFormData(formData);
 
     if (isEditMode) {
-      updateTask(editTaskId, validFormData);
+      updateTaskMutation.mutate(
+        {
+          taskId: editTaskId,
+          updates: validFormData,
+        },
+        {
+          onSuccess: () => {
+            router.back();
+            // TODO: notification - update too many notifications cause performance issue, change it to update only the changed task
+            // await NotificationService.reinitializeAllLocalNotifications(updatedTasks);
+          },
+          onError: () => {
+            Alert.alert('Error', t('Failed to update task. Please try again.'));
+          },
+        },
+      );
     } else {
       createTaskMutation.mutate(validFormData, {
         onSuccess: () => {
@@ -184,7 +203,7 @@ const TaskForm = () => {
         },
       });
     }
-  }, [formData, isEditMode, updateTask, editTaskId, createTaskMutation, router, t]);
+  }, [formData, isEditMode, editTaskId, createTaskMutation, updateTaskMutation, router, t]);
 
   const handleCancel = useCallback(() => {
     const hasChanges = checkHasChanges(initFormData, formData);
@@ -240,7 +259,7 @@ const TaskForm = () => {
     if (formData != null) return;
 
     if (isEditMode) {
-      const editingTask = getTask(editTaskId);
+      if (isLoadingTask) return; // Wait for task to load
       if (!editingTask) return; // TODO: handle error
 
       const newFormData: TaskFormData = {
@@ -255,7 +274,28 @@ const TaskForm = () => {
       setInitFormData(defaultTaskFormData);
       setFormData(defaultTaskFormData);
     }
-  }, [formData, editTaskId, isEditMode, getTask]);
+  }, [formData, editTaskId, isEditMode, editingTask, isLoadingTask]);
+
+  // Show loading indicator when fetching task data in edit mode
+  if (isEditMode && isLoadingTask) {
+    return (
+      <Fragment>
+        <Stack.Screen
+          options={{
+            title: t('Edit Task'),
+            headerLeft: () => (
+              <Button color={theme.colors.primary} onPress={handleCancel} title={t('Cancel')} />
+            ),
+          }}
+        />
+        <ScreenContainer isRoot={false} style={styles.screenContainer} scrollable>
+          <ThemedView style={styles.loadingContainer}>
+            <ActivityIndicator size="large" color={theme.colors.primary} />
+          </ThemedView>
+        </ScreenContainer>
+      </Fragment>
+    );
+  }
 
   return (
     <Fragment>
@@ -362,7 +402,14 @@ interface StyleParams {
 }
 
 const getStyles = createStyles<
-  StyleRecord<'screenContainer' | 'deleteButton' | 'timePicker' | 'recurrenceSelector' | 'divider'>,
+  StyleRecord<
+    | 'screenContainer'
+    | 'deleteButton'
+    | 'timePicker'
+    | 'recurrenceSelector'
+    | 'divider'
+    | 'loadingContainer'
+  >,
   StyleParams
 >({
   screenContainer: {
@@ -380,5 +427,10 @@ const getStyles = createStyles<
   },
   divider: {
     marginVertical: StaticTheme.spacing.md,
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
 });

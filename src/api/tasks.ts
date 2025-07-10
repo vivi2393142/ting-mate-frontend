@@ -42,6 +42,11 @@ const APITaskListResponseSchema = z.object({
   tasks: z.array(z.unknown()), // Accept any array structure
 });
 
+// Task response schema for single task operations
+const APITaskResponseSchema = z.object({
+  task: APITaskSchema,
+});
+
 /* =============================================================================
  * Type Definitions
  * ============================================================================= */
@@ -49,22 +54,23 @@ const APITaskListResponseSchema = z.object({
 type APIReminderTime = z.infer<typeof APIReminderTimeSchema>;
 type APIRecurrenceRule = z.infer<typeof APIRecurrenceRuleSchema>;
 type APITask = z.infer<typeof APITaskSchema>;
-type APICreateTaskRequest = {
-  title: string;
-  icon: string;
-  reminder_time: APIReminderTime;
-  recurrence: APIRecurrenceRule | null | undefined;
-};
 
 /* =============================================================================
  * Data Transform Functions
  * ============================================================================= */
 
+// Normalize hour to 0-23 range
+const normalizeHour = (hour: number): number => {
+  return hour === 24 ? 0 : hour;
+};
+
 // Transform API reminder time to frontend ReminderTime
-const transformReminderTime = (apiReminderTime: APIReminderTime): ReminderTime => ({
-  hour: apiReminderTime.hour,
-  minute: apiReminderTime.minute,
-});
+const transformReminderTime = (apiReminderTime: APIReminderTime): ReminderTime => {
+  return {
+    hour: normalizeHour(apiReminderTime.hour),
+    minute: apiReminderTime.minute,
+  };
+};
 
 // Transform API recurrence rule to frontend RecurrenceRule
 const transformRecurrenceRule = (apiRecurrence: APIRecurrenceRule): RecurrenceRule => ({
@@ -88,28 +94,32 @@ const transformTaskFromAPI = (apiTask: APITask): Task => ({
   completedBy: apiTask.completed_by || undefined,
 });
 
-// Transform frontend TaskFormData to API request format
+// Transform frontend TaskFormData to API format
 const transformTaskFormDataToAPI = (formData: {
   title: string;
   icon: string;
   reminderTime: ReminderTime;
   recurrence?: RecurrenceRule;
-}): APICreateTaskRequest => ({
-  title: formData.title,
-  icon: formData.icon,
-  reminder_time: {
-    hour: formData.reminderTime.hour,
-    minute: formData.reminderTime.minute,
-  },
-  recurrence: formData.recurrence
-    ? {
-        interval: formData.recurrence.interval,
-        unit: formData.recurrence.unit,
-        days_of_week: formData.recurrence.daysOfWeek,
-        days_of_month: formData.recurrence.daysOfMonth,
-      }
-    : null,
-});
+}) => {
+  const apiData = {
+    title: formData.title,
+    icon: formData.icon,
+    reminder_time: {
+      hour: normalizeHour(formData.reminderTime.hour),
+      minute: formData.reminderTime.minute,
+    },
+    recurrence: formData.recurrence
+      ? {
+          interval: formData.recurrence.interval,
+          unit: formData.recurrence.unit,
+          days_of_week: formData.recurrence.daysOfWeek,
+          days_of_month: formData.recurrence.daysOfMonth,
+        }
+      : null,
+  };
+
+  return apiData;
+};
 
 /* =============================================================================
  * Utility Functions
@@ -148,6 +158,21 @@ export const useGetTasks = (options?: Omit<UseQueryOptions<Task[]>, 'queryKey' |
     ...options,
   });
 
+export const useGetTask = (
+  taskId: string,
+  options?: Omit<UseQueryOptions<Task>, 'queryKey' | 'queryFn'>,
+) =>
+  useQuery<Task>({
+    queryKey: ['task', taskId],
+    queryFn: async (): Promise<Task> => {
+      const res = await axiosClientWithAuth.get(`/tasks/${taskId}`);
+      const validatedData = APITaskResponseSchema.parse(res.data);
+      return transformTaskFromAPI(validatedData.task);
+    },
+    enabled: !!taskId,
+    ...options,
+  });
+
 export const useCreateTask = () => {
   const queryClient = useQueryClient();
 
@@ -164,6 +189,40 @@ export const useCreateTask = () => {
     onSuccess: () => {
       // Invalidate and refetch tasks list
       queryClient.invalidateQueries({ queryKey: ['tasks'] });
+    },
+  });
+};
+
+export const useUpdateTask = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({
+      taskId,
+      updates,
+    }: {
+      taskId: string;
+      updates: {
+        title: string;
+        icon: string;
+        reminderTime: ReminderTime;
+        recurrence?: RecurrenceRule;
+      };
+    }): Promise<Task> => {
+      console.log({
+        taskId,
+        updates,
+      });
+      const requestData = transformTaskFormDataToAPI(updates);
+
+      const res = await axiosClientWithAuth.put(`/tasks/${taskId}`, requestData);
+      const validatedData = APITaskResponseSchema.parse(res.data);
+      return transformTaskFromAPI(validatedData.task);
+    },
+    onSuccess: (_, { taskId }) => {
+      // Invalidate and refetch tasks list
+      queryClient.invalidateQueries({ queryKey: ['tasks'] });
+      queryClient.invalidateQueries({ queryKey: ['task', taskId] });
     },
   });
 };
