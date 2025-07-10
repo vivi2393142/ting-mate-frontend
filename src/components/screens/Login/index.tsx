@@ -1,3 +1,4 @@
+import { isAxiosError } from 'axios';
 import { Stack, useRouter } from 'expo-router';
 import { Fragment, useCallback, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -83,8 +84,12 @@ const LoginScreen = () => {
         onSuccess: () => {
           router.replace('/(tabs)');
         },
-        onError: () => {
-          setError(t('Registration failed. Please check your information and try again.'));
+        onError: (e) => {
+          if (isAxiosError(e) && e.response?.data?.detail?.includes('Email already registered')) {
+            setError(t('This email is already registered.'));
+          } else {
+            setError(t('Registration failed. Please check your information and try again.'));
+          }
         },
       },
     );

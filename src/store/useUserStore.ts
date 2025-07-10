@@ -55,7 +55,7 @@ const useUserStore = create<UserState>((set) => ({
   setUser: (user: User) => set({ user }),
   updateLoginUser: (partialUser: Pick<User, 'email' | 'role'>) =>
     set((state) => ({
-      user: state.user ? { ...state.user, ...partialUser } : null,
+      user: state.user ? { ...state.user, email: partialUser.email, role: partialUser.role } : null,
     })),
   updateUserSettings: (settings: Partial<User['settings']>) =>
     set((state) => ({

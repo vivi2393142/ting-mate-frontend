@@ -1,36 +1,51 @@
 import useUserStore from '@/store/useUserStore';
-import { useMutation } from '@tanstack/react-query';
+import { useMutation, type UseMutationOptions, useQueryClient } from '@tanstack/react-query';
 import { z } from 'zod';
 
 import { axiosClient } from '@/api/axiosClient';
 import API_PATH from '@/api/path';
 import { Role } from '@/types/user';
 
-export const LoginResponseSchema = z.object({
+interface LoginRequest {
+  email: string;
+  password: string;
+}
+
+const LoginResponseSchema = z.object({
   access_token: z.string(),
   anonymous_id: z.string(),
 });
 
-export const login = async (params: { email: string; password: string }) => {
-  const res = await axiosClient.post(API_PATH.LOGIN, params);
-  return LoginResponseSchema.parse(res.data);
-};
+type LoginResponse = z.infer<typeof LoginResponseSchema>;
 
-export const useLogin = () => {
+export const useLogin = (
+  options?: Omit<UseMutationOptions<LoginResponse, Error, LoginRequest>, 'mutationFn'>,
+) => {
+  const queryClient = useQueryClient();
+
   const updateToken = useUserStore((s) => s.updateToken);
   const updateAnonymousId = useUserStore((s) => s.updateAnonymousId);
 
   return useMutation({
-    mutationFn: login,
+    mutationFn: async (params: LoginRequest) => {
+      const res = await axiosClient.post(API_PATH.LOGIN, params);
+      return LoginResponseSchema.parse(res.data);
+    },
     onSuccess: async (data: typeof LoginResponseSchema._type) => {
       const { access_token, anonymous_id } = data;
       await updateToken(access_token);
       await updateAnonymousId(anonymous_id);
+
+      // Refetch all active queries
+      queryClient.invalidateQueries();
     },
+    ...options,
   });
 };
 
 export const useLogout = () => {
+  const queryClient = useQueryClient();
+
   const clearToken = useUserStore((s) => s.clearToken);
   const clearAnonymousId = useUserStore((s) => s.clearAnonymousId);
   const initAnonymousId = useUserStore((s) => s.initAnonymousId);
@@ -39,20 +54,24 @@ export const useLogout = () => {
   return async () => {
     await clearToken();
     await clearAnonymousId();
-    await initAnonymousId(); // Init anonymous id again to avoid anonymous id conflict
     clearUser();
+
+    await initAnonymousId(); // Init anonymous id again to avoid anonymous id conflict
     // TODO: Clear user data & tasks
+
+    // Refetch all active queries
+    queryClient.invalidateQueries();
   };
 };
 
-export interface RegisterRequest {
+interface RegisterRequest {
   id: string;
   email: string;
   role: Role;
   password: string;
 }
 
-export const RegisterResponseSchema = z.object({
+const RegisterResponseSchema = z.object({
   message: z.string(),
   user: z.object({
     id: z.string(),
@@ -63,18 +82,20 @@ export const RegisterResponseSchema = z.object({
   anonymous_id: z.string(),
 });
 
-export const register = async (params: RegisterRequest) => {
-  const res = await axiosClient.post(API_PATH.REGISTER, params);
-  return RegisterResponseSchema.parse(res.data);
-};
+type RegisterResponse = z.infer<typeof RegisterResponseSchema>;
 
-export const useRegister = () => {
+export const useRegister = (
+  options?: Omit<UseMutationOptions<RegisterResponse, Error, RegisterRequest>, 'mutationFn'>,
+) => {
   const updateLoginUser = useUserStore((s) => s.updateLoginUser);
   const updateToken = useUserStore((s) => s.updateToken);
   const updateAnonymousId = useUserStore((s) => s.updateAnonymousId);
 
   return useMutation({
-    mutationFn: register,
+    mutationFn: async (params: RegisterRequest) => {
+      const res = await axiosClient.post(API_PATH.REGISTER, params);
+      return RegisterResponseSchema.parse(res.data);
+    },
     onSuccess: async ({
       access_token,
       anonymous_id,
@@ -87,5 +108,6 @@ export const useRegister = () => {
         role: user.role,
       });
     },
+    ...options,
   });
 };

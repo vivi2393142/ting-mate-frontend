@@ -18,7 +18,14 @@ export interface ReminderSettings {
   safeZoneReminder: boolean;
 }
 
+export interface UserLink {
+  email: string;
+  name: string;
+}
+
 export interface UserSettings {
+  name: string;
+  linked: UserLink[];
   textSize: UserTextSize;
   displayMode: UserDisplayMode;
   reminder: ReminderSettings;
@@ -31,11 +38,7 @@ export enum Role {
 }
 
 export interface User {
-  email: string;
-  name: string;
+  email?: string;
   role: Role;
-  /* A caregiver can only link to one carereceiver,
-  while a carereceiver can link to multiple caregivers */
-  linked: string[];
   settings: UserSettings;
 }

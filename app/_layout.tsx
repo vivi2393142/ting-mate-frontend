@@ -10,6 +10,7 @@ import { configureFonts, PaperProvider } from 'react-native-paper';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 import queryClient from '@/api/queryClient';
+import { syncCurrentUserToStore, useCurrentUser } from '@/api/user';
 import useColorScheme from '@/hooks/useColorScheme';
 import '@/i18n';
 import { NotificationService } from '@/services/notification';
@@ -47,6 +48,18 @@ const CombinedThemeProvider = ({ children }: { children: ReactNode }) => {
       <ThemeProvider value={navigationTheme}>{children}</ThemeProvider>
     </PaperProvider>
   );
+};
+
+// User data sync handler
+const UserSyncHandler = () => {
+  const { token, anonymousId } = useUserStore.getState();
+  const { data } = useCurrentUser({ enabled: !!(token || anonymousId) });
+
+  useEffect(() => {
+    if (data) syncCurrentUserToStore(data);
+  }, [data]);
+
+  return null;
 };
 
 const RootLayout = () => {
@@ -100,6 +113,7 @@ const RootLayout = () => {
   return (
     <SafeAreaProvider>
       <QueryClientProvider client={queryClient}>
+        <UserSyncHandler />
         <CombinedThemeProvider>
           <Stack>
             <Stack.Screen name="(tabs)" options={{ headerShown: false, title: t('Home') }} />

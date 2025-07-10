@@ -9,5 +9,5 @@
   "Registration failed. Please check your information and try again.": "Registration failed. Please check your information and try again.",
   "Sign up": "Sign up",
   "Sorry, we couldn't find an account with that email and password. Please double-check and try again.": "Sorry, we couldn't find an account with that email and password. Please double-check and try again.",
-  "Username": "Username"
+  "This email is already registered.": "This email is already registered."
 }
