@@ -38,6 +38,7 @@ interface UserState {
   user: User | null;
   anonymousId: string | null;
   setUser: (user: User) => void;
+  updateLoginUser: (partialUser: Pick<User, 'email' | 'role'>) => void;
   updateUserSettings: (settings: Partial<User['settings']>) => void;
   clearUser: () => void;
   initAnonymousId: () => Promise<void>;
@@ -52,6 +53,10 @@ interface UserState {
 const useUserStore = create<UserState>((set) => ({
   user: null,
   setUser: (user: User) => set({ user }),
+  updateLoginUser: (partialUser: Pick<User, 'email' | 'role'>) =>
+    set((state) => ({
+      user: state.user ? { ...state.user, ...partialUser } : null,
+    })),
   updateUserSettings: (settings: Partial<User['settings']>) =>
     set((state) => ({
       user: state.user

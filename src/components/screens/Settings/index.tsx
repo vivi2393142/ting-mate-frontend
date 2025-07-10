@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { useRouter } from 'expo-router';
 import { List } from 'react-native-paper';
 
+import { useLogout } from '@/api/auth';
 import useAppTheme from '@/hooks/useAppTheme';
 import useUserDisplayModeTranslation from '@/hooks/useUserDisplayModeTranslation';
 import useUserTextSizeTranslation from '@/hooks/useUserTextSizeTranslation';
@@ -38,10 +39,12 @@ const SettingsScreen = () => {
   const { tUserTextSize } = useUserTextSizeTranslation();
   const { tUserDisplayMode } = useUserDisplayModeTranslation();
 
+  const token = useUserStore((state) => state.token);
   const userState = useUserStore((state) => state.user);
   const updateUserSettings = useUserStore((state) => state.updateUserSettings);
 
   const router = useRouter();
+  const logoutMutation = useLogout();
 
   const theme = useAppTheme();
   const styles = getStyles(theme, { userState });
@@ -83,8 +86,9 @@ const SettingsScreen = () => {
   }, [router]);
 
   const handleLogout = useCallback(() => {
-    // TODO: implement logout
-  }, []);
+    logoutMutation();
+    router.push('/login');
+  }, [logoutMutation, router]);
 
   return (
     <ScreenContainer scrollable>
@@ -130,7 +134,7 @@ const SettingsScreen = () => {
       </SectionGroup>
       <SectionGroup title={t('Account')} subheaderStyle={styles.subheader}>
         <ThemedView style={styles.buttonItemWrapper}>
-          {userState ? (
+          {token ? (
             <ThemedButton color="error" mode="outlined" onPress={handleLogout}>
               {t('Logout')}
             </ThemedButton>

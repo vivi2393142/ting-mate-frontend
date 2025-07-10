@@ -1,17 +1,19 @@
 import { Stack, useRouter } from 'expo-router';
-import { Fragment, useCallback, useEffect, useMemo, useState } from 'react';
+import { Fragment, useCallback, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Image, StyleSheet } from 'react-native';
 
 import { Text, TextInput } from 'react-native-paper';
 
-import { useLogin } from '@/api/auth';
+import { useLogin, useRegister } from '@/api/auth';
 import useAppTheme from '@/hooks/useAppTheme';
 import { StaticTheme } from '@/theme';
+import { Role } from '@/types/user';
 import { createStyles, type StyleRecord } from '@/utils/createStyles';
 
 import ThemedButton from '@/components/atoms/ThemedButton';
 import ThemedView from '@/components/atoms/ThemedView';
+import useUserStore from '@/store/useUserStore';
 
 const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -21,15 +23,33 @@ const LoginScreen = () => {
   const theme = useAppTheme();
   const styles = getStyles(theme);
 
+  const { anonymousId } = useUserStore.getState();
+
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
 
-  const [isEmailValid, setIsEmailValid] = useState(true);
-  const [isPasswordValid, setIsPasswordValid] = useState(true);
+  const [isEmailValid, setIsEmailValid] = useState<null | boolean>(null);
+  const [isPasswordValid, setIsPasswordValid] = useState<null | boolean>(null);
   const [error, setError] = useState('');
 
   const router = useRouter();
   const loginMutation = useLogin();
+  const registerMutation = useRegister();
+
+  const handleEmailChange = useCallback((text: string) => {
+    setError('');
+    setEmail(text);
+    setIsEmailValid(emailRegex.test(text));
+  }, []);
+
+  const handlePasswordChange = useCallback((text: string) => {
+    setError('');
+    setPassword(text);
+    const hasLetter = /[a-zA-Z]/.test(text);
+    const hasNumber = /\d/.test(text);
+    const hasMinLength = text.length >= 8;
+    setIsPasswordValid(hasLetter && hasNumber && hasMinLength);
+  }, []);
 
   const handleLogin = useCallback(async () => {
     setError('');
@@ -42,7 +62,7 @@ const LoginScreen = () => {
         onError: () => {
           setError(
             t(
-              'Sorry, we couldn’t find an account with that email and password. Please double-check and try again.',
+              "Sorry, we couldn't find an account with that email and password. Please double-check and try again.",
             ),
           );
         },
@@ -50,29 +70,32 @@ const LoginScreen = () => {
     );
   }, [email, loginMutation, password, router, t]);
 
-  const handleSignUp = useCallback(() => {
-    // TODO: Implement sign up
-  }, []);
+  const handleSignUp = useCallback(async () => {
+    if (!anonymousId) {
+      if (__DEV__) console.error('Anonymous ID is not found');
+      return;
+    }
 
-  useEffect(() => {
     setError('');
-    setIsEmailValid(emailRegex.test(email));
-  }, [email]);
-
-  useEffect(() => {
-    setError('');
-    const hasLetter = /[a-zA-Z]/.test(password);
-    const hasNumber = /\d/.test(password);
-    const hasMinLength = password.length >= 8;
-    setIsPasswordValid(hasLetter && hasNumber && hasMinLength);
-  }, [password]);
+    await registerMutation.mutate(
+      { id: anonymousId, email, password, role: Role.CARERECEIVER },
+      {
+        onSuccess: () => {
+          router.replace('/(tabs)');
+        },
+        onError: () => {
+          setError(t('Registration failed. Please check your information and try again.'));
+        },
+      },
+    );
+  }, [anonymousId, registerMutation, email, password, router, t]);
 
   const errorMessage = useMemo(() => {
-    if (!isEmailValid) return t('Please enter a valid email address');
-    if (!isPasswordValid)
+    if (isEmailValid === false) return t('Please enter a valid email address');
+    if (isPasswordValid === false)
       return t('Password must be at least 8 characters with letters and numbers');
     return error;
-  }, [isEmailValid, isPasswordValid, error, t]);
+  }, [isEmailValid, t, isPasswordValid, error]);
 
   const isValidToSubmit = isEmailValid && isPasswordValid;
 
@@ -91,7 +114,7 @@ const LoginScreen = () => {
           style={imageStyle.logo}
           resizeMode="contain"
         />
-        {!isValidToSubmit || error ? (
+        {errorMessage ? (
           <ThemedView style={styles.errorContainer}>
             <Text style={styles.errorMessage}>{errorMessage}</Text>
           </ThemedView>
@@ -101,8 +124,8 @@ const LoginScreen = () => {
           label={t('Email')}
           keyboardType="email-address"
           value={email}
-          onChangeText={setEmail}
-          error={!isEmailValid}
+          onChangeText={handleEmailChange}
+          error={isEmailValid === false}
           style={styles.input}
         />
         <TextInput
@@ -110,13 +133,13 @@ const LoginScreen = () => {
           label={t('Password')}
           textContentType="password"
           value={password}
-          onChangeText={setPassword}
+          onChangeText={handlePasswordChange}
           secureTextEntry
-          error={!isPasswordValid}
+          error={isPasswordValid === false}
           style={styles.input}
         />
         <ThemedButton
-          disabled={!isValidToSubmit}
+          disabled={!isValidToSubmit || loginMutation.isPending || registerMutation.isPending}
           onPress={handleLogin}
           loading={loginMutation.isPending}
           style={[styles.button, styles.loginButton]}
@@ -124,8 +147,9 @@ const LoginScreen = () => {
           {t('Login')}
         </ThemedButton>
         <ThemedButton
-          disabled={!isValidToSubmit}
+          disabled={!isValidToSubmit || loginMutation.isPending || registerMutation.isPending}
           onPress={handleSignUp}
+          loading={registerMutation.isPending}
           mode="outlined"
           style={styles.button}
         >

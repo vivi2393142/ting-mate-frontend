@@ -1,10 +1,13 @@
 {
   "Email": "Email",
   "Login": "Login",
+  "Name": "Name",
   "Password": "Password",
   "Password must be at least 8 characters with letters and numbers": "Password must be at least 8 characters with letters and numbers",
   "Please enter a valid email address": "Please enter a valid email address",
+  "Please enter your name": "Please enter your name",
+  "Registration failed. Please check your information and try again.": "Registration failed. Please check your information and try again.",
   "Sign up": "Sign up",
-  "Sorry, we couldn’t find an account with that email and password. Please double-check and try again.": "Sorry, we couldn’t find an account with that email and password. Please double-check and try again.",
+  "Sorry, we couldn't find an account with that email and password. Please double-check and try again.": "Sorry, we couldn't find an account with that email and password. Please double-check and try again.",
   "Username": "Username"
 }
