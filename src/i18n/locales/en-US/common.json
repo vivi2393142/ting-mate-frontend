@@ -1,9 +1,12 @@
 {
   "Auto-stopped due to time limit": "Auto-stopped due to time limit",
+  "Back": "Back",
+  "Cancel": "Cancel",
   "Connect": "Connect",
   "Daily": "Daily",
   "Done!": "Done!",
   "End Conversation": "End Conversation",
+  "Error": "Error",
   "Failed to stop recording.": "Failed to stop recording.",
   "Go to home screen!": "Go to home screen!",
   "Home": "Home",
@@ -12,7 +15,9 @@
   "No audio file found.": "No audio file found.",
   "Oops!": "Oops!",
   "Permission to access microphone was denied": "Permission to access microphone was denied",
+  "Save": "Save",
   "Settings": "Settings",
+  "Sign In / Sign Up": "Sign In / Sign Up",
   "Start Voice Command": "Start Voice Command",
   "Stop Voice Command": "Stop Voice Command",
   "Theme Test": "Theme Test",
@@ -44,6 +49,10 @@
     "Week_other": "Weeks",
     "Month_one": "Month",
     "Month_other": "Months"
+  },
+  "role": {
+    "Core User": "Core User",
+    "Companion": "Companion"
   },
   "userDisplayMode": {
     "Full": "Full",

@@ -1,8 +1,16 @@
+import {
+  useMutation,
+  UseMutationOptions,
+  useQuery,
+  useQueryClient,
+  type UseQueryOptions,
+} from '@tanstack/react-query';
+import { z } from 'zod';
+
 import { axiosClientWithAuth } from '@/api/axiosClient';
+import API_PATH from '@/api/path';
 import useUserStore from '@/store/useUserStore';
 import { type ReminderSettings, Role, UserDisplayMode, UserTextSize } from '@/types/user';
-import { useQuery, type UseQueryOptions } from '@tanstack/react-query';
-import { z } from 'zod';
 
 /* =============================================================================
  * API Schema Definitions
@@ -35,7 +43,7 @@ const UserSettingsSchema = z.object({
   // language: z.string().optional(),
 });
 
-const UserSchema = z.object({
+export const UserSchema = z.object({
   email: z.string().nullable(),
   role: z.nativeEnum(Role),
   settings: UserSettingsSchema,
@@ -46,6 +54,8 @@ const UserSchema = z.object({
  * ============================================================================= */
 
 type UserResponse = z.infer<typeof UserSchema>;
+
+export type UserSettingsUpdateRequest = Partial<z.infer<typeof UserSettingsSchema>>;
 
 /* =============================================================================
  * Default Values
@@ -72,6 +82,25 @@ export const useCurrentUser = (
     },
     ...options,
   });
+
+export const useUpdateUserSettings = (
+  options?: Omit<
+    UseMutationOptions<{ success: boolean }, Error, UserSettingsUpdateRequest>,
+    'mutationFn' | 'onSuccess'
+  >,
+) => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (settings: UserSettingsUpdateRequest) => {
+      await axiosClientWithAuth.put(API_PATH.USER_SETTINGS, settings);
+      return { success: true };
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['currentUser'] });
+    },
+    ...options,
+  });
+};
 
 /* =============================================================================
  * Utility Functions

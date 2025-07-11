@@ -39,8 +39,9 @@ const fonts: Record<UserTextSize, Record<MD3TypescaleKey, Partial<MD3Type>>> = {
       fontWeight: '700',
     },
     titleLarge: {
-      fontSize: 22,
-      lineHeight: 28,
+      fontSize: 20,
+      lineHeight: 26,
+      fontWeight: '700',
     },
     labelSmall: {
       fontSize: 11,
@@ -106,6 +107,7 @@ const fonts: Record<UserTextSize, Record<MD3TypescaleKey, Partial<MD3Type>>> = {
     titleLarge: {
       fontSize: 26,
       lineHeight: 36,
+      fontWeight: '700',
     },
     labelSmall: {
       fontSize: 16,

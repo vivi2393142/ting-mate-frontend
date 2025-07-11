@@ -82,7 +82,10 @@ const LoginScreen = () => {
       { id: anonymousId, email, password, role: Role.CARERECEIVER },
       {
         onSuccess: () => {
-          router.replace('/(tabs)');
+          router.replace({
+            pathname: '/role-selection',
+            params: { from: 'signup' },
+          });
         },
         onError: (e) => {
           if (isAxiosError(e) && e.response?.data?.detail?.includes('Email already registered')) {

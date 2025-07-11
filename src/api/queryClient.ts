@@ -1,5 +1,18 @@
-import { QueryClient } from '@tanstack/react-query';
+import { QueryCache, QueryClient } from '@tanstack/react-query';
 
-const queryClient = new QueryClient();
+import { syncCurrentUserToStore, UserSchema } from '@/api/user';
+
+const queryCache = new QueryCache({
+  onSuccess: (data, query) => {
+    if (query.queryKey[0] === 'currentUser') {
+      const validatedData = UserSchema.parse(data);
+      syncCurrentUserToStore(validatedData);
+    }
+  },
+});
+
+const queryClient = new QueryClient({
+  queryCache,
+});
 
 export default queryClient;

@@ -7,6 +7,7 @@ import { useUserTextSize } from '@/store/useUserStore';
 import { StaticTheme } from '@/theme';
 import { UserTextSize } from '@/types/user';
 import { createStyles, type StyleRecord } from '@/utils/createStyles';
+import type { TextStyle } from 'react-native';
 
 import IconSymbol from '@/components/atoms/IconSymbol';
 
@@ -18,12 +19,14 @@ export type CustomMenuItemProps<T extends Value> = Omit<MenuItemProps, 'title'> 
 export interface SelectProps<V extends Value, T extends CustomMenuItemProps<V>> {
   displayValue: ReactNode;
   options: T[];
+  labelStyle?: TextStyle;
   onSelect: (option: T) => void;
 }
 
 const Select = <V extends Value, T extends CustomMenuItemProps<V>>({
   displayValue,
   options,
+  labelStyle,
   onSelect,
 }: SelectProps<V, T>) => {
   const userTextSize = useUserTextSize();
@@ -56,7 +59,7 @@ const Select = <V extends Value, T extends CustomMenuItemProps<V>>({
           onPress={handleOpen}
           style={styles.button}
           contentStyle={styles.buttonContent}
-          labelStyle={styles.label}
+          labelStyle={[styles.label, labelStyle]}
           icon={({ color }) => (
             <IconSymbol name="chevron.up.chevron.down" color={color} size={16} />
           )}
@@ -94,13 +97,15 @@ const getStyles = createStyles<
   StyleParams
 >({
   button: {
-    borderRadius: 4,
+    borderRadius: StaticTheme.borderRadius.s,
   },
   buttonContent: {
     flexDirection: 'row-reverse',
   },
   label: {
     marginVertical: StaticTheme.spacing.xs,
+    fontSize: ({ fonts }) => fonts.bodyLarge.fontSize,
+    fontWeight: ({ fonts }) => fonts.bodyLarge.fontWeight,
   },
   menuContent: {
     backgroundColor: ({ colors }) => colors.background,

@@ -1,28 +1,27 @@
-import { useCallback, useMemo } from 'react';
+import { useCallback, useMemo, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import { useRouter } from 'expo-router';
 import { List } from 'react-native-paper';
 
 import { useLogout } from '@/api/auth';
+import { useUpdateUserSettings } from '@/api/user';
 import useAppTheme from '@/hooks/useAppTheme';
+import useRoleTranslation from '@/hooks/useRoleTranslation';
 import useUserDisplayModeTranslation from '@/hooks/useUserDisplayModeTranslation';
 import useUserTextSizeTranslation from '@/hooks/useUserTextSizeTranslation';
 import useUserStore from '@/store/useUserStore';
-import type { Theme } from '@/theme';
 import { StaticTheme } from '@/theme';
-import { UserDisplayMode, UserTextSize } from '@/types/user';
-import { createStyles } from '@/utils/createStyles';
+import { Role, UserDisplayMode, UserTextSize } from '@/types/user';
+import { createStyles, StyleRecord } from '@/utils/createStyles';
 
 import FormInput from '@/components/atoms/FormInput';
 import ScreenContainer from '@/components/atoms/ScreenContainer';
 import Select from '@/components/atoms/Select';
-import ThemedButton from '@/components/atoms/ThemedButton';
-import ThemedView from '@/components/atoms/ThemedView';
 
 interface SectionGroupProps {
   title: string;
-  children: React.ReactNode;
+  children: ReactNode;
   style?: object;
   subheaderStyle?: object;
 }
@@ -36,12 +35,16 @@ const SectionGroup = ({ title, children, style, subheaderStyle }: SectionGroupPr
 
 const SettingsScreen = () => {
   const { t } = useTranslation('settings');
+  const { t: tCommon } = useTranslation('common');
+
   const { tUserTextSize } = useUserTextSizeTranslation();
   const { tUserDisplayMode } = useUserDisplayModeTranslation();
+  const { tRole } = useRoleTranslation();
 
   const token = useUserStore((state) => state.token);
   const userState = useUserStore((state) => state.user);
-  const updateUserSettings = useUserStore((state) => state.updateUserSettings);
+
+  const updateUserSettingsMutation = useUpdateUserSettings();
 
   const router = useRouter();
   const logoutMutation = useLogout();
@@ -68,20 +71,31 @@ const SettingsScreen = () => {
   );
 
   const handleTextSizeSelect = useCallback(
-    (option: (typeof textSizeOptions)[number]) => {
-      updateUserSettings({ textSize: option.value });
+    ({ value }: { value: UserTextSize }) => {
+      updateUserSettingsMutation.mutate({ textSize: value });
     },
-    [updateUserSettings],
+    [updateUserSettingsMutation],
   );
 
   const handleDisplayModeSelect = useCallback(
-    (option: (typeof displayModeOptions)[number]) => {
-      updateUserSettings({ displayMode: option.value });
+    ({ value }: { value: UserDisplayMode }) => {
+      updateUserSettingsMutation.mutate({ displayMode: value });
     },
-    [updateUserSettings],
+    [updateUserSettingsMutation],
   );
 
-  const handleLogin = useCallback(() => {
+  const handleRolePress = useCallback(() => {
+    router.push({
+      pathname: '/role-selection',
+      params: { from: 'settings' },
+    });
+  }, [router]);
+
+  const handleNamePress = useCallback(() => {
+    router.push('/edit-name');
+  }, [router]);
+
+  const handleAccountAction = useCallback(() => {
     router.push('/login');
   }, [router]);
 
@@ -92,7 +106,11 @@ const SettingsScreen = () => {
 
   return (
     <ScreenContainer scrollable>
-      <SectionGroup title={t('General')} subheaderStyle={styles.subheader}>
+      <SectionGroup
+        title={t('General')}
+        style={styles.sectionGroup}
+        subheaderStyle={styles.subheader}
+      >
         <FormInput
           valueAlign="right"
           rightIconName="chevron.up.chevron.down"
@@ -123,54 +141,89 @@ const SettingsScreen = () => {
           )}
         />
       </SectionGroup>
-      {/* TODO: implement reset settings */}
-      <SectionGroup title={t('Reminder')} subheaderStyle={styles.subheader}>
-        {/* eslint-disable-next-line i18next/no-literal-string */}
-        <List.Item title={'pending'} style={styles.listItem} />
-      </SectionGroup>
-      <SectionGroup title={t('Voice Assistant')} subheaderStyle={styles.subheader}>
-        {/* eslint-disable-next-line i18next/no-literal-string */}
-        <List.Item title={'pending'} style={styles.listItem} />
-      </SectionGroup>
-      <SectionGroup title={t('Account')} subheaderStyle={styles.subheader}>
-        <ThemedView style={styles.buttonItemWrapper}>
-          {token ? (
-            <ThemedButton color="error" mode="outlined" onPress={handleLogout}>
-              {t('Logout')}
-            </ThemedButton>
-          ) : (
-            <ThemedButton mode="outlined" onPress={handleLogin}>
-              {t('Login')}
-            </ThemedButton>
-          )}
-        </ThemedView>
+      <SectionGroup
+        title={t('Account')}
+        style={styles.sectionGroup}
+        subheaderStyle={styles.subheader}
+      >
+        <FormInput
+          valueAlign="right"
+          rightIconName="chevron.right"
+          dense={false}
+          label={t('Name')}
+          value={userState?.settings.name || '---'}
+          valueColor={theme.colors.primary}
+          onPress={handleNamePress}
+        />
+        <FormInput
+          valueAlign="right"
+          rightIconName="chevron.right"
+          dense={false}
+          label={t('Role')}
+          value={tRole(userState?.role || Role.CARERECEIVER)}
+          valueColor={theme.colors.primary}
+          onPress={handleRolePress}
+        />
+        {!token && (
+          <List.Item
+            title={tCommon('Sign In / Sign Up')}
+            style={styles.buttonItem}
+            containerStyle={styles.buttonContainer}
+            contentStyle={styles.buttonContent}
+            titleStyle={styles.signInText}
+            onPress={handleAccountAction}
+          />
+        )}
+        {token && (
+          <List.Item
+            title={t('Logout')}
+            style={styles.buttonItem}
+            containerStyle={styles.buttonContainer}
+            contentStyle={styles.buttonContent}
+            titleStyle={styles.logoutText}
+            onPress={handleLogout}
+          />
+        )}
       </SectionGroup>
     </ScreenContainer>
   );
 };
 
-const getStyles = createStyles({
-  listItem: {
-    paddingRight: StaticTheme.spacing.sm,
-    paddingVertical: StaticTheme.spacing.xs,
-  },
-  listItemLast: {
-    borderBottomWidth: 0,
-  },
-  listItemTitle: {
-    fontSize: (theme: Theme) => theme.fonts.bodyLarge.fontSize,
-    lineHeight: (theme: Theme) => theme.fonts.bodyLarge.lineHeight,
+const getStyles = createStyles<
+  StyleRecord<
+    'sectionGroup' | 'buttonItem' | 'buttonContainer' | 'buttonContent',
+    'subheader' | 'signInText' | 'logoutText'
+  >
+>({
+  sectionGroup: {
+    paddingHorizontal: StaticTheme.spacing.md,
   },
   subheader: {
-    color: (theme: Theme) => theme.colors.outline,
+    color: ({ colors }) => colors.outline,
     textTransform: 'uppercase',
     paddingTop: StaticTheme.spacing.sm,
     paddingVertical: StaticTheme.spacing.xs,
+    paddingHorizontal: 0,
   },
-  buttonItemWrapper: {
-    paddingTop: StaticTheme.spacing.sm,
-    paddingBottom: StaticTheme.spacing.xs,
-    paddingHorizontal: StaticTheme.spacing.md,
+  buttonItem: {
+    paddingVertical: StaticTheme.spacing.xs * 1.5,
+  },
+  buttonContainer: {
+    marginVertical: 0,
+  },
+  buttonContent: {
+    paddingLeft: 0,
+    minHeight: 28,
+  },
+  signInText: {
+    color: ({ colors }) => colors.primary,
+    fontSize: ({ fonts }) => fonts.bodyLarge.fontSize,
+    fontWeight: ({ fonts }) => fonts.bodyLarge.fontWeight,
+  },
+  logoutText: {
+    color: ({ colors }) => colors.error,
+    fontSize: ({ fonts }) => fonts.bodyLarge.fontSize,
+    fontWeight: ({ fonts }) => fonts.bodyLarge.fontWeight,
   },
 });
 

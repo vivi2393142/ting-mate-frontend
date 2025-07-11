@@ -346,6 +346,7 @@ const TaskForm = () => {
             rightIconName="chevron.up.chevron.down"
             placeholder={t('Select time')}
             value={formData?.reminderTime ? formatReminderTime(formData.reminderTime) : ''}
+            valueColor={theme.colors.onSurfaceVariant}
             onPress={handleToggleTimePicker}
           />
           {showTimePicker && (
@@ -367,6 +368,7 @@ const TaskForm = () => {
             placeholder={t('Select recurrence')}
             divider={false}
             value={recurrenceText}
+            valueColor={theme.colors.onSurfaceVariant}
             onPress={handleToggleRecurrenceSelector}
           />
           {showRecurrenceSelector && formData && (

@@ -1,12 +1,17 @@
 {
   "Account": "Account",
   "Display Mode": "Display Mode",
+  "Edit Name": "Edit Name",
+  "Enter your name": "Enter your name",
+  "Failed to update name. Please try again.": "Failed to update name. Please try again.",
   "General": "General",
-  "Login": "Login",
   "Logout": "Logout",
   "Logout failed": "Logout failed, please try again",
   "Logout failed, please try again": "Logout failed, please try again",
+  "Name": "Name",
   "Reminder": "Reminder",
+  "Role": "Role",
+  "Save": "Save",
   "Text Size": "Text Size",
   "Voice Assistant": "Voice Assistant"
 }

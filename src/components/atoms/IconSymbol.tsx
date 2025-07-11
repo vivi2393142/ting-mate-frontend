@@ -15,7 +15,7 @@ type IconMapping = Record<SymbolViewProps['name'], ComponentProps<typeof Materia
  * - see Material Icons in the [Icons Directory](https://icons.expo.fyi).
  * - see SF Symbols in the [SF Symbols](https://developer.apple.com/sf-symbols/) app.
  */
-const MAPPING: IconMapping = {
+const MAPPING = {
   'house.fill': 'home',
   'paperplane.fill': 'send',
   'chevron.left.forwardslash.chevron.right': 'code',
@@ -31,6 +31,9 @@ const MAPPING: IconMapping = {
   microphone: 'mic',
   stop: 'stop',
   'xmark.circle': 'closecircleo',
+  person: 'person',
+  'person.2': 'people',
+  'arrow.left.and.right': 'compare-arrows',
 } as IconMapping;
 
 export type IconName = SymbolViewProps['name'];

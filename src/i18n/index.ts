@@ -5,6 +5,7 @@ import enUSCommon from '@/i18n/locales/en-US/common.json';
 import enUSConnect from '@/i18n/locales/en-US/connect.json';
 import enUSHome from '@/i18n/locales/en-US/home.json';
 import enUSLogin from '@/i18n/locales/en-US/login.json';
+import enUSRoleSelection from '@/i18n/locales/en-US/roleSelection.json';
 import enUSSettings from '@/i18n/locales/en-US/settings.json';
 import enUSTaskForm from '@/i18n/locales/en-US/taskForm.json';
 
@@ -12,6 +13,7 @@ import zhHantTWCommon from '@/i18n/locales/zh-Hant-TW/common.json';
 import zhHantTWConnect from '@/i18n/locales/zh-Hant-TW/connect.json';
 import zhHantTWHome from '@/i18n/locales/zh-Hant-TW/home.json';
 import zhHantTWLogin from '@/i18n/locales/zh-Hant-TW/login.json';
+import zhHantTWRoleSelection from '@/i18n/locales/zh-Hant-TW/roleSelection.json';
 import zhHantTWSettings from '@/i18n/locales/zh-Hant-TW/settings.json';
 import zhHantTWTaskForm from '@/i18n/locales/zh-Hant-TW/taskForm.json';
 
@@ -24,6 +26,7 @@ export const resources = {
     settings: enUSSettings,
     taskForm: enUSTaskForm,
     login: enUSLogin,
+    roleSelection: enUSRoleSelection,
   },
   'zh-Hant-TW': {
     common: zhHantTWCommon,
@@ -32,6 +35,7 @@ export const resources = {
     settings: zhHantTWSettings,
     taskForm: zhHantTWTaskForm,
     login: zhHantTWLogin,
+    roleSelection: zhHantTWRoleSelection,
   },
 } as const;
 
@@ -39,7 +43,7 @@ i18n.use(initReactI18next).init({
   resources,
   lng: 'en-US',
   fallbackLng: 'en-US',
-  ns: ['common', 'home', 'connect', 'settings', 'taskForm'],
+  ns: ['common', 'home', 'connect', 'settings', 'taskForm', 'login', 'roleSelection'],
   defaultNS,
   interpolation: {
     escapeValue: false,

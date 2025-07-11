@@ -17,6 +17,9 @@ interface MultiLineButtonProps {
   icon?: IconName;
   disabled?: boolean;
   multiline?: boolean; // true: text wrap, false: ellipsis
+  color?: string;
+  dense?: boolean;
+  valueAlign?: 'left' | 'right';
   children: ReactNode;
 }
 
@@ -26,6 +29,9 @@ const MultiLineButton = ({
   children,
   disabled = false,
   multiline = true,
+  color,
+  dense = true,
+  valueAlign = 'left',
 }: MultiLineButtonProps) => {
   const theme = useAppTheme();
   const styles = getMultiLineButtonStyles(theme);
@@ -35,17 +41,20 @@ const MultiLineButton = ({
     <TouchableRipple
       onPress={onPress}
       disabled={disabled}
-      style={[styles.button, disabled && styles.disabledButton]}
+      style={[styles.button, disabled && styles.disabledButton, !dense && styles.buttonNoDense]}
       rippleColor={theme.colors.primary + '22'}
       accessibilityRole="button"
     >
       <View style={styles.content}>
         <View style={styles.textContainer}>
-          <Text style={styles.text} {...textProps}>
+          <Text
+            style={[styles.text, valueAlign === 'right' && styles.textAlignRight, { color }]}
+            {...textProps}
+          >
             {children}
           </Text>
         </View>
-        {icon && <IconSymbol name={icon} size={16} color={theme.colors.onSurface} />}
+        {icon && <IconSymbol name={icon} size={16} color={color || theme.colors.onSurface} />}
       </View>
     </TouchableRipple>
   );
@@ -59,6 +68,7 @@ type FormInputProps = Omit<TextInputProps, 'mode' | 'value' | 'style' | 'onPress
   rightIconName?: IconName;
   style?: ViewStyle;
   multiline?: boolean;
+  valueColor?: string;
   onPress?: (e: GestureResponderEvent) => void;
 } & (
     | {
@@ -91,6 +101,7 @@ const Input = ({
   placeholder,
   rightIconName,
   multiline,
+  valueColor,
   onPress,
   onChangeValue,
   render,
@@ -102,7 +113,14 @@ const Input = ({
 
   if (render) return render();
   return onPress ? (
-    <MultiLineButton onPress={onPress} icon={rightIconName} multiline={multiline}>
+    <MultiLineButton
+      onPress={onPress}
+      icon={rightIconName}
+      multiline={multiline}
+      color={valueColor}
+      dense={rest.dense}
+      valueAlign={valueAlign}
+    >
       {value}
     </MultiLineButton>
   ) : (
@@ -114,6 +132,7 @@ const Input = ({
       mode="outlined"
       outlineColor="transparent"
       activeOutlineColor="transparent"
+      textColor={theme.colors.onSurfaceVariant}
       selectionColor={theme.colors.primary}
       placeholderTextColor={theme.colors.outline}
       {...rest}
@@ -147,7 +166,7 @@ const FormInput = ({
         style={[
           styles.inputContainer,
           !divider && styles.inputContainerNoDivider,
-          !dense && styles.inputContainerDense,
+          !dense && styles.inputContainerNoDense,
         ]}
       >
         <ThemedView
@@ -161,7 +180,7 @@ const FormInput = ({
             <Text style={styles.helperText}>{helperText}</Text>
           )}
         </ThemedView>
-        <Input {...rest} />
+        <Input dense={dense} {...rest} />
       </ThemedView>
     </ThemedView>
   );
@@ -170,7 +189,10 @@ const FormInput = ({
 export default FormInput;
 
 const getMultiLineButtonStyles = createStyles<
-  StyleRecord<'content' | 'button' | 'disabledButton' | 'textContainer', 'text'>
+  StyleRecord<
+    'content' | 'button' | 'buttonNoDense' | 'disabledButton' | 'textContainer',
+    'text' | 'textAlignRight'
+  >
 >({
   button: {
     alignItems: 'center',
@@ -178,6 +200,10 @@ const getMultiLineButtonStyles = createStyles<
     flex: 1,
     minHeight: 48,
     paddingHorizontal: StaticTheme.spacing.xs,
+  },
+  buttonNoDense: {
+    minHeight: 28,
+    paddingHorizontal: StaticTheme.spacing.xs * 1.5,
   },
   content: {
     alignItems: 'center',
@@ -195,8 +221,12 @@ const getMultiLineButtonStyles = createStyles<
     fontSize: ({ fonts }) => fonts.bodyLarge.fontSize,
     fontWeight: ({ fonts }) => fonts.bodyLarge.fontWeight,
   },
+  textAlignRight: {
+    textAlign: 'right',
+  },
   textContainer: {
     flex: 1,
+    paddingRight: StaticTheme.spacing.sm,
   },
 });
 
@@ -210,7 +240,7 @@ const getStyles = createStyles<
     | 'iconBox'
     | 'inputContainer'
     | 'inputContainerNoDivider'
-    | 'inputContainerDense'
+    | 'inputContainerNoDense'
     | 'labelContainer'
     | 'labelContainerAlignRight',
     'label' | 'input' | 'inputAlignRight' | 'contentStyle' | 'helperText'
@@ -243,9 +273,8 @@ const getStyles = createStyles<
   inputContainerNoDivider: {
     borderBottomWidth: 0,
   },
-  inputContainerDense: {
-    padding: StaticTheme.spacing.sm,
-    paddingLeft: StaticTheme.spacing.md,
+  inputContainerNoDense: {
+    paddingVertical: StaticTheme.spacing.xs * 1.5,
   },
   labelContainer: {
     minWidth: 72,

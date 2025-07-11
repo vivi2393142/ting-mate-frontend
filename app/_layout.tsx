@@ -10,7 +10,7 @@ import { configureFonts, PaperProvider } from 'react-native-paper';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 import queryClient from '@/api/queryClient';
-import { syncCurrentUserToStore, useCurrentUser } from '@/api/user';
+import { useCurrentUser } from '@/api/user';
 import useColorScheme from '@/hooks/useColorScheme';
 import '@/i18n';
 import { NotificationService } from '@/services/notification';
@@ -50,14 +50,10 @@ const CombinedThemeProvider = ({ children }: { children: ReactNode }) => {
   );
 };
 
-// User data sync handler
+// User data sync handler, data will be synced to store by queryClient
 const UserSyncHandler = () => {
   const { token, anonymousId } = useUserStore.getState();
-  const { data } = useCurrentUser({ enabled: !!(token || anonymousId) });
-
-  useEffect(() => {
-    if (data) syncCurrentUserToStore(data);
-  }, [data]);
+  useCurrentUser({ enabled: !!(token || anonymousId) });
 
   return null;
 };
