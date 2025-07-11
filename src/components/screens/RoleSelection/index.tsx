@@ -2,8 +2,11 @@ import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
 import { Fragment, useCallback, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
+import { Alert } from 'react-native';
 import { Text } from 'react-native-paper';
 
+import { useGetTasks } from '@/api/tasks';
+import { useTransitionUserRole } from '@/api/user';
 import useAppTheme from '@/hooks/useAppTheme';
 import useRoleTranslation from '@/hooks/useRoleTranslation';
 import useUserStore from '@/store/useUserStore';
@@ -28,6 +31,9 @@ const RoleSelectionScreen = () => {
   const router = useRouter();
   const params = useLocalSearchParams();
 
+  const transitionUserRoleMutation = useTransitionUserRole();
+  const { data: tasks = [] } = useGetTasks();
+
   // Check if user came from signup
   const isFromSignup = params.from === 'signup';
 
@@ -35,18 +41,79 @@ const RoleSelectionScreen = () => {
   const isAuthenticated = !!token;
 
   const [selectedRole, setSelectedRole] = useState<Role | null>(user?.role ?? null);
+  const [isSaving, setIsSaving] = useState(false);
 
   const handleRoleSelect = useCallback((role: Role) => {
     setSelectedRole(role);
   }, []);
 
+  const doTransition = useCallback(() => {
+    if (!selectedRole) return;
+
+    setIsSaving(true);
+    transitionUserRoleMutation.mutate(
+      { target_role: selectedRole },
+      {
+        onSuccess: () => {
+          router.back();
+        },
+        onError: () => {
+          Alert.alert(tCommon('Error'), t('Failed to update role. Please try again.'));
+        },
+        onSettled: () => {
+          setIsSaving(false);
+        },
+      },
+    );
+  }, [selectedRole, transitionUserRoleMutation, router, tCommon, t]);
+
   const handleConfirm = useCallback(() => {
-    if (selectedRole) {
-      // TODO: Update user role in store/API
-      console.log('Selected role:', selectedRole);
+    if (!selectedRole) return;
+
+    // 1. If the target role is the same as the current role, just go back without API call
+    if (selectedRole === user?.role) {
       router.back();
+      return;
     }
-  }, [selectedRole, router]);
+
+    // 2. If the user has any linked users, show an alert and do not call the API
+    if (user?.settings.linked && user.settings.linked.length > 0) {
+      Alert.alert(
+        t('Cannot Switch Role'),
+        t('You must remove all linked users before switching roles.'),
+        [
+          {
+            text: tCommon('Confirm'),
+            style: 'default',
+          },
+        ],
+      );
+      return;
+    }
+
+    // 3. If switching from carereceiver and has tasks, show a confirmation alert before API call
+    if (user?.role === Role.CARERECEIVER && tasks.length > 0) {
+      Alert.alert(
+        t('Switch Role?'),
+        t('Switching role will delete all your tasks. Are you sure?'),
+        [
+          {
+            text: tCommon('Cancel'),
+            style: 'cancel',
+          },
+          {
+            text: tCommon('Confirm'),
+            style: 'destructive',
+            onPress: () => doTransition(),
+          },
+        ],
+      );
+      return;
+    }
+
+    // 4. Otherwise, call the API to switch role
+    doTransition();
+  }, [selectedRole, user, tasks, t, tCommon, router, doTransition]);
 
   const handleSignInPress = useCallback(() => {
     router.push('/login');
@@ -129,16 +196,18 @@ const RoleSelectionScreen = () => {
         )}
         {isAuthenticated && (
           <Fragment>
-            <ThemedView style={styles.note}>
-              <IconSymbol name="arrow.left.and.right" size={20} color={theme.colors.onSurface} />
-              <Text style={styles.noteTitle}>{t('Switching roles?')}</Text>
-              <Text style={styles.noteText}>
-                {t(
-                  'Changing to Companion will remove your current tasks and connect you to a Core User.',
-                )}
-              </Text>
-            </ThemedView>
-            <ThemedButton disabled={!selectedRole} onPress={handleConfirm}>
+            {params.from !== 'signup' && (
+              <ThemedView style={styles.note}>
+                <IconSymbol name="arrow.left.and.right" size={20} color={theme.colors.onSurface} />
+                <Text style={styles.noteTitle}>{t('Switching roles?')}</Text>
+                <Text style={styles.noteText}>
+                  {t(
+                    'Changing to Companion will remove your current tasks and connect you to a Core User.',
+                  )}
+                </Text>
+              </ThemedView>
+            )}
+            <ThemedButton disabled={!selectedRole || isSaving} onPress={handleConfirm}>
               {tCommon('Save')}
             </ThemedButton>
           </Fragment>

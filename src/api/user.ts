@@ -102,6 +102,26 @@ export const useUpdateUserSettings = (
   });
 };
 
+export const useTransitionUserRole = (
+  options?: Omit<
+    UseMutationOptions<{ message: string }, Error, { target_role: Role }>,
+    'mutationFn'
+  >,
+) => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (payload: { target_role: Role }) => {
+      const res = await axiosClientWithAuth.post(API_PATH.USER_ROLE_TRANSITION, payload);
+      return res.data;
+    },
+    onSuccess: (data, variables, context) => {
+      queryClient.invalidateQueries({ queryKey: ['currentUser'] });
+      options?.onSuccess?.(data, variables, context);
+    },
+    ...options,
+  });
+};
+
 /* =============================================================================
  * Utility Functions
  * ============================================================================= */
