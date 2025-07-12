@@ -10,13 +10,14 @@ import ROUTES from '@/constants/routes';
 import useAppTheme from '@/hooks/useAppTheme';
 import useCurrentTime from '@/hooks/useCurrentTime';
 import useRecurrenceText from '@/hooks/useRecurrenceText';
-import { useUserDisplayMode, useUserTextSize } from '@/store/useUserStore';
+import useUserStore, { useUserDisplayMode, useUserTextSize } from '@/store/useUserStore';
 import { StaticTheme } from '@/theme';
 import type { Task } from '@/types/task';
-import { UserDisplayMode, UserTextSize } from '@/types/user';
+import { Role, UserDisplayMode, UserTextSize } from '@/types/user';
 import { createStyles, type StyleRecord } from '@/utils/createStyles';
 import { getNextNotificationTime, isTaskMissed, shouldTaskAppearToday } from '@/utils/taskUtils';
 
+import IconSymbol from '@/components/atoms/IconSymbol';
 import ScreenContainer from '@/components/atoms/ScreenContainer';
 import ThemedButton from '@/components/atoms/ThemedButton';
 import ExpandableSectionHeader from '@/components/screens/Home/ExpandableSectionHeader';
@@ -33,6 +34,12 @@ const HomeScreen = () => {
   const theme = useAppTheme();
   const styleParams = useMemo(() => ({ userTextSize }), [userTextSize]);
   const styles = getStyles(theme, styleParams);
+
+  // Get user data from store
+  const user = useUserStore((state) => state.user);
+  const isCaregiver = user?.role === Role.CAREGIVER;
+  const hasLinkedAccounts = user?.settings.linked && user.settings.linked.length > 0;
+  const shouldShowCaregiverWarning = isCaregiver && !hasLinkedAccounts;
 
   // Get current time with 1-minute update interval to avoid excessive recalculations
   const currentTime = useCurrentTime(60000);
@@ -148,6 +155,39 @@ const HomeScreen = () => {
     setIsOtherTasksExpanded((prev) => !prev);
   }, []);
 
+  const handleLinkAccount = useCallback(() => {
+    router.push(ROUTES.ACCOUNT_LINKING);
+  }, [router]);
+
+  // Show caregiver warning if user is caregiver without linked accounts
+  if (shouldShowCaregiverWarning) {
+    return (
+      <ScreenContainer style={styles.root} scrollable>
+        <Text variant="headlineSmall" style={styles.headline}>
+          {t('Todays Tasks')}
+        </Text>
+        <View>
+          <View style={styles.warningContainer}>
+            <IconSymbol
+              name="exclamationmark.triangle"
+              size={16}
+              color={theme.colors.error}
+              style={styles.warmingIcon}
+            />
+            <Text style={styles.warningText}>
+              {t(
+                'You haven’t linked with a companion yet. Link now to see and help manage their tasks.',
+              )}
+            </Text>
+          </View>
+          <ThemedButton onPress={handleLinkAccount} icon="link">
+            {t('Link Account')}
+          </ThemedButton>
+        </View>
+      </ScreenContainer>
+    );
+  }
+
   return (
     // TODO: add voice assistant button
     // TODO: add animation for collapsed tasks
@@ -257,8 +297,10 @@ const getStyles = createStyles<
     | 'addTaskButton'
     | 'bottomSpacer'
     | 'loadingContainer'
-    | 'emptyContainer',
-    'headline' | 'hintText'
+    | 'emptyContainer'
+    | 'noLinkContainer'
+    | 'warningContainer',
+    'headline' | 'hintText' | 'warmingIcon' | 'warningText'
   >,
   StyleParams
 >({
@@ -299,5 +341,23 @@ const getStyles = createStyles<
     fontSize: ({ fonts }) => fonts.bodyLarge.fontSize,
     fontWeight: ({ fonts }) => fonts.bodyLarge.fontWeight,
     lineHeight: ({ fonts }) => fonts.bodyLarge.lineHeight,
+  },
+  noLinkContainer: {
+    paddingHorizontal: StaticTheme.spacing.lg,
+  },
+  warningContainer: {
+    flexDirection: 'row',
+    gap: StaticTheme.spacing.sm,
+    marginBottom: StaticTheme.spacing.md,
+  },
+  warmingIcon: {
+    marginTop: StaticTheme.spacing.xs * 0.5,
+  },
+  warningText: {
+    flex: 1,
+    fontSize: ({ fonts }) => fonts.bodyMedium.fontSize,
+    fontWeight: ({ fonts }) => fonts.bodyMedium.fontWeight,
+    lineHeight: ({ fonts }) => fonts.bodyMedium.lineHeight,
+    color: ({ colors }) => colors.outline,
   },
 });

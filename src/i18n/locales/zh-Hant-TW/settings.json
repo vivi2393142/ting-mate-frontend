@@ -1,5 +1,6 @@
 {
   "Account": "Account",
+  "Are you sure you want to logout?": "Are you sure you want to logout?",
   "Display Mode": "Display Mode",
   "Edit Name": "Edit Name",
   "Enter your name": "Enter your name",
@@ -8,7 +9,6 @@
   "Linked": "Linked",
   "Linked Accounts": "Linked Accounts",
   "Logout": "Logout",
-  "Are you sure you want to logout?": "Are you sure you want to logout?",
   "Logout failed": "Logout failed, please try again",
   "Logout failed, please try again": "Logout failed, please try again",
   "Name": "Name",
