@@ -1,8 +1,13 @@
 {
   "Add Link": "Add Link",
+  "Are you sure you want to unlink": "Are you sure you want to unlink",
+  "Code copied to clipboard": "Code copied to clipboard",
+  "Code shared": "Code shared",
   "Copy code": "Copy code",
   "Enter invite code": "Enter invite code",
   "Enter the code shared by someone else": "Enter the code shared by someone else",
+  "Failed to generate invitation code. Please try again.": "Failed to generate invitation code. Please try again.",
+  "Failed to link account. Please try again.": "Failed to link account. Please try again.",
   "Get gentle updates when things are done": "Get gentle updates when things are done",
   "I Got a Code": "I Got a Code",
   "Invite Someone": "Invite Someone",
@@ -12,11 +17,13 @@
   "Link with Invite Code": "Link with Invite Code",
   "Linked Accounts": "Linked Accounts",
   "Linking Account": "Linking Account",
+  "No linked accounts yet. Use the options below to connect with someone.": "No linked accounts yet. Use the options below to connect with someone.",
   "Share": "Share",
   "Share Your Invite Code": "Share Your Invite Code",
   "Share tasks and stay with someone you care.": "Share tasks and stay with someone you care.",
   "Share this code to link and manage tasks together": "Share this code to link and manage tasks together",
   "Stay close, even when you're apart": "Stay close, even when you're apart",
   "Unlink": "Unlink",
+  "Unlink Account": "Unlink Account",
   "Why link accounts?": "Why link accounts?"
 }

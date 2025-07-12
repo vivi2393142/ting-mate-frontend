@@ -49,6 +49,10 @@ export const UserSchema = z.object({
   settings: UserSettingsSchema,
 });
 
+const RemoveLinkResponseSchema = z.object({
+  message: z.string(),
+});
+
 /* =============================================================================
  * Type Inferences
  * ============================================================================= */
@@ -56,6 +60,8 @@ export const UserSchema = z.object({
 type UserResponse = z.infer<typeof UserSchema>;
 
 export type UserSettingsUpdateRequest = Partial<z.infer<typeof UserSettingsSchema>>;
+
+type RemoveLinkResponse = z.infer<typeof RemoveLinkResponseSchema>;
 
 /* =============================================================================
  * Default Values
@@ -117,6 +123,22 @@ export const useTransitionUserRole = (
     onSuccess: (data, variables, context) => {
       queryClient.invalidateQueries({ queryKey: ['currentUser'] });
       options?.onSuccess?.(data, variables, context);
+    },
+    ...options,
+  });
+};
+
+export const useRemoveUserLink = (
+  options?: Omit<UseMutationOptions<RemoveLinkResponse, Error, string>, 'mutationFn'>,
+) => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (userEmail: string): Promise<RemoveLinkResponse> => {
+      const res = await axiosClientWithAuth.delete(`${API_PATH.USER_LINKS}/${userEmail}`);
+      return RemoveLinkResponseSchema.parse(res.data);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['currentUser'] });
     },
     ...options,
   });

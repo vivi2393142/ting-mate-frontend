@@ -174,7 +174,7 @@ const SettingsScreen = () => {
           valueAlign="right"
           rightIconName="chevron.right"
           dense={false}
-          label={t('Linked Account')}
+          label={t('Linked Accounts')}
           value={userState?.settings.linked?.length ? t('Linked') : '---'}
           valueColor={theme.colors.primary}
           onPress={handleAccountLinkingPress}

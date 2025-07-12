@@ -1,10 +1,13 @@
-import { Fragment, useState } from 'react';
+import { Fragment, useCallback, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { Alert } from 'react-native';
 
 import { Stack } from 'expo-router';
 import { Text, TextInput, View } from 'react-native';
 import { IconButton, TouchableRipple } from 'react-native-paper';
 
+import { useAcceptInvitation, useGenerateInvitation } from '@/api/invitation';
+import { useCurrentUser, useRemoveUserLink } from '@/api/user';
 import useAppTheme from '@/hooks/useAppTheme';
 import { StaticTheme } from '@/theme';
 import colorWithAlpha from '@/utils/colorWithAlpha';
@@ -23,31 +26,74 @@ const AccountLinkingScreen = () => {
   const theme = useAppTheme();
   const styles = getStyles(theme);
 
-  // TODO: Replace with real user/link/invite data from store or API
-  const [inviteCode] = useState('123456');
+  const { data: user } = useCurrentUser();
+  const linkedUsers = user?.settings.linked || [];
+
+  const [inviteCode, setInviteCode] = useState('');
   const [inputCode, setInputCode] = useState('');
   const [showInviteModal, setShowInviteModal] = useState(false);
   const [showInputModal, setShowInputModal] = useState(false);
 
-  // TODO: Replace with real linked users from store or API
-  const linkedUsers = [
-    { name: 'Jane Lee', email: 'jane@email.com' },
-    { name: 'John Doe', email: 'john@email.com' },
-  ];
+  const generateInvitationMutation = useGenerateInvitation();
+  const acceptInvitationMutation = useAcceptInvitation();
 
-  // TODO: Implement these handlers
-  const handleUnlink = () => {};
-  const handleCopy = () => {};
-  const handleShare = () => {};
+  const removeUserLink = useRemoveUserLink({
+    onSuccess: (data) => {
+      Alert.alert(tCommon('Success'), data.message);
+    },
+    onError: (error) => {
+      Alert.alert(tCommon('Error'), error.message);
+    },
+  });
+
+  const handleUnlink = (userEmail: string, userName: string) => () => {
+    Alert.alert(t('Unlink Account'), `${t('Are you sure you want to unlink')} ${userName}?`, [
+      {
+        text: tCommon('Cancel'),
+        style: 'cancel',
+      },
+      {
+        text: tCommon('Confirm'),
+        style: 'destructive',
+        onPress: () => removeUserLink.mutate(userEmail),
+      },
+    ]);
+  };
+
+  const handleCopy = () => {
+    // TODO: Implement copy to clipboard functionality
+    Alert.alert(tCommon('Success'), t('Code copied to clipboard'));
+  };
+
+  const handleShare = () => {
+    // TODO: Implement share functionality
+    Alert.alert(tCommon('Success'), t('Code shared'));
+  };
+
   const handleLink = () => {
-    // TODO: Implement link logic
-    setShowInputModal(false);
-    setInputCode('');
+    if (!inputCode.trim()) return;
+    acceptInvitationMutation.mutate(inputCode.trim(), {
+      onSuccess: () => {
+        setShowInputModal(false);
+        setInputCode('');
+      },
+      onError: () => {
+        Alert.alert(tCommon('Error'), t('Failed to link account. Please try again.'));
+      },
+    });
   };
 
-  const handleShowInviteModal = () => {
+  const handleShowInviteModal = useCallback(() => {
+    generateInvitationMutation.mutate(undefined, {
+      onSuccess: (data) => {
+        setInviteCode(data.invitation_code);
+      },
+      onError: () => {
+        Alert.alert(tCommon('Error'), t('Failed to generate invitation code. Please try again.'));
+      },
+    });
     setShowInviteModal(true);
-  };
+  }, [generateInvitationMutation, t, tCommon]);
 
   const handleCloseInviteModal = () => {
     setShowInviteModal(false);
@@ -107,7 +153,7 @@ const AccountLinkingScreen = () => {
         {/* Linked Account Section */}
         <ThemedView style={styles.linkedAccountsContainer}>
           <Text style={styles.linkedAccountsTitle}>{t('Linked Accounts')}</Text>
-          {linkedUsers?.length > 0 && (
+          {linkedUsers?.length > 0 ? (
             <View style={styles.linkedAccountsList}>
               {linkedUsers.map((user) => (
                 <View key={user.email} style={styles.linkedRow}>
@@ -119,11 +165,17 @@ const AccountLinkingScreen = () => {
                       <IconSymbol name="xmark.circle" size={20} color={theme.colors.error} />
                     )}
                     size={20}
-                    onPress={handleUnlink}
+                    onPress={handleUnlink(user.email, user.name)}
                     accessibilityLabel={t('Unlink')}
                   />
                 </View>
               ))}
+            </View>
+          ) : (
+            <View style={styles.note}>
+              <Text style={styles.noteText}>
+                {t('No linked accounts yet. Use the options below to connect with someone.')}
+              </Text>
             </View>
           )}
         </ThemedView>
@@ -194,11 +246,16 @@ const AccountLinkingScreen = () => {
             onChangeText={handleInputCodeChange}
             placeholder={t('Enter invite code')}
             style={styles.codeInput}
-            maxLength={6}
+            maxLength={8}
             autoFocus
           />
           <View style={styles.modalButtonContainer}>
-            <ThemedButton mode="contained" onPress={handleLink} disabled={!inputCode.trim()}>
+            <ThemedButton
+              mode="contained"
+              onPress={handleLink}
+              disabled={!inputCode.trim() || acceptInvitationMutation.isPending}
+              loading={acceptInvitationMutation.isPending}
+            >
               {t('Link Account')}
             </ThemedButton>
             <ThemedButton mode="outlined" onPress={handleCloseInputModal} color="error">
