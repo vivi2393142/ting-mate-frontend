@@ -14,11 +14,11 @@ import { Role } from '@/types/user';
 import colorWithAlpha from '@/utils/colorWithAlpha';
 import { createStyles, StyleRecord } from '@/utils/createStyles';
 
+import CommonModal from '@/components/atoms/CommonModal';
 import IconSymbol from '@/components/atoms/IconSymbol';
 import ScreenContainer from '@/components/atoms/ScreenContainer';
 import ThemedButton from '@/components/atoms/ThemedButton';
 import ThemedView from '@/components/atoms/ThemedView';
-import CommonModal from '@/components/screens/AccountLinking/CommonModal';
 
 const AccountLinkingScreen = () => {
   const { t } = useTranslation('accountLinking');
@@ -439,9 +439,10 @@ const getStyles = createStyles<
     flexDirection: 'row',
     gap: StaticTheme.spacing.sm,
     borderRadius: StaticTheme.borderRadius.s,
-    paddingHorizontal: StaticTheme.spacing.md,
+    paddingLeft: StaticTheme.spacing.md,
+    paddingRight: StaticTheme.spacing.xs * 0.5,
     borderWidth: 1,
-    borderColor: ({ colors }) => colorWithAlpha(colors.onSurfaceVariant, 0.5),
+    borderColor: ({ colors }) => colors.primary,
   },
   linkedName: {
     flex: 1,
@@ -466,9 +467,9 @@ const getStyles = createStyles<
     flex: 1,
     borderWidth: 1,
     minHeight: 100,
-    backgroundColor: 'transparent',
     borderRadius: StaticTheme.borderRadius.s,
     borderColor: ({ colors }) => colors.primary,
+    backgroundColor: ({ colors }) => colorWithAlpha(colors.primary, 0.05),
   },
   disabledCard: {
     borderColor: ({ colors }) => colors.outlineVariant,

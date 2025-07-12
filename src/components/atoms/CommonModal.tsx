@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react';
 
-import { Modal, Text, View } from 'react-native';
+import { Modal, Text, TouchableWithoutFeedback, View } from 'react-native';
 import { Portal } from 'react-native-paper';
 
 import useAppTheme from '@/hooks/useAppTheme';
@@ -34,24 +34,28 @@ const CommonModal = ({
   return (
     <Portal>
       <Modal visible={visible} onDismiss={onDismiss} transparent animationType="fade">
-        <ThemedView style={styles.modalOverlay}>
-          <ThemedView style={styles.modalContainer}>
-            {topIcon && (
-              <View style={styles.topIconContainer}>
-                <View style={styles.topIconBackground}>
-                  <IconSymbol name={topIcon} size={28} color={theme.colors.onPrimary} />
+        <TouchableWithoutFeedback onPress={onDismiss}>
+          <ThemedView style={styles.modalOverlay}>
+            <TouchableWithoutFeedback onPress={(e) => e.stopPropagation()}>
+              <ThemedView style={styles.modalContainer}>
+                {topIcon && (
+                  <View style={styles.topIconContainer}>
+                    <View style={styles.topIconBackground}>
+                      <IconSymbol name={topIcon} size={28} color={theme.colors.onPrimary} />
+                    </View>
+                  </View>
+                )}
+                <View style={styles.content}>
+                  <View style={styles.titleWrapper}>
+                    <Text style={styles.title}>{title}</Text>
+                    {subtitle && <Text style={styles.subtitle}>{subtitle}</Text>}
+                  </View>
+                  {children}
                 </View>
-              </View>
-            )}
-            <View style={styles.content}>
-              <View style={styles.titleWrapper}>
-                <Text style={styles.title}>{title}</Text>
-                {subtitle && <Text style={styles.subtitle}>{subtitle}</Text>}
-              </View>
-              {children}
-            </View>
+              </ThemedView>
+            </TouchableWithoutFeedback>
           </ThemedView>
-        </ThemedView>
+        </TouchableWithoutFeedback>
       </Modal>
     </Portal>
   );

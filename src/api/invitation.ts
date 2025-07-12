@@ -17,8 +17,9 @@ const InvitationResponseSchema = z.object({
 const AcceptInvitationResponseSchema = z.object({
   message: z.string(),
   linked_user: z.object({
-    email: z.string(),
+    id: z.string(),
     name: z.string(),
+    role: z.string(),
   }),
 });
 

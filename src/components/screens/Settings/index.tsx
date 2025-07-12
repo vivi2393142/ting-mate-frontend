@@ -2,6 +2,7 @@ import { useRouter } from 'expo-router';
 import { useCallback, useMemo, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 
+import { Alert } from 'react-native';
 import { List } from 'react-native-paper';
 
 import { useLogout } from '@/api/auth';
@@ -101,9 +102,21 @@ const SettingsScreen = () => {
   }, [router]);
 
   const handleLogout = useCallback(() => {
-    logoutMutation();
-    router.push(ROUTES.LOGIN);
-  }, [logoutMutation, router]);
+    Alert.alert(t('Logout'), t('Are you sure you want to logout?'), [
+      {
+        text: tCommon('Cancel'),
+        style: 'destructive',
+      },
+      {
+        text: tCommon('Confirm'),
+        style: 'cancel',
+        onPress: () => {
+          logoutMutation();
+          router.push(ROUTES.LOGIN);
+        },
+      },
+    ]);
+  }, [logoutMutation, router, t, tCommon]);
 
   const handleAccountLinkingPress = useCallback(() => {
     router.push({ pathname: ROUTES.ACCOUNT_LINKING });
