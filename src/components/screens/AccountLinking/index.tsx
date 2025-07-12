@@ -10,6 +10,7 @@ import { useAcceptInvitation, useGenerateInvitation } from '@/api/invitation';
 import { useCurrentUser, useRemoveUserLink } from '@/api/user';
 import useAppTheme from '@/hooks/useAppTheme';
 import { StaticTheme } from '@/theme';
+import { Role } from '@/types/user';
 import colorWithAlpha from '@/utils/colorWithAlpha';
 import { createStyles, StyleRecord } from '@/utils/createStyles';
 
@@ -28,6 +29,11 @@ const AccountLinkingScreen = () => {
 
   const { data: user } = useCurrentUser();
   const linkedUsers = user?.settings.linked || [];
+
+  // Check if user is caregiver and has linked accounts
+  const isCaregiver = user?.role === Role.CAREGIVER;
+  const hasLinkedAccounts = linkedUsers.length > 0;
+  const shouldDisableAddLink = isCaregiver && hasLinkedAccounts;
 
   const [inviteCode, setInviteCode] = useState('');
   const [inviteExpiresAt, setInviteExpiresAt] = useState<string>('');
@@ -90,7 +96,10 @@ const AccountLinkingScreen = () => {
         setInputCode('');
       },
       onError: () => {
-        Alert.alert(tCommon('Error'), t('Failed to link account. Please try again.'));
+        Alert.alert(
+          tCommon('Error'),
+          t('Failed to link account. Make sure the code is correct and not expired.'),
+        );
       },
     });
   };
@@ -156,7 +165,7 @@ const AccountLinkingScreen = () => {
       >
         {/* desc Section */}
         <ThemedView style={styles.descContainer}>
-          <ThemedView>
+          <ThemedView style={styles.descTitleContainer}>
             <Text style={styles.descTitle}>{t('Link Account with Others')}</Text>
             <Text style={styles.descSubtitle}>
               {t('Share tasks and stay with someone you care.')}
@@ -194,35 +203,62 @@ const AccountLinkingScreen = () => {
               ))}
             </View>
           ) : (
-            <View style={styles.note}>
-              <Text style={styles.noteText}>
-                {t('No linked accounts yet. Use the options below to connect with someone.')}
-              </Text>
-            </View>
+            <Text style={styles.descSubtitle}>
+              {t('No linked accounts yet. Use the options below to connect with someone.')}
+            </Text>
           )}
         </ThemedView>
         {/* Add Link Section */}
         <ThemedView style={styles.addLinkContainer}>
           <Text style={styles.addLinkTitle}>{t('Add Link')}</Text>
+          {shouldDisableAddLink && (
+            <View style={styles.warningContainer}>
+              <IconSymbol
+                name="exclamationmark.triangle"
+                size={16}
+                color={theme.colors.error}
+                style={styles.warmingIcon}
+              />
+              <Text style={styles.noteText}>
+                {t(
+                  'Caregivers can only link with one account. To link other account, please remove existing links first.',
+                )}
+              </Text>
+            </View>
+          )}
           <View style={styles.addLinkContent}>
             <TouchableRipple
               onPress={handleShowInviteModal}
-              style={styles.actionCard}
+              style={[styles.actionCard, shouldDisableAddLink && styles.disabledCard]}
               rippleColor={colorWithAlpha(theme.colors.primary, 0.1)}
+              disabled={shouldDisableAddLink}
             >
               <View style={styles.actionCardContent}>
-                <IconSymbol name="qrcode" size={24} color={theme.colors.primary} />
-                <Text style={styles.actionCardText}>{t('Invite Someone')}</Text>
+                <IconSymbol
+                  name="qrcode"
+                  size={24}
+                  color={shouldDisableAddLink ? theme.colors.outlineVariant : theme.colors.primary}
+                />
+                <Text style={[styles.actionCardText, shouldDisableAddLink && styles.disabledText]}>
+                  {t('Invite Someone')}
+                </Text>
               </View>
             </TouchableRipple>
             <TouchableRipple
               onPress={handleShowInputModal}
-              style={styles.actionCard}
+              style={[styles.actionCard, shouldDisableAddLink && styles.disabledCard]}
               rippleColor={colorWithAlpha(theme.colors.primary, 0.1)}
+              disabled={shouldDisableAddLink}
             >
               <View style={styles.actionCardContent}>
-                <IconSymbol name="plus" size={24} color={theme.colors.primary} />
-                <Text style={styles.actionCardText}>{t('I Got a Code')}</Text>
+                <IconSymbol
+                  name="plus"
+                  size={24}
+                  color={shouldDisableAddLink ? theme.colors.outlineVariant : theme.colors.primary}
+                />
+                <Text style={[styles.actionCardText, shouldDisableAddLink && styles.disabledText]}>
+                  {t('I Got a Code')}
+                </Text>
               </View>
             </TouchableRipple>
           </View>
@@ -307,6 +343,7 @@ const getStyles = createStyles<
     | 'container'
     | 'content'
     | 'descContainer'
+    | 'descTitleContainer'
     | 'note'
     | 'purposeRow'
     | 'linkedAccountsContainer'
@@ -316,9 +353,11 @@ const getStyles = createStyles<
     | 'addLinkContent'
     | 'actionCard'
     | 'actionCardContent'
+    | 'disabledCard'
     | 'codeDisplay'
     | 'modalButtonContainer'
-    | 'expiryContainer',
+    | 'expiryContainer'
+    | 'warningContainer',
     | 'descTitle'
     | 'descSubtitle'
     | 'noteTitle'
@@ -327,9 +366,11 @@ const getStyles = createStyles<
     | 'linkedName'
     | 'addLinkTitle'
     | 'actionCardText'
+    | 'disabledText'
     | 'codeText'
     | 'codeInput'
     | 'expiryText'
+    | 'warmingIcon'
   >
 >({
   container: {
@@ -338,10 +379,13 @@ const getStyles = createStyles<
   content: {
     flex: 1,
     paddingHorizontal: StaticTheme.spacing.sm,
-    gap: StaticTheme.spacing.md,
+    gap: StaticTheme.spacing.md * 1.5,
   },
   descContainer: {
     gap: StaticTheme.spacing.sm * 1.5,
+  },
+  descTitleContainer: {
+    gap: StaticTheme.spacing.xs,
   },
   descTitle: {
     fontSize: ({ fonts }) => fonts.titleMedium.fontSize,
@@ -426,6 +470,10 @@ const getStyles = createStyles<
     borderRadius: StaticTheme.borderRadius.s,
     borderColor: ({ colors }) => colors.primary,
   },
+  disabledCard: {
+    borderColor: ({ colors }) => colors.outlineVariant,
+    backgroundColor: ({ colors }) => colorWithAlpha(colors.surfaceVariant, 0.5),
+  },
   actionCardContent: {
     flex: 1,
     alignItems: 'center',
@@ -438,6 +486,9 @@ const getStyles = createStyles<
     fontWeight: ({ fonts }) => fonts.bodyLarge.fontWeight,
     lineHeight: ({ fonts }) => fonts.bodyLarge.lineHeight,
     color: ({ colors }) => colors.primary,
+  },
+  disabledText: {
+    color: ({ colors }) => colors.outlineVariant,
   },
   codeDisplay: {
     paddingVertical: StaticTheme.spacing.sm,
@@ -481,6 +532,13 @@ const getStyles = createStyles<
     fontWeight: ({ fonts }) => fonts.bodySmall.fontWeight,
     lineHeight: ({ fonts }) => fonts.bodySmall.lineHeight,
     color: ({ colors }) => colors.outline,
+  },
+  warmingIcon: {
+    marginTop: StaticTheme.spacing.xs * 0.5,
+  },
+  warningContainer: {
+    flexDirection: 'row',
+    gap: StaticTheme.spacing.sm,
   },
 });
 

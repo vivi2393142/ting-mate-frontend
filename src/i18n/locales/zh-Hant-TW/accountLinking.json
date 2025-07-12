@@ -1,6 +1,7 @@
 {
   "Add Link": "Add Link",
   "Are you sure you want to unlink": "Are you sure you want to unlink",
+  "Caregivers can only link with one account. To link other account, please remove existing links first.": "Caregivers can only link with one account. To link other account, please remove existing links first.",
   "Code copied to clipboard": "Code copied to clipboard",
   "Code shared": "Code shared",
   "Copy code": "Copy code",
@@ -9,7 +10,7 @@
   "Expires at": "Expires at",
   "Failed to copy code to clipboard": "Failed to copy code to clipboard",
   "Failed to generate invitation code. Please try again.": "Failed to generate invitation code. Please try again.",
-  "Failed to link account. Please try again.": "Failed to link account. Please try again.",
+  "Failed to link account. Make sure the code is correct and not expired.": "Failed to link account. Make sure the code is correct and not expired.",
   "Failed to share code": "Failed to share code",
   "Get gentle updates when things are done": "Get gentle updates when things are done",
   "I Got a Code": "I Got a Code",
