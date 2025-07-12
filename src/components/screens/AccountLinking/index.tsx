@@ -1,9 +1,9 @@
+import * as Clipboard from 'expo-clipboard';
 import { Fragment, useCallback, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Alert } from 'react-native';
 
 import { Stack } from 'expo-router';
-import { Text, TextInput, View } from 'react-native';
+import { Alert, Share, Text, TextInput, View } from 'react-native';
 import { IconButton, TouchableRipple } from 'react-native-paper';
 
 import { useAcceptInvitation, useGenerateInvitation } from '@/api/invitation';
@@ -30,9 +30,11 @@ const AccountLinkingScreen = () => {
   const linkedUsers = user?.settings.linked || [];
 
   const [inviteCode, setInviteCode] = useState('');
+  const [inviteExpiresAt, setInviteExpiresAt] = useState<string>('');
   const [inputCode, setInputCode] = useState('');
   const [showInviteModal, setShowInviteModal] = useState(false);
   const [showInputModal, setShowInputModal] = useState(false);
+  const [copySuccess, setCopySuccess] = useState(false);
 
   const generateInvitationMutation = useGenerateInvitation();
   const acceptInvitationMutation = useAcceptInvitation();
@@ -60,15 +62,25 @@ const AccountLinkingScreen = () => {
     ]);
   };
 
-  const handleCopy = () => {
-    // TODO: Implement copy to clipboard functionality
-    Alert.alert(tCommon('Success'), t('Code copied to clipboard'));
-  };
+  const handleCopy = useCallback(async () => {
+    try {
+      await Clipboard.setStringAsync(inviteCode);
+      setCopySuccess(true);
+      setTimeout(() => setCopySuccess(false), 2000);
+    } catch {
+      Alert.alert(tCommon('Error'), t('Failed to copy code to clipboard'));
+    }
+  }, [inviteCode, tCommon, t]);
 
-  const handleShare = () => {
-    // TODO: Implement share functionality
-    Alert.alert(tCommon('Success'), t('Code shared'));
-  };
+  const handleShare = useCallback(async () => {
+    try {
+      await Share.share({
+        message: `${t("I'm using Ting Mate to manage tasks and stay in touch.")}\n${t('Join me with this code')}: ${inviteCode}`,
+      });
+    } catch {
+      Alert.alert(tCommon('Error'), t('Failed to share code'));
+    }
+  }, [inviteCode, t, tCommon]);
 
   const handleLink = () => {
     if (!inputCode.trim()) return;
@@ -87,6 +99,7 @@ const AccountLinkingScreen = () => {
     generateInvitationMutation.mutate(undefined, {
       onSuccess: (data) => {
         setInviteCode(data.invitation_code);
+        setInviteExpiresAt(data.expires_at);
       },
       onError: () => {
         Alert.alert(tCommon('Error'), t('Failed to generate invitation code. Please try again.'));
@@ -110,6 +123,15 @@ const AccountLinkingScreen = () => {
 
   const handleInputCodeChange = (text: string) => {
     setInputCode(text);
+  };
+
+  const formatExpiryDate = (expiresAt: string) => {
+    try {
+      const date = new Date(expiresAt);
+      return date.toLocaleString();
+    } catch {
+      return '';
+    }
   };
 
   const purposeItems = [
@@ -217,13 +239,25 @@ const AccountLinkingScreen = () => {
             <Text style={styles.codeText}>{inviteCode}</Text>
             <IconButton
               icon={() => (
-                <IconSymbol name="document.on.document" size={20} color={theme.colors.primary} />
+                <IconSymbol
+                  name={copySuccess ? 'checkmark.circle.fill' : 'document.on.document'}
+                  size={20}
+                  color={theme.colors.primary}
+                />
               )}
               size={20}
               onPress={handleCopy}
               accessibilityLabel={t('Copy code')}
             />
           </View>
+          {inviteExpiresAt && (
+            <View style={styles.expiryContainer}>
+              <IconSymbol name="clock" size={12} color={theme.colors.outline} />
+              <Text style={styles.expiryText}>
+                {t('Expires at')}: {formatExpiryDate(inviteExpiresAt)}
+              </Text>
+            </View>
+          )}
           <View style={styles.modalButtonContainer}>
             <ThemedButton mode="contained" icon="square.and.arrow.up" onPress={handleShare}>
               {t('Share')}
@@ -283,7 +317,8 @@ const getStyles = createStyles<
     | 'actionCard'
     | 'actionCardContent'
     | 'codeDisplay'
-    | 'modalButtonContainer',
+    | 'modalButtonContainer'
+    | 'expiryContainer',
     | 'descTitle'
     | 'descSubtitle'
     | 'noteTitle'
@@ -294,6 +329,7 @@ const getStyles = createStyles<
     | 'actionCardText'
     | 'codeText'
     | 'codeInput'
+    | 'expiryText'
   >
 >({
   container: {
@@ -410,7 +446,7 @@ const getStyles = createStyles<
     borderRadius: StaticTheme.borderRadius.s,
     alignItems: 'center',
     flexDirection: 'row',
-    marginBottom: StaticTheme.spacing.md * 1.5,
+    marginBottom: StaticTheme.spacing.xs,
     backgroundColor: ({ colors }) => colors.surfaceVariant,
   },
   codeText: {
@@ -433,6 +469,18 @@ const getStyles = createStyles<
   },
   modalButtonContainer: {
     gap: StaticTheme.spacing.sm * 1.5,
+  },
+  expiryContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: StaticTheme.spacing.xs,
+    marginBottom: StaticTheme.spacing.md * 1.5,
+  },
+  expiryText: {
+    fontSize: ({ fonts }) => fonts.bodySmall.fontSize,
+    fontWeight: ({ fonts }) => fonts.bodySmall.fontWeight,
+    lineHeight: ({ fonts }) => fonts.bodySmall.lineHeight,
+    color: ({ colors }) => colors.outline,
   },
 });
 
