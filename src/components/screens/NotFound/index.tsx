@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { Link, Stack } from 'expo-router';
 import { Text } from 'react-native-paper';
 
+import ROUTES from '@/constants/routes';
 import useAppTheme from '@/hooks/useAppTheme';
 import { StaticTheme } from '@/theme';
 import { createStyles } from '@/utils/createStyles';
@@ -21,7 +22,7 @@ const NotFoundScreen = () => {
       <Stack.Screen options={{ title: t('Oops!') }} />
       <ThemedView isRoot style={styles.container}>
         <Text>{t('This screen does not exist.')}</Text>
-        <Link href="/" style={styles.link}>
+        <Link href={ROUTES.HOME} style={styles.link}>
           {/* TODO: Add link style */}
           <Text>{t('Go to home screen!')}</Text>
         </Link>

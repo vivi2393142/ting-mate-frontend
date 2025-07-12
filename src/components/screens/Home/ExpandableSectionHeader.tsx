@@ -44,6 +44,7 @@ const ExpandableSectionHeader = ({
         styles.collapseListItemTitle,
         isExpanded && styles.collapseListItemTitleExpanded,
       ]}
+      containerStyle={styles.collapseListItemContent}
     />
   );
 };
@@ -52,7 +53,7 @@ export default ExpandableSectionHeader;
 
 const getStyles = createStyles<
   StyleRecord<
-    'collapseListItem' | 'collapseListItemExpanded',
+    'collapseListItem' | 'collapseListItemExpanded' | 'collapseListItemContent',
     'collapseListItemTitle' | 'collapseListItemTitleExpanded'
   >
 >({
@@ -73,5 +74,8 @@ const getStyles = createStyles<
   },
   collapseListItemTitleExpanded: {
     color: ({ colors }) => colors.onSurface,
+  },
+  collapseListItemContent: {
+    alignItems: 'center',
   },
 });

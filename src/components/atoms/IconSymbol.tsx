@@ -31,10 +31,16 @@ const MAPPING = {
   microphone: 'mic',
   stop: 'stop',
   'xmark.circle': 'closecircleo',
+  'document.on.document': 'content-copy',
   person: 'person',
   'person.2': 'people',
   'arrow.left.and.right': 'compare-arrows',
-} as IconMapping;
+  checklist: 'checklist',
+  bell: 'bell',
+  heart: 'heart',
+  qrcode: 'qr-code',
+  'square.and.arrow.up': 'share',
+} as unknown as IconMapping;
 
 export type IconName = SymbolViewProps['name'];
 

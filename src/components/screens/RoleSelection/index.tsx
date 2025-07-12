@@ -7,6 +7,7 @@ import { Text } from 'react-native-paper';
 
 import { useGetTasks } from '@/api/tasks';
 import { useTransitionUserRole } from '@/api/user';
+import ROUTES from '@/constants/routes';
 import useAppTheme from '@/hooks/useAppTheme';
 import useRoleTranslation from '@/hooks/useRoleTranslation';
 import useUserStore from '@/store/useUserStore';
@@ -16,6 +17,7 @@ import colorWithAlpha from '@/utils/colorWithAlpha';
 import { createStyles, type StyleRecord } from '@/utils/createStyles';
 
 import IconSymbol from '@/components/atoms/IconSymbol';
+import ScreenContainer from '@/components/atoms/ScreenContainer';
 import ThemedButton from '@/components/atoms/ThemedButton';
 import ThemedView from '@/components/atoms/ThemedView';
 
@@ -116,7 +118,7 @@ const RoleSelectionScreen = () => {
   }, [selectedRole, user, tasks, t, tCommon, router, doTransition]);
 
   const handleSignInPress = useCallback(() => {
-    router.push('/login');
+    router.push(ROUTES.LOGIN);
   }, [router]);
 
   const roles = [
@@ -133,15 +135,20 @@ const RoleSelectionScreen = () => {
   ];
 
   return (
-    <ThemedView style={styles.container}>
+    <Fragment>
       <Stack.Screen
         options={{
-          title: t('Choose Your Role'),
+          title: t('Role Selection'),
           headerBackTitle: isFromSignup ? undefined : tCommon('Back'),
           headerBackVisible: !isFromSignup,
         }}
       />
-      <ThemedView style={styles.content}>
+      <ScreenContainer
+        isRoot={false}
+        scrollable
+        style={styles.container}
+        contentContainerStyle={styles.content}
+      >
         <ThemedView style={styles.header}>
           <Text style={styles.headerTitle}>{t('Choose Your Role')}</Text>
           <Text style={styles.headerSubtitle}>{t('Select how you’ll use Ting Mate!')}</Text>
@@ -157,7 +164,6 @@ const RoleSelectionScreen = () => {
                 selectedRole === roleOption.role && styles.selectedRoleCard,
                 !isAuthenticated && styles.disabledRoleCard,
               ]}
-              contentStyle={styles.roleCardContent}
               disabled={!isAuthenticated}
             >
               <ThemedView style={styles.roleContent}>
@@ -179,12 +185,14 @@ const RoleSelectionScreen = () => {
         {!isAuthenticated && (
           <Fragment>
             <ThemedView style={styles.note}>
-              <IconSymbol
-                name="exclamationmark.triangle.fill"
-                size={20}
-                color={theme.colors.error}
-              />
-              <Text style={styles.noteTitle}>{t('Sign in required')}</Text>
+              <ThemedView style={styles.noteTitleWrapper}>
+                <IconSymbol
+                  name="exclamationmark.triangle.fill"
+                  size={20}
+                  color={theme.colors.error}
+                />
+                <Text style={styles.noteTitle}>{t('Sign in required')}</Text>
+              </ThemedView>
               <Text style={styles.noteText}>
                 {t('You need to sign in to save your role selection.')}
               </Text>
@@ -198,8 +206,14 @@ const RoleSelectionScreen = () => {
           <Fragment>
             {params.from !== 'signup' && (
               <ThemedView style={styles.note}>
-                <IconSymbol name="arrow.left.and.right" size={20} color={theme.colors.onSurface} />
-                <Text style={styles.noteTitle}>{t('Switching roles?')}</Text>
+                <ThemedView style={styles.noteTitleWrapper}>
+                  <IconSymbol
+                    name="arrow.left.and.right"
+                    size={20}
+                    color={theme.colors.onSurfaceVariant}
+                  />
+                  <Text style={styles.noteTitle}>{t('Switching roles?')}</Text>
+                </ThemedView>
                 <Text style={styles.noteText}>
                   {t(
                     'Changing to Companion will remove your current tasks and connect you to a Core User.',
@@ -212,8 +226,8 @@ const RoleSelectionScreen = () => {
             </ThemedButton>
           </Fragment>
         )}
-      </ThemedView>
-    </ThemedView>
+      </ScreenContainer>
+    </Fragment>
   );
 };
 
@@ -226,10 +240,10 @@ const getStyles = createStyles<
     | 'roleCard'
     | 'disabledRoleCard'
     | 'selectedRoleCard'
-    | 'roleCardContent'
     | 'roleContent'
     | 'roleTextContainer'
-    | 'note',
+    | 'note'
+    | 'noteTitleWrapper',
     | 'headerTitle'
     | 'headerSubtitle'
     | 'roleTitle'
@@ -244,7 +258,7 @@ const getStyles = createStyles<
   },
   content: {
     flex: 1,
-    padding: StaticTheme.spacing.lg,
+    paddingHorizontal: StaticTheme.spacing.sm,
     gap: StaticTheme.spacing.lg,
   },
   header: {
@@ -253,13 +267,13 @@ const getStyles = createStyles<
   headerTitle: {
     fontSize: ({ fonts }) => fonts.headlineSmall.fontSize,
     fontWeight: ({ fonts }) => fonts.headlineSmall.fontWeight,
-    textAlign: 'center',
+    lineHeight: ({ fonts }) => fonts.headlineSmall.lineHeight,
   },
   headerSubtitle: {
-    fontSize: ({ fonts }) => fonts.bodyLarge.fontSize,
-    fontWeight: ({ fonts }) => fonts.bodyLarge.fontWeight,
+    fontSize: ({ fonts }) => fonts.bodyMedium.fontSize,
+    fontWeight: ({ fonts }) => fonts.bodyMedium.fontWeight,
+    lineHeight: ({ fonts }) => fonts.bodyMedium.lineHeight,
     color: ({ colors }) => colors.outline,
-    textAlign: 'center',
   },
   roleContainer: {
     gap: StaticTheme.spacing.sm * 1.5,
@@ -274,10 +288,6 @@ const getStyles = createStyles<
   selectedRoleCard: {
     backgroundColor: ({ colors }) => colorWithAlpha(colors.primary, 0.05),
   },
-  roleCardContent: {
-    paddingHorizontal: StaticTheme.spacing.xs,
-    paddingVertical: StaticTheme.spacing.sm,
-  },
   roleContent: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -286,13 +296,14 @@ const getStyles = createStyles<
   },
   roleTextContainer: {
     flex: 1,
-    gap: StaticTheme.spacing.xs,
+    gap: StaticTheme.spacing.xs * 1.5,
     backgroundColor: 'transparent',
   },
   roleTitle: {
     color: ({ colors }) => colors.primary,
     fontSize: ({ fonts }) => fonts.titleLarge.fontSize,
     fontWeight: ({ fonts }) => fonts.titleLarge.fontWeight,
+    lineHeight: ({ fonts }) => fonts.titleLarge.lineHeight,
   },
   disabledRoleTitle: {
     color: ({ colors }) => colors.outline,
@@ -300,24 +311,32 @@ const getStyles = createStyles<
   roleSubtitle: {
     fontSize: ({ fonts }) => fonts.bodyMedium.fontSize,
     fontWeight: ({ fonts }) => fonts.bodyMedium.fontWeight,
+    lineHeight: ({ fonts }) => fonts.bodyMedium.lineHeight,
     color: ({ colors }) => colors.outline,
   },
   note: {
     backgroundColor: ({ colors }) => colors.surfaceVariant,
-    padding: StaticTheme.spacing.md,
+    paddingVertical: StaticTheme.spacing.md * 1.25,
+    paddingHorizontal: StaticTheme.spacing.lg,
     borderRadius: StaticTheme.borderRadius.s,
+    gap: StaticTheme.spacing.sm * 1.25,
+  },
+  noteTitleWrapper: {
+    backgroundColor: 'transparent',
+    flexDirection: 'row',
     alignItems: 'center',
-    gap: StaticTheme.spacing.xs,
+    gap: StaticTheme.spacing.sm * 1.25,
   },
   noteTitle: {
     fontSize: ({ fonts }) => fonts.titleSmall.fontSize,
     fontWeight: ({ fonts }) => fonts.titleSmall.fontWeight,
-    textAlign: 'center',
+    lineHeight: ({ fonts }) => fonts.titleSmall.lineHeight,
+    color: ({ colors }) => colors.onSurfaceVariant,
   },
   noteText: {
-    textAlign: 'center',
-    fontSize: ({ fonts }) => fonts.bodySmall.fontSize,
-    fontWeight: ({ fonts }) => fonts.bodySmall.fontWeight,
+    fontSize: ({ fonts }) => fonts.bodyMedium.fontSize,
+    fontWeight: ({ fonts }) => fonts.bodyMedium.fontWeight,
+    lineHeight: ({ fonts }) => fonts.bodyMedium.lineHeight,
     color: ({ colors }) => colors.outline,
   },
 });

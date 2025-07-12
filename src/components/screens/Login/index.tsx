@@ -14,6 +14,7 @@ import { createStyles, type StyleRecord } from '@/utils/createStyles';
 
 import ThemedButton from '@/components/atoms/ThemedButton';
 import ThemedView from '@/components/atoms/ThemedView';
+import ROUTES from '@/constants/routes';
 import useUserStore from '@/store/useUserStore';
 
 const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -83,7 +84,7 @@ const LoginScreen = () => {
       {
         onSuccess: () => {
           router.replace({
-            pathname: '/role-selection',
+            pathname: ROUTES.ROLE_SELECTION,
             params: { from: 'signup' },
           });
         },

@@ -1,7 +1,9 @@
-import { axiosClientWithAuth } from '@/api/axiosClient';
-import type { DayOfWeek, RecurrenceRule, RecurrenceUnit, ReminderTime, Task } from '@/types/task';
 import { useMutation, useQuery, useQueryClient, type UseQueryOptions } from '@tanstack/react-query';
 import { z } from 'zod';
+
+import { axiosClientWithAuth } from '@/api/axiosClient';
+import API_PATH from '@/api/path';
+import type { DayOfWeek, RecurrenceRule, RecurrenceUnit, ReminderTime, Task } from '@/types/task';
 
 /* =============================================================================
  * API Schema Definitions
@@ -144,7 +146,7 @@ export const useGetTasks = (options?: Omit<UseQueryOptions<Task[]>, 'queryKey' |
   useQuery<Task[]>({
     queryKey: ['tasks'],
     queryFn: async (): Promise<Task[]> => {
-      const res = await axiosClientWithAuth.get('/tasks');
+      const res = await axiosClientWithAuth.get(API_PATH.TASKS);
       const validatedData = APITaskListResponseSchema.parse(res.data);
 
       // Filter out invalid tasks and only keep valid ones
@@ -184,7 +186,7 @@ export const useCreateTask = () => {
       recurrence?: RecurrenceRule;
     }): Promise<void> => {
       const requestData = transformTaskFormDataToAPI(formData);
-      await axiosClientWithAuth.post('/tasks', requestData);
+      await axiosClientWithAuth.post(API_PATH.TASKS, requestData);
     },
     onSuccess: () => {
       // Invalidate and refetch tasks list

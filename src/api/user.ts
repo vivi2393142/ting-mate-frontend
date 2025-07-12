@@ -77,7 +77,7 @@ export const useCurrentUser = (
   useQuery<UserResponse>({
     queryKey: ['currentUser'],
     queryFn: async (): Promise<UserResponse> => {
-      const res = await axiosClientWithAuth.get('/user/me');
+      const res = await axiosClientWithAuth.get(API_PATH.USER_ME);
       return UserSchema.parse(res.data);
     },
     ...options,

@@ -1,11 +1,12 @@
+import { useRouter } from 'expo-router';
 import { useCallback, useMemo, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 
-import { useRouter } from 'expo-router';
 import { List } from 'react-native-paper';
 
 import { useLogout } from '@/api/auth';
 import { useUpdateUserSettings } from '@/api/user';
+import ROUTES from '@/constants/routes';
 import useAppTheme from '@/hooks/useAppTheme';
 import useRoleTranslation from '@/hooks/useRoleTranslation';
 import useUserDisplayModeTranslation from '@/hooks/useUserDisplayModeTranslation';
@@ -86,24 +87,29 @@ const SettingsScreen = () => {
 
   const handleRolePress = useCallback(() => {
     router.push({
-      pathname: '/role-selection',
+      pathname: ROUTES.ROLE_SELECTION,
       params: { from: 'settings' },
     });
   }, [router]);
 
   const handleNamePress = useCallback(() => {
-    router.push('/edit-name');
+    router.push(ROUTES.EDIT_NAME);
   }, [router]);
 
   const handleAccountAction = useCallback(() => {
-    router.push('/login');
+    router.push(ROUTES.LOGIN);
   }, [router]);
 
   const handleLogout = useCallback(() => {
     logoutMutation();
-    router.push('/login');
+    router.push(ROUTES.LOGIN);
   }, [logoutMutation, router]);
 
+  const handleAccountLinkingPress = useCallback(() => {
+    router.push({ pathname: ROUTES.ACCOUNT_LINKING });
+  }, [router]);
+
+  // TODO: Add a section for reminder settings
   return (
     <ScreenContainer scrollable>
       <SectionGroup
@@ -163,6 +169,15 @@ const SettingsScreen = () => {
           value={tRole(userState?.role || Role.CARERECEIVER)}
           valueColor={theme.colors.primary}
           onPress={handleRolePress}
+        />
+        <FormInput
+          valueAlign="right"
+          rightIconName="chevron.right"
+          dense={false}
+          label={t('Linked Account')}
+          value={userState?.settings.linked?.length ? t('Linked') : '---'}
+          valueColor={theme.colors.primary}
+          onPress={handleAccountLinkingPress}
         />
         {!token && (
           <List.Item

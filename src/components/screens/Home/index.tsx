@@ -2,10 +2,11 @@ import { useRouter } from 'expo-router';
 import { Fragment, useCallback, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
-import { View } from 'react-native';
+import { Alert, View } from 'react-native';
 import { ActivityIndicator, Divider, List, Text } from 'react-native-paper';
 
 import { useGetTasks, useUpdateTaskStatus } from '@/api/tasks';
+import ROUTES from '@/constants/routes';
 import useAppTheme from '@/hooks/useAppTheme';
 import useCurrentTime from '@/hooks/useCurrentTime';
 import useRecurrenceText from '@/hooks/useRecurrenceText';
@@ -21,7 +22,6 @@ import ThemedButton from '@/components/atoms/ThemedButton';
 import ExpandableSectionHeader from '@/components/screens/Home/ExpandableSectionHeader';
 import OtherTaskListItem from '@/components/screens/Home/OtherTaskListItem';
 import TaskListItem from '@/components/screens/Home/TaskListItem';
-import { Alert } from 'react-native';
 
 const HomeScreen = () => {
   const { t } = useTranslation('home');
@@ -114,7 +114,7 @@ const HomeScreen = () => {
 
     if (userDisplayMode === UserDisplayMode.FULL) {
       router.push({
-        pathname: '/edit-task',
+        pathname: ROUTES.EDIT_TASK,
         params: {
           id: task.id,
           title: task.title,
@@ -141,7 +141,7 @@ const HomeScreen = () => {
   };
 
   const handleAddTask = useCallback(() => {
-    router.push('/add-task');
+    router.push(ROUTES.ADD_TASK);
   }, [router]);
 
   const handleOtherTasksToggle = useCallback(() => {

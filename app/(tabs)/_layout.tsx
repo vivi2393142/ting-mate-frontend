@@ -6,6 +6,7 @@ import useAppTheme from '@/hooks/useAppTheme';
 
 import IconSymbol from '@/components/atoms/IconSymbol';
 import VoiceCommandButton from '@/components/screens/Home/VoiceCommandButton';
+import ROUTES from '@/constants/routes';
 
 const tabScreensSettings = [
   {
@@ -30,7 +31,7 @@ const TabLayout = () => {
   const theme = useAppTheme();
 
   const pathName = usePathname();
-  const isOnHomeScreen = pathName === '/';
+  const isOnHomeScreen = pathName === ROUTES.HOME;
 
   return (
     <Tabs
