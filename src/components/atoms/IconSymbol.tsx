@@ -43,6 +43,9 @@ const MAPPING = {
   'checkmark.circle': 'check-circle',
   phone: 'phone',
   location: 'location-on',
+  'exclamationmark.triangle': 'warning',
+  'arrow.clockwise': 'refresh',
+  'figure.wave': 'accessibility',
 } as unknown as IconMapping;
 
 export type IconName = SymbolViewProps['name'];
