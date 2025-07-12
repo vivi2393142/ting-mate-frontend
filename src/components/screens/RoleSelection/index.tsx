@@ -134,6 +134,7 @@ const RoleSelectionScreen = () => {
     },
   ];
 
+  // TODO: Adjust layout for Large mode
   return (
     <Fragment>
       <Stack.Screen

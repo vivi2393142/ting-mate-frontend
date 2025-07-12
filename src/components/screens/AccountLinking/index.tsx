@@ -9,6 +9,7 @@ import { IconButton, TouchableRipple } from 'react-native-paper';
 import { useAcceptInvitation, useGenerateInvitation } from '@/api/invitation';
 import { useCurrentUser, useRemoveUserLink } from '@/api/user';
 import useAppTheme from '@/hooks/useAppTheme';
+import useUserStore from '@/store/useUserStore';
 import { StaticTheme } from '@/theme';
 import { Role } from '@/types/user';
 import colorWithAlpha from '@/utils/colorWithAlpha';
@@ -33,7 +34,8 @@ const AccountLinkingScreen = () => {
   // Check if user is caregiver and has linked accounts
   const isCaregiver = user?.role === Role.CAREGIVER;
   const hasLinkedAccounts = linkedUsers.length > 0;
-  const shouldDisableAddLink = isCaregiver && hasLinkedAccounts;
+  const isLoggedIn = !!useUserStore.getState().token;
+  const shouldDisableAddLink = (isCaregiver && hasLinkedAccounts) || !isLoggedIn;
 
   const [inviteCode, setInviteCode] = useState('');
   const [inviteExpiresAt, setInviteExpiresAt] = useState<string>('');
@@ -149,6 +151,7 @@ const AccountLinkingScreen = () => {
     { text: t("Stay close, even when you're apart"), icon: 'heart' },
   ] as const;
 
+  // TODO: Adjust layout for Large mode
   return (
     <Fragment>
       <Stack.Screen
@@ -186,7 +189,7 @@ const AccountLinkingScreen = () => {
               ))}
             </View>
           ) : (
-            <Text style={styles.descSubtitle}>
+            <Text style={styles.noteText}>
               {t('No linked accounts yet. Use the options below to connect with someone.')}
             </Text>
           )}
@@ -203,9 +206,11 @@ const AccountLinkingScreen = () => {
                 style={styles.warmingIcon}
               />
               <Text style={styles.noteText}>
-                {t(
-                  'Caregivers can only link with one account. To link other account, please remove existing links first.',
-                )}
+                {!isLoggedIn
+                  ? t('Please sign in to link accounts with others.')
+                  : t(
+                      'Caregivers can only link with one account. To link other account, please remove existing links first.',
+                    )}
               </Text>
             </View>
           )}

@@ -123,6 +123,7 @@ const SettingsScreen = () => {
   }, [router]);
 
   // TODO: Add a section for reminder settings
+  // TODO: Adjust layout for Large mode
   return (
     <ScreenContainer scrollable>
       <SectionGroup
