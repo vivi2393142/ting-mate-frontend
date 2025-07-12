@@ -2,7 +2,6 @@
   "Add Task": "Add Task",
   "Add a task to get started!": "Add a task to get started!",
   "As a caregiver, you need to link with a care receiver account to view and manage their tasks.": "As a caregiver, you need to link with a care receiver account to view and manage their tasks.",
-  "You haven’t linked with a companion yet. Link now to see and help manage their tasks.": "You haven’t linked with a companion yet. Link now to see and help manage their tasks.",
   "Collapse Completed": "Collapse Completed",
   "Failed to update task status": "Failed to update task status",
   "Link Account": "Link Account",
@@ -11,5 +10,6 @@
   "Next Occurrence": "Next",
   "Other Tasks": "Other Tasks",
   "Todays Tasks": "Today's Tasks",
-  "You haven't added any tasks yet.": "You haven't added any tasks yet."
+  "You haven't added any tasks yet.": "You haven't added any tasks yet.",
+  "You haven’t linked with a companion yet. Link now to see and help manage their tasks.": "You haven’t linked with a companion yet. Link now to see and help manage their tasks."
 }

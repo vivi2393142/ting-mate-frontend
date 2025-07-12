@@ -154,6 +154,7 @@ const AccountLinkingScreen = () => {
       <Stack.Screen
         options={{
           title: t('Linking Account'),
+          // TODO: Back to last page but not settings, reset name
           headerBackTitle: tCommon('Settings'),
         }}
       />
@@ -163,24 +164,6 @@ const AccountLinkingScreen = () => {
         style={styles.container}
         contentContainerStyle={styles.content}
       >
-        {/* desc Section */}
-        <ThemedView style={styles.descContainer}>
-          <ThemedView style={styles.descTitleContainer}>
-            <Text style={styles.descTitle}>{t('Link Account with Others')}</Text>
-            <Text style={styles.descSubtitle}>
-              {t('Share tasks and stay with someone you care.')}
-            </Text>
-          </ThemedView>
-          <ThemedView style={styles.note}>
-            <Text style={styles.noteTitle}>{t('Why link accounts?')}</Text>
-            {purposeItems.map((item, idx) => (
-              <View key={idx} style={styles.purposeRow}>
-                <IconSymbol name={item.icon} size={18} color={theme.colors.primary} />
-                <Text style={styles.noteText}>{item.text}</Text>
-              </View>
-            ))}
-          </ThemedView>
-        </ThemedView>
         {/* Linked Account Section */}
         <ThemedView style={styles.linkedAccountsContainer}>
           <Text style={styles.linkedAccountsTitle}>{t('Linked Accounts')}</Text>
@@ -262,6 +245,15 @@ const AccountLinkingScreen = () => {
               </View>
             </TouchableRipple>
           </View>
+          <ThemedView style={styles.note}>
+            <Text style={styles.noteTitle}>{t('Why link accounts?')}</Text>
+            {purposeItems.map((item, idx) => (
+              <View key={idx} style={styles.purposeRow}>
+                <IconSymbol name={item.icon} size={18} color={theme.colors.primary} />
+                <Text style={styles.noteText}>{item.text}</Text>
+              </View>
+            ))}
+          </ThemedView>
         </ThemedView>
         {/* Invite Code Modal */}
         <CommonModal
@@ -342,8 +334,6 @@ const getStyles = createStyles<
   StyleRecord<
     | 'container'
     | 'content'
-    | 'descContainer'
-    | 'descTitleContainer'
     | 'note'
     | 'purposeRow'
     | 'linkedAccountsContainer'
@@ -358,8 +348,6 @@ const getStyles = createStyles<
     | 'modalButtonContainer'
     | 'expiryContainer'
     | 'warningContainer',
-    | 'descTitle'
-    | 'descSubtitle'
     | 'noteTitle'
     | 'noteText'
     | 'linkedAccountsTitle'
@@ -380,23 +368,6 @@ const getStyles = createStyles<
     flex: 1,
     paddingHorizontal: StaticTheme.spacing.sm,
     gap: StaticTheme.spacing.md * 1.5,
-  },
-  descContainer: {
-    gap: StaticTheme.spacing.sm * 1.5,
-  },
-  descTitleContainer: {
-    gap: StaticTheme.spacing.xs,
-  },
-  descTitle: {
-    fontSize: ({ fonts }) => fonts.titleMedium.fontSize,
-    fontWeight: ({ fonts }) => fonts.titleMedium.fontWeight,
-    lineHeight: ({ fonts }) => fonts.titleMedium.lineHeight,
-  },
-  descSubtitle: {
-    fontSize: ({ fonts }) => fonts.bodyMedium.fontSize,
-    fontWeight: ({ fonts }) => fonts.bodyMedium.fontWeight,
-    lineHeight: ({ fonts }) => fonts.bodyMedium.lineHeight,
-    color: ({ colors }) => colors.outline,
   },
   note: {
     backgroundColor: ({ colors }) => colors.surfaceVariant,
@@ -462,6 +433,7 @@ const getStyles = createStyles<
   addLinkContent: {
     flexDirection: 'row',
     gap: StaticTheme.spacing.md,
+    marginBottom: StaticTheme.spacing.sm,
   },
   actionCard: {
     flex: 1,
