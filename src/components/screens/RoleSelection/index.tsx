@@ -187,11 +187,7 @@ const RoleSelectionScreen = () => {
           <Fragment>
             <ThemedView style={styles.note}>
               <ThemedView style={styles.noteTitleWrapper}>
-                <IconSymbol
-                  name="exclamationmark.triangle.fill"
-                  size={20}
-                  color={theme.colors.error}
-                />
+                <IconSymbol name="exclamationmark.triangle" size={16} color={theme.colors.error} />
                 <Text style={styles.noteTitle}>{t('Sign in required')}</Text>
               </ThemedView>
               <Text style={styles.noteText}>
@@ -263,12 +259,12 @@ const getStyles = createStyles<
     gap: StaticTheme.spacing.lg,
   },
   header: {
-    gap: StaticTheme.spacing.xs,
+    gap: StaticTheme.spacing.sm,
   },
   headerTitle: {
-    fontSize: ({ fonts }) => fonts.headlineSmall.fontSize,
-    fontWeight: ({ fonts }) => fonts.headlineSmall.fontWeight,
-    lineHeight: ({ fonts }) => fonts.headlineSmall.lineHeight,
+    fontSize: ({ fonts }) => fonts.titleMedium.fontSize,
+    fontWeight: ({ fonts }) => fonts.titleMedium.fontWeight,
+    lineHeight: ({ fonts }) => fonts.titleMedium.lineHeight,
   },
   headerSubtitle: {
     fontSize: ({ fonts }) => fonts.bodyMedium.fontSize,
