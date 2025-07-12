@@ -40,6 +40,9 @@ const MAPPING = {
   heart: 'heart',
   qrcode: 'qr-code',
   'square.and.arrow.up': 'share',
+  'checkmark.circle': 'check-circle',
+  phone: 'phone',
+  location: 'location-on',
 } as unknown as IconMapping;
 
 export type IconName = SymbolViewProps['name'];
