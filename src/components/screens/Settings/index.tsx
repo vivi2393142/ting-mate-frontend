@@ -126,11 +126,7 @@ const SettingsScreen = () => {
   // TODO: Adjust layout for Large mode
   return (
     <ScreenContainer scrollable>
-      <SectionGroup
-        title={t('General')}
-        style={styles.sectionGroup}
-        subheaderStyle={styles.subheader}
-      >
+      <SectionGroup title={t('General')} subheaderStyle={styles.subheader}>
         <FormInput
           valueAlign="right"
           rightIconName="chevron.up.chevron.down"
@@ -220,13 +216,10 @@ const SettingsScreen = () => {
 
 const getStyles = createStyles<
   StyleRecord<
-    'sectionGroup' | 'buttonItem' | 'buttonContainer' | 'buttonContent',
+    'buttonItem' | 'buttonContainer' | 'buttonContent',
     'subheader' | 'signInText' | 'logoutText'
   >
 >({
-  sectionGroup: {
-    paddingHorizontal: StaticTheme.spacing.md,
-  },
   subheader: {
     color: ({ colors }) => colors.outline,
     textTransform: 'uppercase',

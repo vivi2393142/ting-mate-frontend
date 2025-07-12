@@ -6,8 +6,6 @@ import { type ViewStyle } from 'react-native';
 
 import useErrorHandler from '@/components/screens/Home/VoiceCommandButton/useErrorHandler';
 import useSoundManager from '@/components/screens/Home/VoiceCommandButton/useSoundManager';
-import useMockAPI, { VoiceCommandStatus } from '@/store/useMockAPI';
-import useUserStore from '@/store/useUserStore';
 
 import VoiceButton from '@/components/screens/Home/VoiceCommandButton/VoiceButton';
 import VoiceModal, {
@@ -28,7 +26,7 @@ const VoiceCommandButton = ({ style, ...props }: VoiceCommandButtonProps) => {
   const { t } = useTranslation('common');
 
   // TODO: change to real user ID
-  const userId = useUserStore((state) => state.user?.email || 'test@example.com');
+  // const userId = useUserStore((state) => state.user?.email || 'test@example.com');
 
   const audioRecorder = useAudioRecorder({
     ...RecordingPresets.HIGH_QUALITY,
@@ -46,7 +44,7 @@ const VoiceCommandButton = ({ style, ...props }: VoiceCommandButtonProps) => {
   const [conversation, setConversation] = useState<{ role: ConversationRole; text: string }[]>([]);
 
   // TODO: change to real API
-  const mockVoiceCommand = useMockAPI((state) => state.mockVoiceCommand);
+  // const mockVoiceCommand = useMockAPI((state) => state.mockVoiceCommand);
   const [isConfirming] = useState(false);
 
   // Helper function to add message to conversation with sound and speech
@@ -96,7 +94,7 @@ const VoiceCommandButton = ({ style, ...props }: VoiceCommandButtonProps) => {
   }, []);
 
   const stopRecording = useCallback(
-    async (isAutoStop = false) => {
+    async (isAutoStop: boolean) => {
       try {
         await audioRecorder.stop();
         setIsRecording(false);
@@ -114,27 +112,28 @@ const VoiceCommandButton = ({ style, ...props }: VoiceCommandButtonProps) => {
         }
 
         // Call voice command API
+        console.log('isAutoStop', isAutoStop);
         // TODO: change to real API
-        const response = await mockVoiceCommand({
-          conversationId: conversationIdRef.current,
-          sound: soundUri,
-          userId,
-        });
-        conversationIdRef.current = response.conversationId;
+        // const response = await mockVoiceCommand({
+        //   conversationId: conversationIdRef.current,
+        //   sound: soundUri,
+        //   userId,
+        // });
+        // conversationIdRef.current = response.conversationId;
 
-        // Process response and update states
-        const userMessage = `${response.transcript || t('[Voice message]')} ${isAutoStop ? `\n${t('Auto-stopped due to time limit')}` : ''}`;
-        addMessageToConversation(ConversationRole.USER, userMessage, true, false);
-        addMessageToConversation(ConversationRole.SYSTEM, response.message, false, true);
-        setIsProcessing(false);
+        // // Process response and update states
+        // const userMessage = `${response.transcript || t('[Voice message]')} ${isAutoStop ? `\n${t('Auto-stopped due to time limit')}` : ''}`;
+        // addMessageToConversation(ConversationRole.USER, userMessage, true, false);
+        // addMessageToConversation(ConversationRole.SYSTEM, response.message, false, true);
+        // setIsProcessing(false);
 
-        // Finish conversation when status is CONFIRMED or UNKNOWN
-        if (
-          response.status === VoiceCommandStatus.CONFIRMED ||
-          response.status === VoiceCommandStatus.UNKNOWN
-        ) {
-          setTimeout(handleCloseVoiceModal, 1500);
-        }
+        // // Finish conversation when status is CONFIRMED or UNKNOWN
+        // if (
+        //   response.status === VoiceCommandStatus.CONFIRMED ||
+        //   response.status === VoiceCommandStatus.UNKNOWN
+        // ) {
+        //   setTimeout(handleCloseVoiceModal, 1500);
+        // }
       } catch {
         // Show error message if failed to stop recording
         const newMessage = t('Failed to stop recording.');
@@ -143,15 +142,7 @@ const VoiceCommandButton = ({ style, ...props }: VoiceCommandButtonProps) => {
         setTimeout(handleCloseVoiceModal, 1200);
       }
     },
-    [
-      audioRecorder,
-      handleCloseVoiceModal,
-      mockVoiceCommand,
-      t,
-      userId,
-      playStopRecording,
-      addMessageToConversation,
-    ],
+    [audioRecorder, handleCloseVoiceModal, t, playStopRecording, addMessageToConversation],
   );
 
   const handleVoiceButtonPress = useCallback(() => {

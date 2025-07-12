@@ -31,17 +31,17 @@ const fonts: Record<UserTextSize, Record<MD3TypescaleKey, Partial<MD3Type>>> = {
     titleSmall: {
       fontSize: 14,
       lineHeight: 20,
-      fontWeight: '700',
+      fontWeight: '600',
     },
     titleMedium: {
       fontSize: 16,
       lineHeight: 24,
-      fontWeight: '700',
+      fontWeight: '600',
     },
     titleLarge: {
       fontSize: 20,
       lineHeight: 26,
-      fontWeight: '700',
+      fontWeight: '600',
     },
     labelSmall: {
       fontSize: 11,
@@ -105,8 +105,8 @@ const fonts: Record<UserTextSize, Record<MD3TypescaleKey, Partial<MD3Type>>> = {
       fontWeight: '700',
     },
     titleLarge: {
-      fontSize: 26,
-      lineHeight: 36,
+      fontSize: 24,
+      lineHeight: 32,
       fontWeight: '700',
     },
     labelSmall: {

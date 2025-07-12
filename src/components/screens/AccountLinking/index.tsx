@@ -382,10 +382,11 @@ const getStyles = createStyles<
     gap: StaticTheme.spacing.sm * 1.25,
   },
   noteTitle: {
-    fontSize: ({ fonts }) => fonts.titleSmall.fontSize,
-    fontWeight: ({ fonts }) => fonts.titleSmall.fontWeight,
-    lineHeight: ({ fonts }) => fonts.titleSmall.lineHeight,
+    fontSize: ({ fonts }) => fonts.titleMedium.fontSize,
+    fontWeight: ({ fonts }) => fonts.titleMedium.fontWeight,
+    lineHeight: ({ fonts }) => fonts.titleMedium.lineHeight,
     color: ({ colors }) => colors.onSurfaceVariant,
+    marginBottom: StaticTheme.spacing.xs,
   },
   noteText: {
     fontSize: ({ fonts }) => fonts.bodyMedium.fontSize,
@@ -406,9 +407,9 @@ const getStyles = createStyles<
     marginBottom: StaticTheme.spacing.xs * 1.5,
   },
   linkedAccountsTitle: {
-    fontSize: ({ fonts }) => fonts.titleMedium.fontSize,
-    fontWeight: ({ fonts }) => fonts.titleMedium.fontWeight,
-    lineHeight: ({ fonts }) => fonts.titleMedium.lineHeight,
+    fontSize: ({ fonts }) => fonts.titleLarge.fontSize,
+    fontWeight: ({ fonts }) => fonts.titleLarge.fontWeight,
+    lineHeight: ({ fonts }) => fonts.titleLarge.lineHeight,
   },
   linkedRow: {
     alignItems: 'center',
@@ -418,7 +419,7 @@ const getStyles = createStyles<
     paddingLeft: StaticTheme.spacing.md,
     paddingRight: StaticTheme.spacing.xs * 0.5,
     borderWidth: 1,
-    borderColor: ({ colors }) => colors.primary,
+    borderColor: ({ colors }) => colorWithAlpha(colors.primary, 0.5),
   },
   linkedName: {
     flex: 1,
@@ -431,9 +432,9 @@ const getStyles = createStyles<
     gap: StaticTheme.spacing.sm,
   },
   addLinkTitle: {
-    fontSize: ({ fonts }) => fonts.titleMedium.fontSize,
-    fontWeight: ({ fonts }) => fonts.titleMedium.fontWeight,
-    lineHeight: ({ fonts }) => fonts.titleMedium.lineHeight,
+    fontSize: ({ fonts }) => fonts.titleLarge.fontSize,
+    fontWeight: ({ fonts }) => fonts.titleLarge.fontWeight,
+    lineHeight: ({ fonts }) => fonts.titleLarge.lineHeight,
   },
   addLinkContent: {
     flexDirection: 'row',

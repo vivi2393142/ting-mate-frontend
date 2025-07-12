@@ -259,12 +259,12 @@ const getStyles = createStyles<
     gap: StaticTheme.spacing.lg,
   },
   header: {
-    gap: StaticTheme.spacing.sm,
+    gap: StaticTheme.spacing.xs,
   },
   headerTitle: {
-    fontSize: ({ fonts }) => fonts.titleMedium.fontSize,
-    fontWeight: ({ fonts }) => fonts.titleMedium.fontWeight,
-    lineHeight: ({ fonts }) => fonts.titleMedium.lineHeight,
+    fontSize: ({ fonts }) => fonts.titleLarge.fontSize,
+    fontWeight: ({ fonts }) => fonts.titleLarge.fontWeight,
+    lineHeight: ({ fonts }) => fonts.titleLarge.lineHeight,
   },
   headerSubtitle: {
     fontSize: ({ fonts }) => fonts.bodyMedium.fontSize,
@@ -325,9 +325,9 @@ const getStyles = createStyles<
     gap: StaticTheme.spacing.sm * 1.25,
   },
   noteTitle: {
-    fontSize: ({ fonts }) => fonts.titleSmall.fontSize,
-    fontWeight: ({ fonts }) => fonts.titleSmall.fontWeight,
-    lineHeight: ({ fonts }) => fonts.titleSmall.lineHeight,
+    fontSize: ({ fonts }) => fonts.titleMedium.fontSize,
+    fontWeight: ({ fonts }) => fonts.titleMedium.fontWeight,
+    lineHeight: ({ fonts }) => fonts.titleMedium.lineHeight,
     color: ({ colors }) => colors.onSurfaceVariant,
   },
   noteText: {

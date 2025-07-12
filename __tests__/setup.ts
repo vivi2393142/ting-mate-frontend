@@ -97,28 +97,6 @@ jest.mock('react-i18next', () => ({
   }),
 }));
 
-// Mock zustand stores
-jest.mock('@/store/useMockAPI', () => ({
-  __esModule: true,
-  default: () => ({
-    getTasks: jest.fn(() => []),
-    getTask: jest.fn(),
-    createTask: jest.fn(),
-    updateTask: jest.fn(),
-    completeTask: jest.fn(),
-    deleteTask: jest.fn(),
-    initializeMockData: jest.fn(),
-  }),
-  useMockTasks: () => ({
-    getTasks: jest.fn(() => []),
-    getTask: jest.fn(),
-    createTask: jest.fn(),
-    updateTask: jest.fn(),
-    completeTask: jest.fn(),
-    deleteTask: jest.fn(),
-  }),
-}));
-
 jest.mock('@/store/useUserStore', () => ({
   useUserTextSize: () => 'standard',
   useUserDisplayMode: () => 'full',

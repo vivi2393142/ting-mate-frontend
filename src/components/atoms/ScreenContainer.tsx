@@ -16,6 +16,7 @@ export default ScreenContainer;
 
 const styles = StyleSheet.create({
   container: {
-    padding: StaticTheme.spacing.md,
+    paddingHorizontal: StaticTheme.spacing.md * 1.25,
+    paddingVertical: StaticTheme.spacing.md,
   },
 });

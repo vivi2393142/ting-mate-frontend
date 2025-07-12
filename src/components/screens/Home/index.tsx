@@ -309,6 +309,9 @@ const getStyles = createStyles<
   },
   headline: {
     paddingVertical: StaticTheme.spacing.xs,
+    fontSize: ({ fonts }) => fonts.titleLarge.fontSize,
+    fontWeight: ({ fonts }) => fonts.titleLarge.fontWeight,
+    lineHeight: ({ fonts }) => fonts.titleLarge.lineHeight,
     marginBottom: StaticTheme.spacing.sm,
   },
   listSection: {

@@ -14,7 +14,6 @@ import { useCurrentUser } from '@/api/user';
 import useColorScheme from '@/hooks/useColorScheme';
 import '@/i18n';
 import { NotificationService } from '@/services/notification';
-import useMockAPI from '@/store/useMockAPI';
 import useUserStore, { useUserTextSize } from '@/store/useUserStore';
 import {
   customDarkTheme,
@@ -60,7 +59,6 @@ const UserSyncHandler = () => {
 
 const RootLayout = () => {
   const colorScheme = useColorScheme();
-  const { initializeMockData, getTasks } = useMockAPI();
   const [loaded] = useFonts({
     SpaceMono: require('../src/assets/fonts/SpaceMono-Regular.ttf'),
   });
@@ -76,16 +74,12 @@ const RootLayout = () => {
   // Initialize mock data and notifications when the app starts
   useEffect(() => {
     (async () => {
-      // Initialize mock data
-      initializeMockData();
-
       // Initialize notifications
       try {
         const { localNotificationsEnabled } = await NotificationService.initialize();
         if (localNotificationsEnabled) {
-          const tasks = getTasks();
           // TODO: notification - update too many notifications cause performance issue, change it to update only the changed task
-          await NotificationService.reinitializeAllLocalNotifications(tasks);
+          // await NotificationService.reinitializeAllLocalNotifications(tasks);
         }
 
         // Setup notification listeners
@@ -101,7 +95,6 @@ const RootLayout = () => {
         if (__DEV__) console.error('Failed to initialize notifications:', error);
       }
     })();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []); // Only run once on mount
 
   // Async font loading only occurs in development.
