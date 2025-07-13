@@ -153,6 +153,7 @@ const AccountLinkingScreen = () => {
   ] as const;
 
   // TODO: Adjust layout for Large mode
+  // TODO: Show accounts that are in same group (same carereceiver)
   return (
     <Fragment>
       <Stack.Screen
