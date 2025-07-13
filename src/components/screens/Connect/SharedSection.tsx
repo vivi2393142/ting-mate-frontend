@@ -270,7 +270,7 @@ const getStyles = createStyles<
   tabContainer: {
     flexDirection: 'row',
     borderWidth: 1,
-    borderColor: ({ colors }) => colors.onSurface,
+    borderColor: ({ colors }) => colors.outline,
     borderTopLeftRadius: StaticTheme.borderRadius.s,
     borderTopRightRadius: StaticTheme.borderRadius.s,
     overflow: 'hidden',
@@ -295,7 +295,7 @@ const getStyles = createStyles<
   contentArea: {
     borderWidth: 1,
     borderTopWidth: 0,
-    borderColor: ({ colors }) => colors.onSurface,
+    borderColor: ({ colors }) => colors.outline,
     borderBottomLeftRadius: StaticTheme.borderRadius.s,
     borderBottomRightRadius: StaticTheme.borderRadius.s,
     position: 'relative',

@@ -297,7 +297,7 @@ const getStyles = createStyles<
     height: 150,
     width: '100%',
     borderWidth: 1,
-    borderColor: ({ colors }) => colors.onSurface,
+    borderColor: ({ colors }) => colors.outline,
     borderRadius: StaticTheme.borderRadius.s,
     overflow: 'hidden',
     position: 'relative',

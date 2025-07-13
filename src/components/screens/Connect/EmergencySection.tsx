@@ -164,7 +164,7 @@ const getStyles = createStyles<
     paddingHorizontal: StaticTheme.spacing.md,
     paddingVertical: StaticTheme.spacing.sm,
     borderWidth: 1,
-    borderColor: ({ colors }) => colors.onSurface,
+    borderColor: ({ colors }) => colors.outline,
   },
   contactText: {
     flex: 1,
