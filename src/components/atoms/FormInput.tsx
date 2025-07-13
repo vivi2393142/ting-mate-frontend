@@ -145,7 +145,7 @@ const Input = ({
       mode="outlined"
       outlineColor="transparent"
       activeOutlineColor="transparent"
-      textColor={theme.colors.onSurfaceVariant}
+      textColor={valueColor || theme.colors.onSurfaceVariant}
       selectionColor={theme.colors.primary}
       placeholderTextColor={theme.colors.outline}
       {...rest}

@@ -1,9 +1,11 @@
+import { router } from 'expo-router';
 import { Fragment, useCallback, useMemo, useState, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import { ScrollView, Text, View } from 'react-native';
 import { TouchableRipple } from 'react-native-paper';
 
+import ROUTES from '@/constants/routes';
 import useAppTheme from '@/hooks/useAppTheme';
 import { StaticTheme } from '@/theme';
 import colorWithAlpha from '@/utils/colorWithAlpha';
@@ -134,18 +136,25 @@ const SharedSection = ({ isExpanded }: { isExpanded: boolean }) => {
   const [activeTab, setActiveTab] = useState<TabType>(TabType.LOG);
 
   const handleAddNote = useCallback(() => {
-    // TODO: Implement add note functionality
-    console.log('Add note');
+    router.push(ROUTES.NOTE_EDIT);
   }, []);
 
   const handleLogPress = useCallback((log: LogEntry) => {
-    // TODO: Navigate to log detail screen
-    console.log('View log:', log);
+    router.push({
+      pathname: ROUTES.LOG_DETAIL,
+      params: {
+        id: log.id.toString(),
+      },
+    });
   }, []);
 
   const handleNotePress = useCallback((note: NoteEntry) => {
-    // TODO: Navigate to note detail/edit screen
-    console.log('View/edit note:', note);
+    router.push({
+      pathname: ROUTES.NOTE_EDIT,
+      params: {
+        id: note.id.toString(),
+      },
+    });
   }, []);
 
   const handleLoadMoreLogs = useCallback(() => {
@@ -275,9 +284,9 @@ const getStyles = createStyles<
     backgroundColor: ({ colors }) => colors.primary,
   },
   tabText: {
-    fontSize: ({ fonts }) => fonts.bodyMedium.fontSize,
-    fontWeight: ({ fonts }) => fonts.bodyMedium.fontWeight,
-    lineHeight: ({ fonts }) => fonts.bodyMedium.lineHeight,
+    fontSize: ({ fonts }) => fonts.bodyLarge.fontSize,
+    fontWeight: ({ fonts }) => fonts.bodyLarge.fontWeight,
+    lineHeight: ({ fonts }) => fonts.bodyLarge.lineHeight,
     color: ({ colors }) => colors.onSurfaceVariant,
   },
   activeTabText: {

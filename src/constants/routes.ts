@@ -10,6 +10,8 @@ const ROUTES = {
   EDIT_TASK: '/edit-task',
   ADD_EMERGENCY_CONTACT: '/add-emergency-contact',
   EDIT_EMERGENCY_CONTACT: '/edit-emergency-contact',
+  LOG_DETAIL: '/log-detail',
+  NOTE_EDIT: '/note-edit',
 } as const;
 
 export default ROUTES;

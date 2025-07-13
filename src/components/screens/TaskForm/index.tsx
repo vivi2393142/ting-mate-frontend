@@ -70,6 +70,7 @@ const checkHasChanges = (initFormData: TaskFormData | null, formData: TaskFormDa
 
 const TaskForm = () => {
   const { t } = useTranslation('taskForm');
+  const { t: tCommon } = useTranslation('common');
   const { tRecurrenceText } = useRecurrenceText();
 
   const router = useRouter();
@@ -311,7 +312,7 @@ const TaskForm = () => {
             <Button
               color={theme.colors.primary}
               onPress={handleSave}
-              title={isEditMode ? t('Save') : t('Done')}
+              title={isEditMode ? tCommon('Save') : tCommon('Done')}
             />
           ),
         }}
