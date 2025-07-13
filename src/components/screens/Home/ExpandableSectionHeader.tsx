@@ -36,7 +36,11 @@ const ExpandableSectionHeader = ({
     <List.Item
       title={count !== undefined ? `${title} (${count})` : title}
       right={() => (
-        <IconSymbol name={`chevron.${chevronType}`} color={theme.colors.primary} size={16} />
+        <IconSymbol
+          name={`chevron.${chevronType}`}
+          color={theme.colors.primary}
+          size={StaticTheme.iconSize.s}
+        />
       )}
       onPress={onPress}
       style={[styles.collapseListItem, isExpanded && styles.collapseListItemExpanded]}

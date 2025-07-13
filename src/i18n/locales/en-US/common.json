@@ -26,6 +26,10 @@
   "This screen does not exist.": "This screen  does not exist.",
   "Yes": "Yes",
   "[Voice message]": "[Voice message]",
+  "contactMethod": {
+    "Phone": "Phone",
+    "WhatsApp": "WhatsApp"
+  },
   "dayOfWeek": {
     "Mon": "Mon",
     "Monday": "Monday",

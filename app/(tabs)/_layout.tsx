@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { StyleSheet } from 'react-native';
 
 import useAppTheme from '@/hooks/useAppTheme';
+import { StaticTheme } from '@/theme';
 
 import IconSymbol from '@/components/atoms/IconSymbol';
 import VoiceCommandButton from '@/components/screens/Home/VoiceCommandButton';
@@ -73,7 +74,7 @@ const TabLayout = () => {
                     }}
                   />
                 ) : (
-                  <IconSymbol name={iconName} color={color} size={24} />
+                  <IconSymbol name={iconName} color={color} size={StaticTheme.iconSize.l} />
                 ),
             }}
           />

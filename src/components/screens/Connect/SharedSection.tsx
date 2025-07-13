@@ -40,7 +40,7 @@ const mockNotes: NoteEntry[] = [
   { id: 2, name: 'Note 2', text: 'Doctor visit this Saturday at 10 AM' },
 ];
 
-const SharedSection = () => {
+const SharedSection = ({ isExpanded: _ }: { isExpanded: boolean }) => {
   const theme = useAppTheme();
   const styles = getStyles(theme);
 

@@ -41,7 +41,11 @@ const CommonModal = ({
                 {topIcon && (
                   <View style={styles.topIconContainer}>
                     <View style={styles.topIconBackground}>
-                      <IconSymbol name={topIcon} size={28} color={theme.colors.onPrimary} />
+                      <IconSymbol
+                        name={topIcon}
+                        size={StaticTheme.iconSize.xl}
+                        color={theme.colors.onPrimary}
+                      />
                     </View>
                   </View>
                 )}

@@ -41,7 +41,11 @@ const ThemedButton = ({
       mode={mode}
       buttonColor={mode === 'outlined' ? theme.colors.background : mergedColor}
       textColor={mode === 'outlined' ? mergedColor : theme.colors.onPrimary}
-      icon={icon ? ({ color }) => <IconSymbol name={icon} color={color} size={16} /> : undefined}
+      icon={
+        icon
+          ? ({ color }) => <IconSymbol name={icon} color={color} size={StaticTheme.iconSize.s} />
+          : undefined
+      }
       style={[styles.button, !rest?.disabled && styles.activeButton, style]}
       labelStyle={[styles.buttonLabel, labelStyle]}
       {...rest}

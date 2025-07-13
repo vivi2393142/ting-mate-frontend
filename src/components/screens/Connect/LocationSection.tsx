@@ -1,20 +1,20 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-
 import * as Location from 'expo-location';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useTranslation } from 'react-i18next';
+
 import { Alert, Text, View } from 'react-native';
 import MapView, { Circle, Marker, PROVIDER_GOOGLE } from 'react-native-maps';
 
 import useAppTheme from '@/hooks/useAppTheme';
 import { StaticTheme } from '@/theme';
-import { createStyles, type StyleRecord } from '@/utils/createStyles';
-
-import IconButton from '@/components/atoms/IconButton';
-import IconSymbol from '@/components/atoms/IconSymbol';
-import ThemedButton from '@/components/atoms/ThemedButton';
 import { googleMapStyles } from '@/theme/mapStyles';
 import colorWithAlpha from '@/utils/colorWithAlpha';
+import { createStyles, type StyleRecord } from '@/utils/createStyles';
 import { isPointInCircle } from '@/utils/locationUtils';
-import { useTranslation } from 'react-i18next';
+
+import IconSymbol from '@/components/atoms/IconSymbol';
+import ThemedButton from '@/components/atoms/ThemedButton';
+import ThemedIconButton from '@/components/atoms/ThemedIconButton';
 
 // TODO: Replace with real API data
 const mockLocation = {
@@ -49,7 +49,7 @@ interface SafeZone {
 // TODO: Send 'out of safe zone' notification
 // TODO: No map when no linked account
 // TODO: No map when no location permission
-const LocationSection = () => {
+const LocationSection = ({ isExpanded }: { isExpanded: boolean }) => {
   const theme = useAppTheme();
   const styles = getStyles(theme);
 
@@ -61,8 +61,6 @@ const LocationSection = () => {
   const [location, setLocation] = useState(mockLocation);
   const [lastUpdate, setLastUpdate] = useState(mockUserInfo.lastUpdate);
   const [isLoading, setIsLoading] = useState(false);
-
-  const [isExpanded, setIsExpanded] = useState(false);
 
   const mapRef = useRef<MapView>(null);
 
@@ -135,10 +133,6 @@ const LocationSection = () => {
     panToLocation(location);
   }, [location, panToLocation]);
 
-  const handleToggleExpanded = useCallback(() => {
-    setIsExpanded(!isExpanded);
-  }, [isExpanded]);
-
   const isInSafeZone = useMemo(() => {
     return isPointInCircle(
       location.latitude,
@@ -193,7 +187,11 @@ const LocationSection = () => {
             anchor={{ x: 0.5, y: 0.5 }}
           >
             <View style={styles.markerContainer}>
-              <IconSymbol name="figure.wave" size={24} color={theme.colors.primary} />
+              <IconSymbol
+                name="figure.wave"
+                size={StaticTheme.iconSize.l}
+                color={theme.colors.primary}
+              />
               {mockUserInfo.name && <Text style={styles.markerName}>{mockUserInfo.name}</Text>}
             </View>
           </Marker>
@@ -219,7 +217,7 @@ const LocationSection = () => {
             {!isInSafeZone && (
               <IconSymbol
                 name="exclamationmark.triangle"
-                size={12}
+                size={StaticTheme.iconSize.xs}
                 color={theme.colors.onPrimary}
               />
             )}
@@ -228,26 +226,18 @@ const LocationSection = () => {
             </Text>
           </View>
         )}
-        {/* Expand/Collapse Button */}
-        <IconButton
-          name={isExpanded ? 'chevron.down' : 'chevron.up'}
-          onPress={handleToggleExpanded}
-          size={20}
-          color={theme.colors.onSurface}
-          style={styles.expandButton}
-        />
       </View>
       {/* Last Update Time and Refresh Button */}
       <View style={styles.updateWrapper}>
         <Text style={styles.updateText}>
           {t('Last updated:')} {lastUpdate.toLocaleTimeString()}
         </Text>
-        <IconButton
+        <ThemedIconButton
           name={isLoading ? 'arrow.clockwise.circle' : 'arrow.clockwise'}
           onPress={getCurrentLocation}
-          size={16}
-          color={isLoading ? theme.colors.primary : theme.colors.onSurface}
+          size={'tiny'}
           disabled={isLoading}
+          color={theme.colors.onSurfaceVariant}
         />
       </View>
       {/* Expanded Options */}
@@ -307,7 +297,7 @@ const getStyles = createStyles<
     height: 150,
     width: '100%',
     borderWidth: 1,
-    borderColor: ({ colors }) => colors.outline,
+    borderColor: ({ colors }) => colors.onSurface,
     borderRadius: StaticTheme.borderRadius.s,
     overflow: 'hidden',
     position: 'relative',
@@ -343,7 +333,7 @@ const getStyles = createStyles<
     paddingVertical: StaticTheme.spacing.xs,
     borderRadius: StaticTheme.borderRadius.s,
     gap: StaticTheme.spacing.xs,
-    backgroundColor: ({ colors }) => colors.primary,
+    backgroundColor: ({ colors }) => colors.outline,
   },
   warningChipOut: {
     backgroundColor: ({ colors }) => colors.error,
@@ -360,12 +350,14 @@ const getStyles = createStyles<
     right: StaticTheme.spacing.sm,
     zIndex: 10,
     borderRadius: StaticTheme.borderRadius.s,
-    backgroundColor: ({ colors }) => colors.surface,
-    shadowColor: ({ colors }) => colors.shadow,
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.2,
     shadowRadius: 2,
-    elevation: 2,
+    elevation: 5,
+    borderWidth: 1,
+    backgroundColor: ({ colors }) => colors.surface,
+    shadowColor: ({ colors }) => colors.shadow,
+    borderColor: ({ colors }) => colors.primary,
   },
   updateWrapper: {
     flexDirection: 'row',

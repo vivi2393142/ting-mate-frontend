@@ -61,7 +61,11 @@ const Select = <V extends Value, T extends CustomMenuItemProps<V>>({
           contentStyle={styles.buttonContent}
           labelStyle={[styles.label, labelStyle]}
           icon={({ color }) => (
-            <IconSymbol name="chevron.up.chevron.down" color={color} size={16} />
+            <IconSymbol
+              name="chevron.up.chevron.down"
+              color={color}
+              size={StaticTheme.iconSize.s}
+            />
           )}
         >
           {displayValue}

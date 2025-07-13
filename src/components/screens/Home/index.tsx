@@ -170,7 +170,7 @@ const HomeScreen = () => {
           <View style={styles.warningContainer}>
             <IconSymbol
               name="exclamationmark.triangle"
-              size={16}
+              size={StaticTheme.iconSize.s}
               color={theme.colors.error}
               style={styles.warmingIcon}
             />

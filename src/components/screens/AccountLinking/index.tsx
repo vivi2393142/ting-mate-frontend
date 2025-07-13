@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next';
 
 import { Stack } from 'expo-router';
 import { Alert, Share, Text, TextInput, View } from 'react-native';
-import { IconButton, TouchableRipple } from 'react-native-paper';
+import { TouchableRipple } from 'react-native-paper';
 
 import { useAcceptInvitation, useGenerateInvitation } from '@/api/invitation';
 import { useCurrentUser, useRemoveUserLink } from '@/api/user';
@@ -19,6 +19,7 @@ import CommonModal from '@/components/atoms/CommonModal';
 import IconSymbol from '@/components/atoms/IconSymbol';
 import ScreenContainer from '@/components/atoms/ScreenContainer';
 import ThemedButton from '@/components/atoms/ThemedButton';
+import ThemedIconButton from '@/components/atoms/ThemedIconButton';
 import ThemedView from '@/components/atoms/ThemedView';
 
 const AccountLinkingScreen = () => {
@@ -177,11 +178,9 @@ const AccountLinkingScreen = () => {
                   <Text style={styles.linkedName}>
                     {user.name || '---'} ({user.email})
                   </Text>
-                  <IconButton
-                    icon={() => (
-                      <IconSymbol name="xmark.circle" size={20} color={theme.colors.error} />
-                    )}
-                    size={20}
+                  <ThemedIconButton
+                    name="xmark.circle"
+                    color={theme.colors.error}
                     onPress={handleUnlink(user.email, user.name)}
                     accessibilityLabel={t('Unlink')}
                   />
@@ -201,7 +200,7 @@ const AccountLinkingScreen = () => {
             <View style={styles.warningContainer}>
               <IconSymbol
                 name="exclamationmark.triangle"
-                size={16}
+                size={StaticTheme.iconSize.s}
                 color={theme.colors.error}
                 style={styles.warmingIcon}
               />
@@ -224,7 +223,7 @@ const AccountLinkingScreen = () => {
               <View style={styles.actionCardContent}>
                 <IconSymbol
                   name="qrcode"
-                  size={24}
+                  size={StaticTheme.iconSize.l}
                   color={shouldDisableAddLink ? theme.colors.outlineVariant : theme.colors.primary}
                 />
                 <Text style={[styles.actionCardText, shouldDisableAddLink && styles.disabledText]}>
@@ -241,7 +240,7 @@ const AccountLinkingScreen = () => {
               <View style={styles.actionCardContent}>
                 <IconSymbol
                   name="plus"
-                  size={24}
+                  size={StaticTheme.iconSize.l}
                   color={shouldDisableAddLink ? theme.colors.outlineVariant : theme.colors.primary}
                 />
                 <Text style={[styles.actionCardText, shouldDisableAddLink && styles.disabledText]}>
@@ -254,7 +253,11 @@ const AccountLinkingScreen = () => {
             <Text style={styles.noteTitle}>{t('Why link accounts?')}</Text>
             {purposeItems.map((item, idx) => (
               <View key={idx} style={styles.purposeRow}>
-                <IconSymbol name={item.icon} size={18} color={theme.colors.primary} />
+                <IconSymbol
+                  name={item.icon}
+                  size={StaticTheme.iconSize.m}
+                  color={theme.colors.primary}
+                />
                 <Text style={styles.noteText}>{item.text}</Text>
               </View>
             ))}
@@ -270,22 +273,20 @@ const AccountLinkingScreen = () => {
         >
           <View style={styles.codeDisplay}>
             <Text style={styles.codeText}>{inviteCode}</Text>
-            <IconButton
-              icon={() => (
-                <IconSymbol
-                  name={copySuccess ? 'checkmark.circle.fill' : 'document.on.document'}
-                  size={20}
-                  color={theme.colors.primary}
-                />
-              )}
-              size={20}
+            <ThemedIconButton
+              name={copySuccess ? 'checkmark.circle.fill' : 'document.on.document'}
+              color={theme.colors.primary}
               onPress={handleCopy}
               accessibilityLabel={t('Copy code')}
             />
           </View>
           {inviteExpiresAt && (
             <View style={styles.expiryContainer}>
-              <IconSymbol name="clock" size={12} color={theme.colors.outline} />
+              <IconSymbol
+                name="clock"
+                size={StaticTheme.iconSize.xs}
+                color={theme.colors.outline}
+              />
               <Text style={styles.expiryText}>
                 {t('Expires at')}: {formatExpiryDate(inviteExpiresAt)}
               </Text>
@@ -417,7 +418,8 @@ const getStyles = createStyles<
     gap: StaticTheme.spacing.sm,
     borderRadius: StaticTheme.borderRadius.s,
     paddingLeft: StaticTheme.spacing.md,
-    paddingRight: StaticTheme.spacing.xs * 0.5,
+    paddingRight: StaticTheme.spacing.sm * 1.25,
+    paddingVertical: StaticTheme.spacing.sm,
     borderWidth: 1,
     borderColor: ({ colors }) => colorWithAlpha(colors.primary, 0.5),
   },

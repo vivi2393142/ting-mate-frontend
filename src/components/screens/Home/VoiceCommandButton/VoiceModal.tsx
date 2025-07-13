@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Animated, FlatList, Modal, Text, TouchableOpacity, View } from 'react-native';
+import { Animated, FlatList, Modal, Text, View } from 'react-native';
 
 import useAppTheme from '@/hooks/useAppTheme';
 import { StaticTheme } from '@/theme';
@@ -8,8 +8,8 @@ import colorWithAlpha from '@/utils/colorWithAlpha';
 import { createStyles, StyleRecord } from '@/utils/createStyles';
 
 import EllipsisLoading from '@/components/atoms/EllipsisLoading';
-import IconSymbol from '@/components/atoms/IconSymbol';
 import ThemedButton from '@/components/atoms/ThemedButton';
+import ThemedIconButton from '@/components/atoms/ThemedIconButton';
 import ThemedView from '@/components/atoms/ThemedView';
 import VoiceButton, {
   type VoiceButtonProps,
@@ -188,13 +188,13 @@ const VoiceModal = ({
           />
         </View>
         {/* Close modal button */}
-        <TouchableOpacity
+        <ThemedIconButton
+          name="xmark.circle"
+          size={'large'}
           onPress={onClose}
-          accessibilityLabel={t('End Conversation')}
+          color={theme.colors.background}
           style={styles.closeButton}
-        >
-          <IconSymbol name="xmark.circle" size={40} color={theme.colors.background} />
-        </TouchableOpacity>
+        />
       </ThemedView>
     </Modal>
   );

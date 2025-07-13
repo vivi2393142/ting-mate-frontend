@@ -20,6 +20,7 @@ interface MultiLineButtonProps {
   color?: string;
   dense?: boolean;
   valueAlign?: 'left' | 'right';
+  placeholder?: string;
   children: ReactNode;
 }
 
@@ -32,6 +33,7 @@ const MultiLineButton = ({
   color,
   dense = true,
   valueAlign = 'left',
+  placeholder,
 }: MultiLineButtonProps) => {
   const theme = useAppTheme();
   const styles = getMultiLineButtonStyles(theme);
@@ -48,13 +50,23 @@ const MultiLineButton = ({
       <View style={styles.content}>
         <View style={styles.textContainer}>
           <Text
-            style={[styles.text, valueAlign === 'right' && styles.textAlignRight, { color }]}
+            style={[
+              styles.text,
+              valueAlign === 'right' && styles.textAlignRight,
+              { color: children ? color : theme.colors.outline },
+            ]}
             {...textProps}
           >
-            {children}
+            {children || placeholder}
           </Text>
         </View>
-        {icon && <IconSymbol name={icon} size={16} color={color || theme.colors.onSurface} />}
+        {icon && (
+          <IconSymbol
+            name={icon}
+            size={StaticTheme.iconSize.s}
+            color={color || theme.colors.onSurface}
+          />
+        )}
       </View>
     </TouchableRipple>
   );
@@ -120,6 +132,7 @@ const Input = ({
       color={valueColor}
       dense={rest.dense}
       valueAlign={valueAlign}
+      placeholder={placeholder}
     >
       {value}
     </MultiLineButton>
@@ -159,7 +172,7 @@ const FormInput = ({
     <ThemedView style={[styles.row, style]}>
       {icon && (
         <ThemedView style={styles.iconBox}>
-          <IconSymbol name={icon} size={16} color={theme.colors.onSurface} />
+          <IconSymbol name={icon} size={StaticTheme.iconSize.s} color={theme.colors.onSurface} />
         </ThemedView>
       )}
       <ThemedView

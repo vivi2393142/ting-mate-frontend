@@ -25,7 +25,7 @@ const Collapsible = ({ children, title }: PropsWithChildren & { title: string })
       >
         <IconSymbol
           name="chevron.right"
-          size={18}
+          size={StaticTheme.iconSize.m}
           color={theme.colors.onSurfaceVariant}
           style={styles.icon}
         />

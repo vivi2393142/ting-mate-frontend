@@ -170,7 +170,7 @@ const RoleSelectionScreen = () => {
               <ThemedView style={styles.roleContent}>
                 <IconSymbol
                   name={roleOption.icon}
-                  size={32}
+                  size={StaticTheme.iconSize.xxl}
                   color={isAuthenticated ? theme.colors.primary : theme.colors.outline}
                 />
                 <ThemedView style={styles.roleTextContainer}>
@@ -187,7 +187,11 @@ const RoleSelectionScreen = () => {
           <Fragment>
             <ThemedView style={styles.note}>
               <ThemedView style={styles.noteTitleWrapper}>
-                <IconSymbol name="exclamationmark.triangle" size={16} color={theme.colors.error} />
+                <IconSymbol
+                  name="exclamationmark.triangle"
+                  size={StaticTheme.iconSize.s}
+                  color={theme.colors.error}
+                />
                 <Text style={styles.noteTitle}>{t('Sign in required')}</Text>
               </ThemedView>
               <Text style={styles.noteText}>
@@ -206,7 +210,7 @@ const RoleSelectionScreen = () => {
                 <ThemedView style={styles.noteTitleWrapper}>
                   <IconSymbol
                     name="arrow.left.and.right"
-                    size={20}
+                    size={StaticTheme.iconSize.m}
                     color={theme.colors.onSurfaceVariant}
                   />
                   <Text style={styles.noteTitle}>{t('Switching roles?')}</Text>

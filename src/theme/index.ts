@@ -27,6 +27,14 @@ export const StaticTheme = {
     l: 16,
     round: '100%',
   },
+  iconSize: {
+    xs: 12,
+    s: 16,
+    m: 20,
+    l: 24,
+    xl: 28,
+    xxl: 32,
+  },
 };
 
 // Dynamic icon size
