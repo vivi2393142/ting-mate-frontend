@@ -8,17 +8,23 @@ import MapView, { Circle, Marker, PROVIDER_GOOGLE } from 'react-native-maps';
 
 import ROUTES from '@/constants/routes';
 import useAppTheme from '@/hooks/useAppTheme';
+import useUserStore from '@/store/useUserStore';
 import { StaticTheme } from '@/theme';
 import { googleMapStyles } from '@/theme/mapStyles';
+import { SafeZone } from '@/types/connect';
+import { Role } from '@/types/user';
 import colorWithAlpha from '@/utils/colorWithAlpha';
 import { createStyles, type StyleRecord } from '@/utils/createStyles';
 import { isPointInCircle } from '@/utils/locationUtils';
 
 import IconSymbol from '@/components/atoms/IconSymbol';
+import Skeleton from '@/components/atoms/Skeleton';
 import ThemedButton from '@/components/atoms/ThemedButton';
 import ThemedIconButton from '@/components/atoms/ThemedIconButton';
 
 // TODO: Replace with real API data
+const mockIsAllowed = true;
+
 const mockLocation = {
   latitude: 0,
   longitude: 0,
@@ -27,8 +33,12 @@ const mockLocation = {
 };
 
 const mockSafeZone: SafeZone = {
-  latitude: 51.4529183,
-  longitude: -2.5994918,
+  location: {
+    latitude: 51.4529183,
+    longitude: -2.5994918,
+    name: 'Safe Zone',
+    address: '123 Main St, Anytown, USA',
+  },
   radius: 1000,
 };
 
@@ -37,10 +47,14 @@ const mockUserInfo = {
   lastUpdate: new Date('2024-01-15T10:30:00Z'),
 };
 
-interface SafeZone {
-  latitude: number;
-  longitude: number;
-  radius: number;
+export enum Status {
+  LOADING = 'LOADING', // Data is loading from API
+  NO_AGREEMENT = 'NO_AGREEMENT', // User has not agreed to share location in backend settings
+  NO_PERMISSION = 'NO_PERMISSION', // User agreed in backend, but device location permission is not granted
+  NO_DATA = 'NO_DATA', // No safezone and no location data available
+  ONLY_SAFEZONE = 'ONLY_SAFEZONE', // Safezone exists, but no location data
+  // ONLY_LOCATION = 'ONLY_LOCATION', // Location exists, but no safezone data
+  READY = 'READY', // Both safezone and location data are available
 }
 
 // TODO: Get safe zone from API
@@ -54,6 +68,7 @@ interface SafeZone {
 const LocationSection = ({ isExpanded }: { isExpanded: boolean }) => {
   const theme = useAppTheme();
   const styles = getStyles(theme);
+  const { user } = useUserStore();
 
   const { t } = useTranslation('connect');
 
@@ -62,20 +77,9 @@ const LocationSection = ({ isExpanded }: { isExpanded: boolean }) => {
 
   const [location, setLocation] = useState(mockLocation);
   const [lastUpdate, setLastUpdate] = useState(mockUserInfo.lastUpdate);
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading] = useState(false);
 
   const mapRef = useRef<MapView>(null);
-
-  const requestLocationPermission = useCallback(async () => {
-    try {
-      const { status } = await Location.requestForegroundPermissionsAsync();
-      setHasLocationPermission(status === 'granted');
-      return status === 'granted';
-    } catch {
-      Alert.alert('Error', 'Failed to request location permission');
-      return false;
-    }
-  }, []);
 
   const panToLocation = useCallback((newLocation: { latitude: number; longitude: number }) => {
     mapRef.current?.animateToRegion(
@@ -89,13 +93,22 @@ const LocationSection = ({ isExpanded }: { isExpanded: boolean }) => {
     );
   }, []);
 
-  const getCurrentLocation = useCallback(async () => {
-    if (!hasLocationPermission) {
-      const granted = await requestLocationPermission();
-      if (!granted) return;
+  const requestLocationPermission = useCallback(async () => {
+    if (hasLocationPermission) return true;
+    try {
+      const { status } = await Location.requestForegroundPermissionsAsync();
+      setHasLocationPermission(status === 'granted');
+      return status === 'granted';
+    } catch {
+      Alert.alert('Error', 'Failed to request location permission');
+      return false;
     }
+  }, [hasLocationPermission]);
 
-    setIsLoading(true);
+  const handleCarereceiverRefresh = useCallback(async () => {
+    const granted = await requestLocationPermission();
+    if (!granted) return;
+
     try {
       const location = await Location.getCurrentPositionAsync({
         accuracy: Location.Accuracy.High,
@@ -109,13 +122,29 @@ const LocationSection = ({ isExpanded }: { isExpanded: boolean }) => {
       };
       setLocation(newLocation);
       setLastUpdate(new Date());
-      panToLocation(newLocation);
+      return newLocation;
     } catch {
       Alert.alert('Error', 'Failed to get current location');
-    } finally {
-      setIsLoading(false);
     }
-  }, [hasLocationPermission, panToLocation, requestLocationPermission]);
+  }, [requestLocationPermission]);
+
+  const handleCaregiverRefresh = useCallback(async () => {
+    // TODO: Handle update current location API
+    setLocation(mockLocation);
+    setLastUpdate(new Date());
+    return mockLocation;
+  }, []);
+
+  const handleRefresh = useCallback(async () => {
+    if (!user || !mockIsAllowed) return;
+    if (user.role === Role.CARERECEIVER) {
+      const newLocation = await handleCarereceiverRefresh();
+      if (newLocation) panToLocation(newLocation);
+    } else {
+      const newLocation = await handleCaregiverRefresh();
+      if (newLocation) panToLocation(newLocation);
+    }
+  }, [handleCaregiverRefresh, handleCarereceiverRefresh, panToLocation, user]);
 
   const handleEditSafeZone = useCallback(() => {
     router.push(ROUTES.EDIT_SAFE_ZONE);
@@ -124,8 +153,8 @@ const LocationSection = ({ isExpanded }: { isExpanded: boolean }) => {
   const handlePanToSafeZone = useCallback(() => {
     mapRef.current?.animateToRegion(
       {
-        latitude: mockSafeZone.latitude,
-        longitude: mockSafeZone.longitude,
+        latitude: mockSafeZone.location.latitude,
+        longitude: mockSafeZone.location.longitude,
         latitudeDelta: 0.01,
         longitudeDelta: 0.01,
       },
@@ -141,15 +170,63 @@ const LocationSection = ({ isExpanded }: { isExpanded: boolean }) => {
     return isPointInCircle(
       location.latitude,
       location.longitude,
-      mockSafeZone.latitude,
-      mockSafeZone.longitude,
+      mockSafeZone.location.latitude,
+      mockSafeZone.location.longitude,
       mockSafeZone.radius / 1000, // Convert meters to kilometers
     );
   }, [location.latitude, location.longitude]);
 
   useEffect(() => {
-    getCurrentLocation();
-  }, [getCurrentLocation]);
+    // TODO: Get initial location
+  }, []);
+
+  const status = useMemo(() => {
+    if (isLoading) return Status.LOADING;
+    if (!mockIsAllowed) return Status.NO_AGREEMENT;
+    if (!user) return Status.NO_DATA;
+    if (user.role === Role.CARERECEIVER) {
+      if (!hasLocationPermission) return Status.NO_PERMISSION;
+      return Status.READY;
+    } else {
+      if (location) return Status.READY;
+      if (mockSafeZone) return Status.ONLY_SAFEZONE;
+      return Status.NO_DATA;
+    }
+  }, [isLoading, user, hasLocationPermission, location]);
+
+  if (status === Status.LOADING) {
+    return (
+      <View style={styles.container}>
+        <Skeleton width={'100%'} height={150} />
+      </View>
+    );
+  }
+
+  if (status === Status.NO_AGREEMENT) {
+    return <View style={styles.note}>{/* TODO: Redirect to settings screen */}</View>;
+  }
+
+  if (status === Status.NO_PERMISSION) {
+    return (
+      <View style={styles.note}>
+        <ThemedButton mode="contained" icon="location" onPress={handleCarereceiverRefresh}>
+          {t('Grant Location Permission')}
+        </ThemedButton>
+      </View>
+    );
+  }
+
+  if (status === Status.NO_DATA) {
+    return (
+      <View style={styles.note}>
+        <View style={styles.note}>
+          <ThemedButton mode="contained" icon="arrow.clockwise" onPress={handleRefresh}>
+            {t('Refresh')}
+          </ThemedButton>
+        </View>
+      </View>
+    );
+  }
 
   return (
     <View style={styles.container}>
@@ -166,7 +243,7 @@ const LocationSection = ({ isExpanded }: { isExpanded: boolean }) => {
           style={styles.map}
           mapType="standard"
           provider={PROVIDER_GOOGLE}
-          initialRegion={location}
+          initialRegion={location || mockSafeZone.location}
           customMapStyle={googleMapStyles}
           showsUserLocation={false}
           showsMyLocationButton={false}
@@ -200,20 +277,23 @@ const LocationSection = ({ isExpanded }: { isExpanded: boolean }) => {
             </View>
           </Marker>
           {/* Safe Zone Circle */}
-          <Circle
-            center={{
-              latitude: mockSafeZone.latitude,
-              longitude: mockSafeZone.longitude,
-            }}
-            radius={mockSafeZone.radius}
-            fillColor={colorWithAlpha(
-              isInSafeZone ? theme.colors.primary : theme.colors.error,
-              0.2,
-            )}
-            strokeColor={theme.colors.primary}
-            strokeWidth={2}
-            zIndex={1}
-          />
+          {mockSafeZone && (
+            // TODO: Add hint for no safe zone
+            <Circle
+              center={{
+                latitude: mockSafeZone.location.latitude,
+                longitude: mockSafeZone.location.longitude,
+              }}
+              radius={mockSafeZone.radius}
+              fillColor={colorWithAlpha(
+                isInSafeZone ? theme.colors.primary : theme.colors.error,
+                0.2,
+              )}
+              strokeColor={theme.colors.primary}
+              strokeWidth={2}
+              zIndex={1}
+            />
+          )}
         </MapView>
         {/* Warning Container */}
         {!isLoading && (
@@ -238,7 +318,7 @@ const LocationSection = ({ isExpanded }: { isExpanded: boolean }) => {
         </Text>
         <ThemedIconButton
           name={isLoading ? 'arrow.clockwise.circle' : 'arrow.clockwise'}
-          onPress={getCurrentLocation}
+          onPress={handleRefresh}
           size={'tiny'}
           disabled={isLoading}
           color={theme.colors.onSurfaceVariant}
@@ -290,7 +370,8 @@ const getStyles = createStyles<
     | 'updateWrapper'
     | 'expandedOptions'
     | 'optionsRow'
-    | 'optionButton',
+    | 'optionButton'
+    | 'note',
     'markerName' | 'warningText' | 'updateText'
   >
 >({
@@ -383,6 +464,13 @@ const getStyles = createStyles<
   },
   optionButton: {
     flex: 1,
+  },
+  note: {
+    backgroundColor: ({ colors }) => colors.surfaceVariant,
+    paddingVertical: StaticTheme.spacing.md * 1.25,
+    paddingHorizontal: StaticTheme.spacing.md,
+    borderRadius: StaticTheme.borderRadius.s,
+    gap: StaticTheme.spacing.sm * 1.25,
   },
 });
 

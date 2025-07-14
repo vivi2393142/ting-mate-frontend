@@ -198,9 +198,7 @@ const RoleSelectionScreen = () => {
                 {t('You need to sign in to save your role selection.')}
               </Text>
             </ThemedView>
-            <ThemedButton disabled={!selectedRole} onPress={handleSignInPress}>
-              {tCommon('Sign In / Sign Up')}
-            </ThemedButton>
+            <ThemedButton onPress={handleSignInPress}>{tCommon('Sign In / Sign Up')}</ThemedButton>
           </Fragment>
         )}
         {isAuthenticated && (

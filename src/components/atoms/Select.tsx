@@ -73,6 +73,7 @@ const Select = <V extends Value, T extends CustomMenuItemProps<V>>({
       }
       anchorPosition="bottom"
       contentStyle={styles.menuContent}
+      style={styles.menu}
     >
       {options.map((option: T, idx) => {
         const { value, render, ...menuItemProps } = option;
@@ -97,9 +98,18 @@ interface StyleParams {
 }
 
 const getStyles = createStyles<
-  StyleRecord<'button' | 'buttonContent' | 'menuContent' | 'menuItem' | 'menuItemLast', 'label'>,
+  StyleRecord<
+    'menu' | 'button' | 'buttonContent' | 'menuContent' | 'menuItem' | 'menuItemLast',
+    'label'
+  >,
   StyleParams
 >({
+  menu: {
+    borderColor: ({ colors }) => colors.outlineVariant,
+    borderWidth: 1,
+    borderRadius: StaticTheme.borderRadius.s,
+    overflow: 'hidden',
+  },
   button: {
     borderRadius: StaticTheme.borderRadius.s,
   },

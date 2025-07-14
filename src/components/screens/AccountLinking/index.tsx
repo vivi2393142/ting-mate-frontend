@@ -1,4 +1,5 @@
 import * as Clipboard from 'expo-clipboard';
+import { router } from 'expo-router';
 import { Fragment, useCallback, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
@@ -8,6 +9,7 @@ import { TouchableRipple } from 'react-native-paper';
 
 import { useAcceptInvitation, useGenerateInvitation } from '@/api/invitation';
 import { useCurrentUser, useRemoveUserLink } from '@/api/user';
+import ROUTES from '@/constants/routes';
 import useAppTheme from '@/hooks/useAppTheme';
 import useUserStore from '@/store/useUserStore';
 import { StaticTheme } from '@/theme';
@@ -146,6 +148,10 @@ const AccountLinkingScreen = () => {
     }
   };
 
+  const handleSignInPress = useCallback(() => {
+    router.push(ROUTES.LOGIN);
+  }, []);
+
   const purposeItems = [
     { text: t('Keep track of tasks together'), icon: 'checklist' },
     { text: t('Get gentle updates when things are done'), icon: 'bell' },
@@ -263,6 +269,11 @@ const AccountLinkingScreen = () => {
               </View>
             ))}
           </ThemedView>
+          {!isLoggedIn && (
+            <ThemedButton onPress={handleSignInPress} style={styles.signInButton}>
+              {tCommon('Sign In / Sign Up')}
+            </ThemedButton>
+          )}
         </ThemedView>
         {/* Invite Code Modal */}
         <CommonModal
@@ -354,7 +365,8 @@ const getStyles = createStyles<
     | 'codeDisplay'
     | 'modalButtonContainer'
     | 'expiryContainer'
-    | 'warningContainer',
+    | 'warningContainer'
+    | 'signInButton',
     | 'noteTitle'
     | 'noteText'
     | 'linkedAccountsTitle'
@@ -412,6 +424,7 @@ const getStyles = createStyles<
     fontSize: ({ fonts }) => fonts.titleLarge.fontSize,
     fontWeight: ({ fonts }) => fonts.titleLarge.fontWeight,
     lineHeight: ({ fonts }) => fonts.titleLarge.lineHeight,
+    color: ({ colors }) => colors.onSurface,
   },
   linkedRow: {
     alignItems: 'center',
@@ -438,6 +451,7 @@ const getStyles = createStyles<
     fontSize: ({ fonts }) => fonts.titleLarge.fontSize,
     fontWeight: ({ fonts }) => fonts.titleLarge.fontWeight,
     lineHeight: ({ fonts }) => fonts.titleLarge.lineHeight,
+    color: ({ colors }) => colors.onSurface,
   },
   addLinkContent: {
     flexDirection: 'row',
@@ -521,6 +535,9 @@ const getStyles = createStyles<
   warningContainer: {
     flexDirection: 'row',
     gap: StaticTheme.spacing.sm,
+  },
+  signInButton: {
+    marginTop: StaticTheme.spacing.xs * 1.5,
   },
 });
 

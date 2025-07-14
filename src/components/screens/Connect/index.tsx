@@ -103,6 +103,7 @@ const getStyles = createStyles<
     fontWeight: ({ fonts }) => fonts.titleLarge.fontWeight,
     lineHeight: ({ fonts }) => fonts.titleLarge.lineHeight,
     marginBottom: StaticTheme.spacing.sm,
+    color: ({ colors }) => colors.onSurface,
   },
 });
 
