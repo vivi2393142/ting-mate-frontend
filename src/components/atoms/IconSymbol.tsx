@@ -47,6 +47,7 @@ const MAPPING = {
   'figure.wave': 'accessibility',
   'message.fill': 'message',
   'phone.fill': 'phone',
+  ruler: 'ruler',
 } as unknown as IconMapping;
 
 export type IconName = SymbolViewProps['name'];

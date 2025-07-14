@@ -300,6 +300,7 @@ const TaskForm = () => {
     );
   }
 
+  // TODO: Show Skeleton when loading (globally)
   return (
     <Fragment>
       <Stack.Screen

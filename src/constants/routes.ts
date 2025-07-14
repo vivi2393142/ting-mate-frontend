@@ -12,6 +12,7 @@ const ROUTES = {
   EDIT_EMERGENCY_CONTACT: '/edit-emergency-contact',
   LOG_DETAIL: '/log-detail',
   NOTE_EDIT: '/note-edit',
+  EDIT_SAFE_ZONE: '/edit-safe-zone',
 } as const;
 
 export default ROUTES;

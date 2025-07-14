@@ -20,6 +20,7 @@
   "dependencies": {
     "@expo/vector-icons": "^14.1.0",
     "@react-native-community/datetimepicker": "^8.4.2",
+    "@react-native-community/slider": "^4.5.7",
     "@react-native-picker/picker": "^2.11.1",
     "@react-navigation/bottom-tabs": "^7.3.10",
     "@react-navigation/elements": "^2.3.8",
@@ -32,6 +33,7 @@
     "expo-blur": "~14.1.5",
     "expo-clipboard": "^7.1.5",
     "expo-constants": "~17.1.6",
+    "expo-contacts": "~14.2.5",
     "expo-device": "^7.1.4",
     "expo-font": "~13.3.1",
     "expo-haptics": "~14.1.4",
@@ -53,6 +55,7 @@
     "react-i18next": "^15.5.3",
     "react-native": "0.79.3",
     "react-native-gesture-handler": "~2.24.0",
+    "react-native-maps": "1.20.1",
     "react-native-paper": "^5.14.5",
     "react-native-reanimated": "~3.17.4",
     "react-native-safe-area-context": "^5.4.0",
@@ -62,9 +65,7 @@
     "react-native-webview": "13.13.5",
     "rn-emoji-keyboard": "^1.7.0",
     "zod": "^3.25.76",
-    "zustand": "^5.0.5",
-    "react-native-maps": "1.20.1",
-    "expo-contacts": "~14.2.5"
+    "zustand": "^5.0.5"
   },
   "devDependencies": {
     "@babel/core": "^7.25.2",

@@ -1,10 +1,12 @@
 import * as Location from 'expo-location';
+import { router } from 'expo-router';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import { Alert, Text, View } from 'react-native';
 import MapView, { Circle, Marker, PROVIDER_GOOGLE } from 'react-native-maps';
 
+import ROUTES from '@/constants/routes';
 import useAppTheme from '@/hooks/useAppTheme';
 import { StaticTheme } from '@/theme';
 import { googleMapStyles } from '@/theme/mapStyles';
@@ -115,7 +117,9 @@ const LocationSection = ({ isExpanded }: { isExpanded: boolean }) => {
     }
   }, [hasLocationPermission, panToLocation, requestLocationPermission]);
 
-  const handleEditSafeZone = useCallback(() => {}, []);
+  const handleEditSafeZone = useCallback(() => {
+    router.push(ROUTES.EDIT_SAFE_ZONE);
+  }, []);
 
   const handlePanToSafeZone = useCallback(() => {
     mapRef.current?.animateToRegion(

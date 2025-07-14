@@ -9,3 +9,15 @@ export interface Contact {
   phone: string;
   contactMethods: ContactMethod[];
 }
+
+export interface AddressData {
+  name: string;
+  address: string;
+  latitude: number;
+  longitude: number;
+}
+
+export interface SafeZone {
+  location: AddressData;
+  radius: number;
+}
