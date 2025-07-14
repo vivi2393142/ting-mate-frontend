@@ -3,7 +3,7 @@ import { Fragment, useCallback, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import { Alert, View } from 'react-native';
-import { ActivityIndicator, Divider, List, Text } from 'react-native-paper';
+import { Divider, List, Text } from 'react-native-paper';
 
 import { useGetTasks, useUpdateTaskStatus } from '@/api/tasks';
 import ROUTES from '@/constants/routes';
@@ -19,6 +19,7 @@ import { getNextNotificationTime, isTaskMissed, shouldTaskAppearToday } from '@/
 
 import IconSymbol from '@/components/atoms/IconSymbol';
 import ScreenContainer from '@/components/atoms/ScreenContainer';
+import Skeleton from '@/components/atoms/Skeleton';
 import ThemedButton from '@/components/atoms/ThemedButton';
 import ExpandableSectionHeader from '@/components/screens/Home/ExpandableSectionHeader';
 import OtherTaskListItem from '@/components/screens/Home/OtherTaskListItem';
@@ -197,10 +198,9 @@ const HomeScreen = () => {
       </Text>
       {isLoading && (
         <View style={styles.loadingContainer}>
-          <ActivityIndicator size={'small'} />
-          <Text style={[styles.hintText, { marginTop: StaticTheme.spacing.sm }]}>
-            {t('Loading tasks...')}
-          </Text>
+          {Array.from({ length: 3 }).map((_, idx) => (
+            <Skeleton key={idx} width={'100%'} height={58} />
+          ))}
         </View>
       )}
       {!isLoading && sortedTasks.length === 0 && (
@@ -328,10 +328,9 @@ const getStyles = createStyles<
     height: (_, { userTextSize }) => (userTextSize === UserTextSize.LARGE ? 48 : 36),
   },
   loadingContainer: {
-    justifyContent: 'center',
-    alignItems: 'center',
     gap: StaticTheme.spacing.md,
-    paddingVertical: StaticTheme.spacing.lg,
+    marginTop: StaticTheme.spacing.sm,
+    marginBottom: StaticTheme.spacing.md,
   },
   emptyContainer: {
     justifyContent: 'center',

@@ -3,7 +3,7 @@ import dayjs from 'dayjs';
 import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
 import { Fragment, useCallback, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { ActivityIndicator, Alert, Button, Platform } from 'react-native';
+import { Alert, Button, Platform } from 'react-native';
 import { Divider } from 'react-native-paper';
 import EmojiPicker from 'rn-emoji-keyboard';
 
@@ -19,6 +19,7 @@ import { autoFillInvalidTaskFormData, formatReminderTime } from '@/utils/taskUti
 
 import FormInput from '@/components/atoms/FormInput';
 import ScreenContainer from '@/components/atoms/ScreenContainer';
+import Skeleton from '@/components/atoms/Skeleton';
 import ThemedButton from '@/components/atoms/ThemedButton';
 import ThemedView from '@/components/atoms/ThemedView';
 import RecurrenceSelector from '@/components/screens/TaskForm/RecurrenceSelector';
@@ -293,7 +294,9 @@ const TaskForm = () => {
         />
         <ScreenContainer isRoot={false} style={styles.screenContainer} scrollable>
           <ThemedView style={styles.loadingContainer}>
-            <ActivityIndicator size="large" color={theme.colors.primary} />
+            {Array.from({ length: 4 }).map((_, idx) => (
+              <Skeleton key={idx} width={'100%'} height={40} />
+            ))}
           </ThemedView>
         </ScreenContainer>
       </Fragment>
@@ -436,7 +439,7 @@ const getStyles = createStyles<
   },
   loadingContainer: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
+    gap: StaticTheme.spacing.sm,
+    marginTop: StaticTheme.spacing.md,
   },
 });
