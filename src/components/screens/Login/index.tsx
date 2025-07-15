@@ -19,6 +19,7 @@ import useUserStore from '@/store/useUserStore';
 
 const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
+// TODO: Should add name when sign up
 const LoginScreen = () => {
   const { t } = useTranslation('login');
   const { t: tCommon } = useTranslation('common');

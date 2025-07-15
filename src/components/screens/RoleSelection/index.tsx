@@ -29,7 +29,8 @@ const RoleSelectionScreen = () => {
   const theme = useAppTheme();
   const styles = getStyles(theme);
 
-  const { user, token } = useUserStore();
+  const user = useUserStore((s) => s.user);
+  const token = useUserStore((s) => s.token);
   const router = useRouter();
   const params = useLocalSearchParams();
 

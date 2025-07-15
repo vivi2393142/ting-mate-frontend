@@ -20,7 +20,7 @@ const EditNameScreen = () => {
   const theme = useAppTheme();
   const styles = getStyles(theme);
 
-  const { user } = useUserStore();
+  const user = useUserStore((s) => s.user);
   const router = useRouter();
   const updateUserSettingsMutation = useUpdateUserSettings();
 

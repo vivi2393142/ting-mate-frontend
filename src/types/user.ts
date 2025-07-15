@@ -1,3 +1,5 @@
+import type { ContactMethod } from '@/types/connect';
+
 export enum UserTextSize {
   STANDARD = 'STANDARD', // default
   LARGE = 'LARGE',
@@ -23,12 +25,21 @@ export interface UserLink {
   name: string;
 }
 
+export interface EmergencyContact {
+  id: string;
+  name: string;
+  phone: string;
+  methods: ContactMethod[];
+}
+
 export interface UserSettings {
   name: string;
   linked: UserLink[];
   textSize: UserTextSize;
   displayMode: UserDisplayMode;
   reminder: ReminderSettings;
+  emergencyContacts: EmergencyContact[];
+  allowShareLocation: boolean;
   // language: 'zh-TW' | 'en-US'; // TODO: implement language
 }
 

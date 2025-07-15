@@ -8,7 +8,7 @@ import { Alert, Share, Text, TextInput, View } from 'react-native';
 import { TouchableRipple } from 'react-native-paper';
 
 import { useAcceptInvitation, useGenerateInvitation } from '@/api/invitation';
-import { useCurrentUser, useRemoveUserLink } from '@/api/user';
+import { useRemoveUserLink } from '@/api/user';
 import ROUTES from '@/constants/routes';
 import useAppTheme from '@/hooks/useAppTheme';
 import useUserStore from '@/store/useUserStore';
@@ -31,7 +31,7 @@ const AccountLinkingScreen = () => {
   const theme = useAppTheme();
   const styles = getStyles(theme);
 
-  const { data: user } = useCurrentUser();
+  const user = useUserStore((s) => s.user);
   const linkedUsers = user?.settings.linked || [];
 
   // Check if user is caregiver and has linked accounts

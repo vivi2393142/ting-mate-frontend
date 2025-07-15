@@ -26,7 +26,7 @@ const VoiceCommandButton = ({ style, ...props }: VoiceCommandButtonProps) => {
   const { t } = useTranslation('common');
 
   // TODO: change to real user ID
-  // const userId = useUserStore((state) => state.user?.email || 'test@example.com');
+  // const userId = useUserStore((s) => s.user?.email || 'test@example.com');
 
   const audioRecorder = useAudioRecorder({
     ...RecordingPresets.HIGH_QUALITY,

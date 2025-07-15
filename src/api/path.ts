@@ -12,6 +12,11 @@ const API_PATH = {
   USER_LINKS: '/user/links',
   USER_INVITATIONS_GENERATE: '/user/invitations/generate',
   USER_INVITATIONS_ACCEPT: '/user/invitations',
+  // User Locations
+  USER_LOCATION: '/user/location',
+  USER_LINKED_LOCATION: '/user/linked-location',
+  USER_CAN_GET_LOCATION: '/user/can-get-location',
+  USER_LINKED_SAFE_ZONE: '/user/linked-safe-zone',
 };
 
 export default API_PATH;

@@ -64,3 +64,10 @@ export const DATETIME_FORMAT = 'YYYY-MM-DD HH:mm';
 // ============================================================================
 /** Minimum recurrence interval */
 export const MIN_RECURRENCE_INTERVAL = 1;
+
+// ============================================================================
+// Location & Sync Constants
+// ============================================================================
+
+/** Interval for background location sync (in milliseconds) */
+export const LOCATION_SYNC_REFRESH_INTERVAL = 10 * 60 * 1000;

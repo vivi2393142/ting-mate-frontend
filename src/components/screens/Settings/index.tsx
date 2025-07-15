@@ -43,8 +43,8 @@ const SettingsScreen = () => {
   const { tUserDisplayMode } = useUserDisplayModeTranslation();
   const { tRole } = useRoleTranslation();
 
-  const token = useUserStore((state) => state.token);
-  const userState = useUserStore((state) => state.user);
+  const token = useUserStore((s) => s.token);
+  const user = useUserStore((s) => s.user);
 
   const updateUserSettingsMutation = useUpdateUserSettings();
 
@@ -52,7 +52,7 @@ const SettingsScreen = () => {
   const logoutMutation = useLogout();
 
   const theme = useAppTheme();
-  const styles = getStyles(theme, { userState });
+  const styles = getStyles(theme, { user });
 
   const textSizeOptions = useMemo(
     () =>
@@ -134,7 +134,7 @@ const SettingsScreen = () => {
           label={t('Text Size')}
           render={() => (
             <Select
-              displayValue={tUserTextSize(userState?.settings.textSize ?? UserTextSize.STANDARD)}
+              displayValue={tUserTextSize(user?.settings.textSize ?? UserTextSize.STANDARD)}
               options={textSizeOptions}
               onSelect={handleTextSizeSelect}
             />
@@ -148,9 +148,7 @@ const SettingsScreen = () => {
           label={t('Display Mode')}
           render={() => (
             <Select
-              displayValue={tUserDisplayMode(
-                userState?.settings.displayMode ?? UserDisplayMode.FULL,
-              )}
+              displayValue={tUserDisplayMode(user?.settings.displayMode ?? UserDisplayMode.FULL)}
               options={displayModeOptions}
               onSelect={handleDisplayModeSelect}
             />
@@ -167,7 +165,7 @@ const SettingsScreen = () => {
           rightIconName="chevron.right"
           dense={false}
           label={t('Name')}
-          value={userState?.settings.name || '---'}
+          value={user?.settings.name || '---'}
           valueColor={theme.colors.primary}
           onPress={handleNamePress}
         />
@@ -176,7 +174,7 @@ const SettingsScreen = () => {
           rightIconName="chevron.right"
           dense={false}
           label={t('Role')}
-          value={tRole(userState?.role || Role.CARERECEIVER)}
+          value={tRole(user?.role || Role.CARERECEIVER)}
           valueColor={theme.colors.primary}
           onPress={handleRolePress}
         />
@@ -185,7 +183,7 @@ const SettingsScreen = () => {
           rightIconName="chevron.right"
           dense={false}
           label={t('Linked Accounts')}
-          value={userState?.settings.linked?.length ? t('Linked') : '---'}
+          value={user?.settings.linked?.length ? t('Linked') : '---'}
           valueColor={theme.colors.primary}
           onPress={handleAccountLinkingPress}
         />

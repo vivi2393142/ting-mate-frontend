@@ -64,6 +64,7 @@ const useUserStore = create<UserState>((set) => ({
         : null,
     })),
   clearUser: () => set({ user: null }),
+
   anonymousId: null,
   initAnonymousId: async () => {
     const id = await getOrCreateAnonymousId();
@@ -77,6 +78,7 @@ const useUserStore = create<UserState>((set) => ({
     await clearAnonymousId();
     set({ anonymousId: null });
   },
+
   token: null,
   initToken: async () => {
     const token = await getOrCreateToken();
@@ -95,7 +97,7 @@ const useUserStore = create<UserState>((set) => ({
 export default useUserStore;
 
 export const useUserTextSize = () =>
-  useUserStore((state) => state.user?.settings.textSize ?? UserTextSize.STANDARD);
+  useUserStore((s) => s.user?.settings.textSize ?? UserTextSize.STANDARD);
 
 export const useUserDisplayMode = () =>
-  useUserStore((state) => state.user?.settings.displayMode ?? UserDisplayMode.FULL);
+  useUserStore((s) => s.user?.settings.displayMode ?? UserDisplayMode.FULL);

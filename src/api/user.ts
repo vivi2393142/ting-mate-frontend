@@ -10,7 +10,9 @@ import { z } from 'zod';
 import { axiosClientWithAuth } from '@/api/axiosClient';
 import API_PATH from '@/api/path';
 import useUserStore from '@/store/useUserStore';
-import { type ReminderSettings, Role, UserDisplayMode, UserTextSize } from '@/types/user';
+import { ContactMethod } from '@/types/connect';
+import type { User, UserSettings } from '@/types/user';
+import { Role, UserDisplayMode, UserTextSize } from '@/types/user';
 
 /* =============================================================================
  * API Schema Definitions
@@ -34,12 +36,36 @@ const ReminderSettingsSchema = z.object({
   safeZoneReminder: z.boolean(),
 });
 
+const ContactMethodSchema = z.nativeEnum(ContactMethod);
+
+const EmergencyContactSchema = z.object({
+  id: z.string(),
+  name: z.string(),
+  phone: z.string(),
+  methods: z.array(ContactMethodSchema),
+});
+
+const AddressDataSchema = z.object({
+  name: z.string(),
+  address: z.string(),
+  latitude: z.number(),
+  longitude: z.number(),
+});
+
+const SafeZoneSchema = z.object({
+  location: AddressDataSchema,
+  radius: z.number(),
+});
+
 const UserSettingsSchema = z.object({
   name: z.string(),
   linked: z.array(UserLinkSchema),
   textSize: UserTextSizeSchema,
   displayMode: UserDisplayModeSchema,
   reminder: ReminderSettingsSchema.nullable(),
+  emergency_contacts: z.array(EmergencyContactSchema).optional().nullable(),
+  safe_zone: SafeZoneSchema.optional().nullable(),
+  allow_share_location: z.boolean().optional().nullable(),
   // language: z.string().optional(),
 });
 
@@ -57,34 +83,78 @@ const RemoveLinkResponseSchema = z.object({
  * Type Inferences
  * ============================================================================= */
 
-type UserResponse = z.infer<typeof UserSchema>;
+type APIUserSettings = z.infer<typeof UserSettingsSchema>;
 
-export type UserSettingsUpdateRequest = Partial<z.infer<typeof UserSettingsSchema>>;
+type APIUser = z.infer<typeof UserSchema>;
+
+export type UserSettingsUpdateRequest = Partial<UserSettings>;
 
 type RemoveLinkResponse = z.infer<typeof RemoveLinkResponseSchema>;
 
 /* =============================================================================
- * Default Values
+ * Data Transform Functions
  * ============================================================================= */
 
-const defaultReminderSettings: ReminderSettings = {
-  taskTimeReminder: true,
-  overdueReminder: { enabled: true, delayMinutes: 30, repeat: false },
-  safeZoneReminder: false,
+// Transform API user settings (snake_case, nullable) to FE UserSettings (camelCase, strict)
+const transformUserSettingsFromAPI = (apiUserSettings: APIUserSettings): UserSettings => {
+  const userSettings: UserSettings = {
+    name: apiUserSettings.name,
+    linked: apiUserSettings.linked,
+    textSize: apiUserSettings.textSize,
+    displayMode: apiUserSettings.displayMode,
+    reminder: apiUserSettings.reminder || {
+      taskTimeReminder: true,
+      overdueReminder: {
+        enabled: true,
+        delayMinutes: 30,
+        repeat: false,
+      },
+      safeZoneReminder: false,
+    },
+    emergencyContacts: apiUserSettings.emergency_contacts || [],
+    allowShareLocation: apiUserSettings.allow_share_location || false,
+    // language: apiUserSettings.language, // TODO: implement if needed
+  };
+  return userSettings;
+};
+
+// Transform API user to FE User
+export const transformUserFromAPI = (apiUser: APIUser): User => {
+  const user: User = {
+    email: apiUser.email || undefined,
+    role: apiUser.role,
+    settings: transformUserSettingsFromAPI(apiUser.settings),
+  };
+  return user;
+};
+
+// Transform FE UserSettings (camelCase) to API user settings (snake_case)
+const transformUserSettingsToAPI = (
+  userSettings: UserSettingsUpdateRequest,
+): Partial<APIUserSettings> => {
+  return {
+    name: userSettings.name,
+    linked: userSettings.linked,
+    textSize: userSettings.textSize,
+    displayMode: userSettings.displayMode,
+    reminder: userSettings.reminder,
+    emergency_contacts: userSettings.emergencyContacts,
+    allow_share_location: userSettings.allowShareLocation,
+    // language: userSettings.language, // TODO: implement if needed
+  };
 };
 
 /* =============================================================================
  * API Hooks
  * ============================================================================= */
 
-export const useCurrentUser = (
-  options?: Omit<UseQueryOptions<UserResponse>, 'queryKey' | 'queryFn'>,
-) =>
-  useQuery<UserResponse>({
+export const useCurrentUser = (options?: Omit<UseQueryOptions<User>, 'queryKey' | 'queryFn'>) =>
+  useQuery<User>({
     queryKey: ['currentUser'],
-    queryFn: async (): Promise<UserResponse> => {
+    queryFn: async (): Promise<User> => {
       const res = await axiosClientWithAuth.get(API_PATH.USER_ME);
-      return UserSchema.parse(res.data);
+      const parsed = UserSchema.parse(res.data);
+      return transformUserFromAPI(parsed);
     },
     ...options,
   });
@@ -98,7 +168,8 @@ export const useUpdateUserSettings = (
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async (settings: UserSettingsUpdateRequest) => {
-      await axiosClientWithAuth.put(API_PATH.USER_SETTINGS, settings);
+      const apiSettings = transformUserSettingsToAPI(settings);
+      await axiosClientWithAuth.put(API_PATH.USER_SETTINGS, apiSettings);
       return { success: true };
     },
     onSuccess: () => {
@@ -149,10 +220,6 @@ export const useRemoveUserLink = (
  * ============================================================================= */
 
 const updateUser = useUserStore.getState().setUser;
-export const syncCurrentUserToStore = (user: UserResponse) => {
-  updateUser({
-    ...user,
-    email: user.email ?? undefined,
-    settings: { ...user.settings, reminder: user.settings.reminder || defaultReminderSettings },
-  });
+export const syncCurrentUserToStore = (user: User) => {
+  updateUser(user);
 };

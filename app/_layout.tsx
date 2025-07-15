@@ -12,6 +12,7 @@ import '@/i18n';
 import { useTranslation } from 'react-i18next';
 
 import CombinedThemeProvider from '@/components/providers/CombinedThemeProvider';
+import LocationSyncHandler from '@/components/providers/LocationSyncHandler';
 import NotificationHandler from '@/components/providers/NotificationHandler';
 import UserSyncHandler from '@/components/providers/UserSyncHandler';
 
@@ -31,6 +32,7 @@ const RootLayout = () => {
         <UserSyncHandler />
         <NotificationHandler />
         <CombinedThemeProvider>
+          <LocationSyncHandler />
           <Stack>
             <Stack.Screen name="(tabs)" options={{ headerShown: false, title: t('Home') }} />
             <Stack.Screen name="+not-found" />
