@@ -12,6 +12,7 @@ import useAppTheme from '@/hooks/useAppTheme';
 import useRoleTranslation from '@/hooks/useRoleTranslation';
 import useUserDisplayModeTranslation from '@/hooks/useUserDisplayModeTranslation';
 import useUserTextSizeTranslation from '@/hooks/useUserTextSizeTranslation';
+import useAuthStore from '@/store/useAuthStore';
 import useUserStore from '@/store/useUserStore';
 import { StaticTheme } from '@/theme';
 import { Role, UserDisplayMode, UserTextSize } from '@/types/user';
@@ -43,7 +44,7 @@ const SettingsScreen = () => {
   const { tUserDisplayMode } = useUserDisplayModeTranslation();
   const { tRole } = useRoleTranslation();
 
-  const token = useUserStore((s) => s.token);
+  const token = useAuthStore((s) => s.token);
   const user = useUserStore((s) => s.user);
 
   const updateUserSettingsMutation = useUpdateUserSettings();
@@ -155,11 +156,7 @@ const SettingsScreen = () => {
           )}
         />
       </SectionGroup>
-      <SectionGroup
-        title={t('Account')}
-        style={styles.sectionGroup}
-        subheaderStyle={styles.subheader}
-      >
+      <SectionGroup title={t('Account')} subheaderStyle={styles.subheader}>
         <FormInput
           valueAlign="right"
           rightIconName="chevron.right"

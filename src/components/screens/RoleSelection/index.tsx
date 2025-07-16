@@ -10,6 +10,7 @@ import { useTransitionUserRole } from '@/api/user';
 import ROUTES from '@/constants/routes';
 import useAppTheme from '@/hooks/useAppTheme';
 import useRoleTranslation from '@/hooks/useRoleTranslation';
+import useAuthStore from '@/store/useAuthStore';
 import useUserStore from '@/store/useUserStore';
 import { StaticTheme } from '@/theme';
 import { Role } from '@/types/user';
@@ -30,7 +31,7 @@ const RoleSelectionScreen = () => {
   const styles = getStyles(theme);
 
   const user = useUserStore((s) => s.user);
-  const token = useUserStore((s) => s.token);
+  const token = useAuthStore((s) => s.token);
   const router = useRouter();
   const params = useLocalSearchParams();
 

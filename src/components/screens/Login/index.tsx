@@ -8,6 +8,7 @@ import { Text, TextInput } from 'react-native-paper';
 
 import { useLogin, useRegister } from '@/api/auth';
 import useAppTheme from '@/hooks/useAppTheme';
+import useAuthStore from '@/store/useAuthStore';
 import { StaticTheme } from '@/theme';
 import { Role } from '@/types/user';
 import { createStyles, type StyleRecord } from '@/utils/createStyles';
@@ -15,7 +16,6 @@ import { createStyles, type StyleRecord } from '@/utils/createStyles';
 import ThemedButton from '@/components/atoms/ThemedButton';
 import ThemedView from '@/components/atoms/ThemedView';
 import ROUTES from '@/constants/routes';
-import useUserStore from '@/store/useUserStore';
 
 const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -26,7 +26,7 @@ const LoginScreen = () => {
   const theme = useAppTheme();
   const styles = getStyles(theme);
 
-  const { anonymousId } = useUserStore.getState();
+  const anonymousId = useAuthStore((s) => s.anonymousId);
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');

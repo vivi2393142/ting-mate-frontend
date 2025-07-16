@@ -1,4 +1,3 @@
-import useUserStore from '@/store/useUserStore';
 import axios, {
   type AxiosError,
   AxiosHeaders,
@@ -6,12 +5,17 @@ import axios, {
   type InternalAxiosRequestConfig,
 } from 'axios';
 
+import useAuthStore from '@/store/useAuthStore';
+
 const axiosClientWithAuth = axios.create({
   baseURL: process.env.EXPO_PUBLIC_API_URL,
 });
 
 axiosClientWithAuth.interceptors.request.use((config: InternalAxiosRequestConfig) => {
-  const { token, anonymousId } = useUserStore.getState();
+  const { isInit, token, anonymousId } = useAuthStore.getState();
+
+  if (!isInit) throw new Error('Initializing auth state.');
+
   if (token) {
     if (!config.headers || typeof (config.headers as AxiosHeaders).set !== 'function') {
       config.headers = new AxiosHeaders(config.headers);
@@ -34,12 +38,13 @@ axiosClientWithAuth.interceptors.response.use(
       'detail' in response.data &&
       (response.data as { detail?: string }).detail === 'Invalid token'
     ) {
-      await useUserStore.getState().clearToken();
+      await useAuthStore.getState().clearToken();
       const retryConfig = config as InternalAxiosRequestConfig & { _retry?: boolean };
       if (retryConfig && !retryConfig._retry) {
         retryConfig._retry = true;
         return axiosClient(retryConfig);
       }
+
       // If user is registered but not logged in, force user to login
     } else if (
       response?.data &&

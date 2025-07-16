@@ -11,6 +11,7 @@ import { useAcceptInvitation, useGenerateInvitation } from '@/api/invitation';
 import { useRemoveUserLink } from '@/api/user';
 import ROUTES from '@/constants/routes';
 import useAppTheme from '@/hooks/useAppTheme';
+import useAuthStore from '@/store/useAuthStore';
 import useUserStore from '@/store/useUserStore';
 import { StaticTheme } from '@/theme';
 import { Role } from '@/types/user';
@@ -37,7 +38,7 @@ const AccountLinkingScreen = () => {
   // Check if user is caregiver and has linked accounts
   const isCaregiver = user?.role === Role.CAREGIVER;
   const hasLinkedAccounts = linkedUsers.length > 0;
-  const isLoggedIn = !!useUserStore.getState().token;
+  const isLoggedIn = !!useAuthStore((s) => s.token);
   const shouldDisableAddLink = (isCaregiver && hasLinkedAccounts) || !isLoggedIn;
 
   const [inviteCode, setInviteCode] = useState('');

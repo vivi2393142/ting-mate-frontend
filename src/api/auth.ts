@@ -1,9 +1,11 @@
+import { z } from 'zod';
+
 import { axiosClient } from '@/api/axiosClient';
 import API_PATH from '@/api/path';
+import useAuthStore from '@/store/useAuthStore';
 import useUserStore from '@/store/useUserStore';
 import { Role } from '@/types/user';
 import { useMutation, type UseMutationOptions, useQueryClient } from '@tanstack/react-query';
-import { z } from 'zod';
 
 /* =============================================================================
  * Type Definitions
@@ -57,8 +59,8 @@ export const useLogin = (
 ) => {
   const queryClient = useQueryClient();
 
-  const updateToken = useUserStore((s) => s.updateToken);
-  const updateAnonymousId = useUserStore((s) => s.updateAnonymousId);
+  const updateToken = useAuthStore((s) => s.updateToken);
+  const updateAnonymousId = useAuthStore((s) => s.updateAnonymousId);
 
   return useMutation({
     mutationFn: async (params: LoginRequest) => {
@@ -80,9 +82,9 @@ export const useLogin = (
 export const useLogout = () => {
   const queryClient = useQueryClient();
 
-  const clearToken = useUserStore((s) => s.clearToken);
-  const clearAnonymousId = useUserStore((s) => s.clearAnonymousId);
-  const initAnonymousId = useUserStore((s) => s.initAnonymousId);
+  const clearToken = useAuthStore((s) => s.clearToken);
+  const clearAnonymousId = useAuthStore((s) => s.clearAnonymousId);
+  const initAnonymousId = useAuthStore((s) => s.initAnonymousId);
   const clearUser = useUserStore((s) => s.clearUser);
 
   return async () => {
@@ -102,8 +104,8 @@ export const useRegister = (
   options?: Omit<UseMutationOptions<RegisterResponse, Error, RegisterRequest>, 'mutationFn'>,
 ) => {
   const updateLoginUser = useUserStore((s) => s.updateLoginUser);
-  const updateToken = useUserStore((s) => s.updateToken);
-  const updateAnonymousId = useUserStore((s) => s.updateAnonymousId);
+  const updateToken = useAuthStore((s) => s.updateToken);
+  const updateAnonymousId = useAuthStore((s) => s.updateAnonymousId);
 
   return useMutation({
     mutationFn: async (params: RegisterRequest) => {

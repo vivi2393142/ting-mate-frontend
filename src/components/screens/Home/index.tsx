@@ -38,6 +38,7 @@ const HomeScreen = () => {
 
   // Get user data from store
   const user = useUserStore((s) => s.user);
+
   const isCaregiver = user?.role === Role.CAREGIVER;
   const hasLinkedAccounts = user?.settings.linked && user.settings.linked.length > 0;
   const shouldShowCaregiverWarning = isCaregiver && !hasLinkedAccounts;

@@ -7,6 +7,7 @@ import { LOCATION_SYNC_REFRESH_INTERVAL } from '@/constants';
 import useAppTheme from '@/hooks/useAppTheme';
 import { useLocationPermission } from '@/hooks/useLocationPermission';
 import { useSyncCurrentLocation } from '@/hooks/useSyncCurrentLocation';
+import useAuthStore from '@/store/useAuthStore';
 import useUserStore from '@/store/useUserStore';
 import { StaticTheme } from '@/theme';
 import { Role } from '@/types/user';
@@ -20,7 +21,9 @@ const LocationSyncHandler = () => {
   const theme = useAppTheme();
   const styles = getStyles(theme);
 
-  const { token, user } = useUserStore.getState();
+  const token = useAuthStore((s) => s.token);
+  const user = useUserStore((s) => s.user);
+
   const { isGranted, requestPermission } = useLocationPermission();
   useSyncCurrentLocation({ interval: LOCATION_SYNC_REFRESH_INTERVAL });
 
