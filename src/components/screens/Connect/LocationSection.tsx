@@ -574,6 +574,9 @@ const getStyles = createStyles<
     fontWeight: ({ fonts }) => fonts.bodyMedium.fontWeight,
     lineHeight: ({ fonts }) => fonts.bodyMedium.lineHeight,
     color: ({ colors }) => colors.primary,
+    backgroundColor: ({ colors }) => colorWithAlpha(colors.onPrimary, 0.8),
+    paddingHorizontal: StaticTheme.spacing.xs,
+    borderRadius: StaticTheme.borderRadius.s,
   },
   warningChip: {
     position: 'absolute',
