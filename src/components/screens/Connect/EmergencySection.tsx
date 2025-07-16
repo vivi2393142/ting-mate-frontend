@@ -11,7 +11,7 @@ import { StaticTheme } from '@/theme';
 import { ContactMethod } from '@/types/connect';
 import type { EmergencyContact } from '@/types/user';
 import { createStyles, type StyleRecord } from '@/utils/createStyles';
-import { formatPhoneDisplay } from '@/utils/phoneNumberUtils';
+import { getDisplayPhone } from '@/utils/phoneNumberUtils';
 
 import ThemedButton from '@/components/atoms/ThemedButton';
 import ThemedIconButton from '@/components/atoms/ThemedIconButton';
@@ -57,7 +57,7 @@ const ContactRow = ({
     <View style={styles.contactRow}>
       <View style={styles.contactInfo}>
         <Text style={styles.contactName}>{contact.name}</Text>
-        {isExpanded && <Text style={styles.contactPhone}>{formatPhoneDisplay(contact.phone)}</Text>}
+        {isExpanded && <Text style={styles.contactPhone}>{getDisplayPhone(contact.phone)}</Text>}
       </View>
       <View style={styles.contactActions}>
         {contact.methods.includes(ContactMethod.PHONE) && (

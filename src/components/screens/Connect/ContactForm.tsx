@@ -1,7 +1,13 @@
 import * as Contacts from 'expo-contacts';
 import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
-import { Fragment, useCallback, useEffect, useMemo, useState } from 'react';
+import { Fragment, useCallback, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import PhoneInput, {
+  ICountry,
+  getCountriesByCallingCode,
+  getCountryByCca2,
+  isValidPhoneNumber,
+} from 'react-native-international-phone-number';
 import uuid from 'react-native-uuid';
 
 import { Alert, Button, Text, View } from 'react-native';
@@ -18,12 +24,14 @@ import { StaticTheme } from '@/theme';
 import { ContactMethod } from '@/types/connect';
 import colorWithAlpha from '@/utils/colorWithAlpha';
 import { createStyles, type StyleRecord } from '@/utils/createStyles';
-import { cleanPhoneInput, formatPhoneDisplay, validatePhoneNumber } from '@/utils/phoneNumberUtils';
+import { getMergedPhone, getSeparatedPhone } from '@/utils/phoneNumberUtils';
 
 import FormInput from '@/components/atoms/FormInput';
 import ScreenContainer from '@/components/atoms/ScreenContainer';
 import ThemedButton from '@/components/atoms/ThemedButton';
 import ThemedView from '@/components/atoms/ThemedView';
+
+const defaultPhoneCountry = getCountryByCca2('GB') || null;
 
 interface ContactMethodOption {
   type: ContactMethod;
@@ -54,20 +62,32 @@ const ContactFormScreen = () => {
 
   const [hasInit, setHasInit] = useState(false);
   const [name, setName] = useState('');
-  const [phone, setPhone] = useState('');
   const [methods, setMethods] = useState<ContactMethod[]>([]);
+
+  const [phoneCountry, setPhoneCountry] = useState<null | ICountry>(null);
+  const [phoneNumber, setPhoneNumber] = useState<string>('');
 
   const [hasPermission, setHasPermission] = useState(false);
   const [isRequesting, setIsRequesting] = useState(false);
 
   const [showMethodOptions, setShowMethodOptions] = useState(false);
 
-  const isPhoneValid = useMemo(() => validatePhoneNumber(phone), [phone]);
-  const displayPhone = useMemo(() => formatPhoneDisplay(phone), [phone]);
+  const handlePhoneNumberChange = useCallback((phoneNumber: string) => {
+    setPhoneNumber(phoneNumber);
+  }, []);
 
-  const handlePhoneChange = useCallback((text: string) => {
-    const cleaned = cleanPhoneInput(text);
-    setPhone(cleaned);
+  const handlePhonCountryChange = useCallback((country: ICountry) => {
+    setPhoneCountry(country);
+  }, []);
+
+  const handleMethodPress = useCallback(() => {
+    setShowMethodOptions((prev) => !prev);
+  }, []);
+
+  const handleMethodToggle = useCallback((method: ContactMethod) => {
+    setMethods((prev) =>
+      prev.includes(method) ? prev.filter((m) => m !== method) : [...prev, method],
+    );
   }, []);
 
   const requestContactsPermission = useCallback(async () => {
@@ -92,15 +112,23 @@ const ContactFormScreen = () => {
       const data = await Contacts.presentContactPickerAsync();
       if (!data) return;
 
-      const phone = data.phoneNumbers?.[0]?.number;
-      if (!phone) {
+      const phoneData = data.phoneNumbers?.[0];
+      if (!phoneData) {
         Alert.alert('Error', t('No phone number found'));
         return;
       }
 
       const name = data.name || `${data.firstName} ${data.lastName}`;
       setName(name.trim() || 'Unknown');
-      setPhone(cleanPhoneInput(phone));
+
+      if (phoneData.countryCode) {
+        setPhoneCountry(
+          getCountriesByCallingCode(phoneData.countryCode)?.[0] || defaultPhoneCountry,
+        );
+      }
+      if (phoneData.number) {
+        setPhoneNumber(phoneData.number.replace(/[^\d]/g, ''));
+      }
     } catch (error) {
       if (__DEV__) console.error('Error loading contacts:', error);
       Alert.alert('Error', t('Failed to load contacts'));
@@ -109,25 +137,14 @@ const ContactFormScreen = () => {
     }
   }, [hasPermission, requestContactsPermission, t]);
 
-  const handleMethodToggle = useCallback((method: ContactMethod) => {
-    setMethods((prev) =>
-      prev.includes(method) ? prev.filter((m) => m !== method) : [...prev, method],
-    );
-  }, []);
-
   const handleSave = useCallback(() => {
     if (!name) {
       Alert.alert('Error', t('Please enter a name.'));
       return;
     }
 
-    if (!phone) {
-      Alert.alert('Error', t('Please enter a phone number.'));
-      return;
-    }
-
-    if (!isPhoneValid) {
-      Alert.alert('Error', t('Please enter a valid phone number (at least 7 digits).'));
+    if (!phoneCountry || !isValidPhoneNumber(phoneNumber, phoneCountry)) {
+      Alert.alert('Error', t('Please enter a valid phone number.'));
       return;
     }
 
@@ -138,12 +155,13 @@ const ContactFormScreen = () => {
 
     if (!user) return;
     const originContacts = user.settings.emergencyContacts;
+    const mergedPhone = getMergedPhone(phoneNumber, phoneCountry);
 
     if (isEditMode) {
       updateUserSettingsMutation.mutate(
         {
           emergencyContacts: originContacts.map((c) =>
-            c.id === params.contactId ? { ...c, name, phone, methods } : c,
+            c.id === params.contactId ? { ...c, name, phone: mergedPhone, methods } : c,
           ),
         },
         {
@@ -153,6 +171,7 @@ const ContactFormScreen = () => {
         },
       );
     } else {
+      const phone = getMergedPhone(phoneNumber, phoneCountry);
       updateUserSettingsMutation.mutate(
         {
           emergencyContacts: [...originContacts, { id: uuid.v4(), name, phone, methods }],
@@ -166,10 +185,10 @@ const ContactFormScreen = () => {
     }
   }, [
     name,
-    phone,
-    isPhoneValid,
+    phoneCountry,
     methods,
     user,
+    phoneNumber,
     isEditMode,
     t,
     updateUserSettingsMutation,
@@ -196,10 +215,6 @@ const ContactFormScreen = () => {
     router.back();
   }, [router]);
 
-  const handleMethodPress = () => {
-    setShowMethodOptions((prev) => !prev);
-  };
-
   useEffect(() => {
     if (hasInit) return;
     if (isEditMode) {
@@ -208,11 +223,14 @@ const ContactFormScreen = () => {
       );
       if (targetContact) {
         setName(targetContact.name);
-        setPhone(targetContact.phone);
         setMethods(targetContact.methods);
+        const { phoneCountry, phoneNumber } = getSeparatedPhone(targetContact.phone);
+        setPhoneCountry(phoneCountry || null);
+        setPhoneNumber(phoneNumber);
       }
       setHasInit(true);
     } else {
+      setPhoneCountry(defaultPhoneCountry);
       setHasInit(true);
     }
   }, [hasInit, isEditMode, params.contactId, user?.settings?.emergencyContacts]);
@@ -250,12 +268,30 @@ const ContactFormScreen = () => {
           <FormInput
             label={t('Phone')}
             icon="phone"
-            placeholder={t('Enter phone number')}
-            value={displayPhone}
-            onChangeValue={handlePhoneChange}
-            keyboardType="phone-pad"
-            maxLength={25}
-            valueColor={isPhoneValid ? theme.colors.onSurfaceVariant : theme.colors.error}
+            render={() => (
+              <PhoneInput
+                value={phoneNumber}
+                selectedCountry={phoneCountry}
+                onChangePhoneNumber={handlePhoneNumberChange}
+                onChangeSelectedCountry={handlePhonCountryChange}
+                placeholder={t('Enter phone number')}
+                phoneInputSelectionColor={theme.colors.primary}
+                phoneInputPlaceholderTextColor={theme.colors.outline}
+                phoneInputStyles={{
+                  container: styles.phoneInputContainer,
+                  flagContainer: styles.phoneInputFlagContainer,
+                  flag: styles.phoneInputFlag,
+                  caret: styles.phoneInputCaret,
+                  divider: styles.phoneInputDivider,
+                  callingCode: styles.phoneInputCallingCode,
+                  input: styles.phoneInputInput,
+                }}
+                modalStyles={{
+                  searchInput: styles.phoneInputModalSearchInput,
+                  countryItem: styles.phoneInputModalCountryItem,
+                }}
+              />
+            )}
           />
           {/* Contact Methods */}
           <FormInput
@@ -346,8 +382,18 @@ const getStyles = createStyles<
     | 'methodsList'
     | 'methodRow'
     | 'selectedMethodRow'
-    | 'actionButtonsContainer',
-    'methodLabel' | 'selectedMethodLabel'
+    | 'actionButtonsContainer'
+    | 'phoneInputContainer'
+    | 'phoneInputFlagContainer'
+    | 'phoneInputDivider'
+    | 'phoneInputModalCountryItem',
+    | 'methodLabel'
+    | 'selectedMethodLabel'
+    | 'phoneInputFlag'
+    | 'phoneInputCaret'
+    | 'phoneInputCallingCode'
+    | 'phoneInputInput'
+    | 'phoneInputModalSearchInput'
   >
 >({
   screenContainer: {
@@ -383,6 +429,46 @@ const getStyles = createStyles<
   },
   actionButtonsContainer: {
     gap: StaticTheme.spacing.md,
+  },
+  phoneInputContainer: {
+    borderWidth: 0,
+    borderRadius: 0,
+    flex: 1,
+    width: null,
+    backgroundColor: 'transparent',
+  },
+  phoneInputFlagContainer: {
+    paddingHorizontal: StaticTheme.spacing.xs,
+    borderTopLeftRadius: 0,
+    borderBottomLeftRadius: 0,
+    backgroundColor: 'transparent',
+  },
+  phoneInputFlag: {
+    fontSize: 16,
+  },
+  phoneInputCaret: {
+    display: 'none',
+  },
+  phoneInputDivider: {
+    display: 'none',
+  },
+  phoneInputCallingCode: {
+    color: ({ colors }) => colors.onSurfaceVariant,
+    fontSize: ({ fonts }) => fonts.bodyLarge.fontSize,
+    fontWeight: ({ fonts }) => fonts.bodyLarge.fontWeight,
+  },
+  phoneInputInput: {
+    paddingHorizontal: StaticTheme.spacing.xs,
+    paddingVertical: 0,
+    width: 'auto',
+    fontSize: ({ fonts }) => fonts.bodyLarge.fontSize,
+    fontWeight: ({ fonts }) => fonts.bodyLarge.fontWeight,
+  },
+  phoneInputModalSearchInput: {
+    borderRadius: StaticTheme.borderRadius.s,
+  },
+  phoneInputModalCountryItem: {
+    borderRadius: StaticTheme.borderRadius.s,
   },
 });
 
