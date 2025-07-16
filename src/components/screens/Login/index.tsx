@@ -117,7 +117,7 @@ const LoginScreen = () => {
       <ThemedView style={styles.root}>
         <Image
           // eslint-disable-next-line i18next/no-literal-string
-          source={require('@/assets/images/icon.png')}
+          source={require('@/assets/images/splash-icon.png')}
           style={imageStyle.logo}
           resizeMode="contain"
         />
@@ -169,9 +169,9 @@ const LoginScreen = () => {
 
 const imageStyle = StyleSheet.create({
   logo: {
-    height: 140,
-    marginTop: -140,
-    width: 140,
+    height: 200,
+    marginTop: -200,
+    width: 200,
   },
 });
 

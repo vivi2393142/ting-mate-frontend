@@ -92,5 +92,6 @@ const getStyles = createStyles<StyleRecord<'buttonContainer', 'text'>>({
     fontSize: ({ fonts }) => fonts.bodyLarge.fontSize,
     fontWeight: ({ fonts }) => fonts.bodyLarge.fontWeight,
     lineHeight: ({ fonts }) => fonts.bodyLarge.lineHeight,
+    color: ({ colors }) => colors.onSurface,
   },
 });

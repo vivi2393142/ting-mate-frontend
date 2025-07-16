@@ -1,8 +1,9 @@
+import * as Linking from 'expo-linking';
 import { useRouter } from 'expo-router';
 import { useCallback, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
-import { Text, View } from 'react-native';
+import { Alert, Text, View } from 'react-native';
 
 import ROUTES from '@/constants/routes';
 import useAppTheme from '@/hooks/useAppTheme';
@@ -22,6 +23,14 @@ const MIN_ITEM_COUNT = 3;
 
 const whatsAppColor = '#25A366';
 
+// Keep leading '+' if present, remove all other non-digit characters except the leading '+'
+const sanitizePhoneNumber = (phone: string): string => {
+  if (phone.startsWith('+')) return '+' + phone.slice(1).replace(/\D/g, '');
+  return phone.replace(/\D/g, '');
+};
+
+const getWhatsAppMessageUrl = (phone: string) => `https://wa.me/${phone}`;
+
 const ContactRow = ({
   contact,
   isExpanded,
@@ -36,15 +45,36 @@ const ContactRow = ({
 
   const router = useRouter();
 
-  const handleEmergencyCall = useCallback(() => {
-    // TODO: Implement emergency call functionality
-    console.log('Emergency call to:', contact);
-  }, [contact]);
+  const handleEmergencyCall = useCallback(async () => {
+    const sanitized = sanitizePhoneNumber(contact.phone);
+    const url = `tel:${sanitized}`;
+    try {
+      const supported = await Linking.canOpenURL(url);
+      if (supported) {
+        await Linking.openURL(url);
+      } else {
+        Alert.alert('Error', t('Cannot make a call to this number.'));
+      }
+    } catch {
+      Alert.alert('Error', t('Failed to initiate call.'));
+    }
+  }, [contact.phone, t]);
 
-  const handleWhatsAppMessage = useCallback(() => {
-    // TODO: Implement WhatsApp message functionality
-    console.log('WhatsApp message to:', contact);
-  }, [contact]);
+  const handleWhatsAppMessage = useCallback(async () => {
+    // Sanitize phone number for WhatsApp (remove '+', only digits)
+    const sanitized = sanitizePhoneNumber(contact.phone).replace(/^\+/, '');
+    const url = getWhatsAppMessageUrl(sanitized);
+    try {
+      const supported = await Linking.canOpenURL(url);
+      if (supported) {
+        await Linking.openURL(url);
+      } else {
+        Alert.alert('Error', t('WhatsApp is not installed or the number is invalid.'));
+      }
+    } catch {
+      Alert.alert('Error', t('Failed to open WhatsApp.'));
+    }
+  }, [contact.phone, t]);
 
   const handleEditContact = useCallback(() => {
     router.push({
