@@ -16,6 +16,7 @@ import ROUTES from '@/constants/routes';
 import useAppTheme from '@/hooks/useAppTheme';
 import { useLocationPermission } from '@/hooks/useLocationPermission';
 import { useSyncCurrentLocation } from '@/hooks/useSyncCurrentLocation';
+import useAuthStore from '@/store/useAuthStore';
 import useLocationStore from '@/store/useLocationStore';
 import useUserStore from '@/store/useUserStore';
 import { StaticTheme } from '@/theme';
@@ -106,6 +107,7 @@ const LocationSection = ({ isExpanded }: { isExpanded: boolean }) => {
   const { t } = useTranslation('connect');
   const { t: tCommon } = useTranslation('common');
 
+  const token = useAuthStore((s) => s.token);
   const user = useUserStore((s) => s.user);
   const { currentLocation } = useLocationStore();
   const mapRef = useRef<MapView>(null);
@@ -307,6 +309,22 @@ const LocationSection = ({ isExpanded }: { isExpanded: boolean }) => {
   }, [isInSafeZone, t, user, markerName]);
 
   // --- UI: Not ready ---
+  // If not authenticated, show sign in button
+  if (!token) {
+    return (
+      <View style={styles.note}>
+        <Text style={styles.noteText}>{t('Please sign in to use this feature.')}</Text>
+        <ThemedButton
+          onPress={() => {
+            router.push(ROUTES.LOGIN);
+          }}
+        >
+          {tCommon('Sign In / Sign Up')}
+        </ThemedButton>
+      </View>
+    );
+  }
+
   if (status === Status.INITIALIZING || !user) {
     return (
       <View style={styles.container}>
