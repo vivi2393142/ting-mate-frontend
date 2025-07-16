@@ -1,3 +1,3 @@
-import EditSafeZone from '@/components/screens/EditSafeZone';
+import EditSafeZoneScreen from '@/components/screens/EditSafeZone';
 
-export default EditSafeZone;
+export default EditSafeZoneScreen;

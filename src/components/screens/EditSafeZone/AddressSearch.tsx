@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { Keyboard, ScrollView, Text, View } from 'react-native';
 import { Divider, TextInput, TouchableRipple } from 'react-native-paper';
 
+import { usePlaceSearch } from '@/api/places';
 import useAppTheme from '@/hooks/useAppTheme';
 import { StaticTheme } from '@/theme';
 import type { AddressData } from '@/types/connect';
@@ -12,46 +13,6 @@ import { createStyles, type StyleRecord } from '@/utils/createStyles';
 
 import FormInput from '@/components/atoms/FormInput';
 import Skeleton from '@/components/atoms/Skeleton';
-
-// TODO: Get options from google api
-const mockOptions: AddressData[] = [
-  {
-    name: 'Chang Gung Memorial Hospital Taipei Branch',
-    address: 'No. 199, Dunhua N Rd, Songshan District, Taipei City, Taiwan',
-    latitude: 25.0585,
-    longitude: 121.5443,
-  },
-  {
-    name: 'Chang Gung Clinic Minsheng Branch',
-    address: 'No. 109, Sec 3, Minsheng E Rd, Zhongshan District, Taipei City, Taiwan',
-    latitude: 25.0602,
-    longitude: 121.5337,
-  },
-  {
-    name: 'Chang Gung Clinic Songshan Branch',
-    address: 'Fuxing N Rd, Songshan District, Taipei City, Taiwan',
-    latitude: 25.0514,
-    longitude: 121.5512,
-  },
-  {
-    name: 'Chang Gung Clinic Songshan Branch',
-    address: 'Fuxing N Rd, Songshan District, Taipei City, Taiwan',
-    latitude: 25.051,
-    longitude: 121.5512,
-  },
-  {
-    name: 'Chang Gung Clinic Songshan Branch',
-    address: 'Fuxing N Rd, Songshan District, Taipei City, Taiwan',
-    latitude: 25.0511,
-    longitude: 121.5512,
-  },
-  {
-    name: 'Chang Gung Clinic Songshan Branch',
-    address: 'Fuxing N Rd, Songshan District, Taipei City, Taiwan',
-    latitude: 25.0512,
-    longitude: 121.5512,
-  },
-];
 
 interface AddressOptionProps {
   option: AddressData;
@@ -112,6 +73,8 @@ const AddressSearch = ({ selectedAddress, onAddressSelect }: AddressSearchProps)
     selectedAddress ? SearchBarState.SELECTED : SearchBarState.IDLE,
   );
 
+  const placeSearchMutation = usePlaceSearch();
+
   // Update state on input change
   const handleInputChange = useCallback(
     (value: string) => {
@@ -129,15 +92,26 @@ const AddressSearch = ({ selectedAddress, onAddressSelect }: AddressSearchProps)
   );
 
   // Search handler
-  const handleSearch = useCallback(() => {
-    if (!userInput.trim()) return;
-    setSearchBarState(SearchBarState.SEARCHING);
+  const handleSearch = useCallback(async () => {
     Keyboard.dismiss();
-    setTimeout(() => {
-      setOptions(mockOptions);
-      setSearchBarState(SearchBarState.RESULTS);
-    }, 1000);
-  }, [userInput]);
+    if (!userInput.trim()) return;
+
+    setSearchBarState(SearchBarState.SEARCHING);
+    placeSearchMutation.mutate(
+      { query: userInput },
+      {
+        onSuccess: (data) => {
+          setOptions(data);
+        },
+        onError: () => {
+          setOptions([]);
+        },
+        onSettled: () => {
+          setSearchBarState(SearchBarState.RESULTS);
+        },
+      },
+    );
+  }, [userInput, placeSearchMutation]);
 
   // Option select handler
   const handleOptionSelect = useCallback(

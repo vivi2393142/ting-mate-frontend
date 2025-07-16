@@ -38,7 +38,7 @@ interface SafeZoneParams {
   location: AddressData | null;
 }
 
-const EditSafeZone = () => {
+const EditSafeZoneScreen = () => {
   const { t } = useTranslation('connect');
   const { t: tCommon } = useTranslation('common');
 
@@ -408,4 +408,4 @@ const getStyles = createStyles<
   },
 });
 
-export default EditSafeZone;
+export default EditSafeZoneScreen;

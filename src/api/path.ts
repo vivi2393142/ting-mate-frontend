@@ -17,6 +17,7 @@ const API_PATH = {
   USER_LINKED_LOCATION: '/user/linked-location',
   USER_CAN_GET_LOCATION: '/user/can-get-location',
   SAFE_ZONE: '/safe-zone',
+  PLACE_SEARCH: '/places/search',
 };
 
 export default API_PATH;
