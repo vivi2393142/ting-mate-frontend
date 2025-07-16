@@ -45,18 +45,6 @@ const EmergencyContactSchema = z.object({
   methods: z.array(ContactMethodSchema),
 });
 
-const AddressDataSchema = z.object({
-  name: z.string(),
-  address: z.string(),
-  latitude: z.number(),
-  longitude: z.number(),
-});
-
-const SafeZoneSchema = z.object({
-  location: AddressDataSchema,
-  radius: z.number(),
-});
-
 const UserSettingsSchema = z.object({
   name: z.string(),
   linked: z.array(UserLinkSchema),
@@ -64,7 +52,6 @@ const UserSettingsSchema = z.object({
   displayMode: UserDisplayModeSchema,
   reminder: ReminderSettingsSchema.nullable(),
   emergency_contacts: z.array(EmergencyContactSchema).optional().nullable(),
-  safe_zone: SafeZoneSchema.optional().nullable(),
   allow_share_location: z.boolean().optional().nullable(),
   // language: z.string().optional(),
 });

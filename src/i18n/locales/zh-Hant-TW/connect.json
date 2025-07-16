@@ -1,6 +1,7 @@
 {
   "Add Contact": "Add Contact",
   "Add Note": "Add Note",
+  "Are you sure you want to turn off location sharing? Your linked user will not be able to track your location.": "Are you sure you want to turn off location sharing? Your linked user will not be able to track your location.",
   "Call one care giver": "Call one care giver",
   "Call {{name}}": "Call {{name}}",
   "Can’t find your location right now. Try again.": "Can’t find your location right now. Try again.",
@@ -60,6 +61,7 @@
   "Time": "Time",
   "Title": "Title",
   "Try Again": "Try Again",
+  "Turn Off Location Sharing": "Turn Off Location Sharing",
   "Turn On Location Sharing": "Turn On Location Sharing",
   "User": "User",
   "We cannot get the current location. The linked user may have just turned on location sharing or has not allowed location access on their device. Please check their settings or try again.": "We cannot get the current location. The linked user may have just turned on location sharing or has not allowed location access on their device. Please check their settings or try again.",

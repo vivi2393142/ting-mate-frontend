@@ -2,7 +2,7 @@ import { router } from 'expo-router';
 import { useCallback, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
-import { Text, View } from 'react-native';
+import { Alert, Text, View } from 'react-native';
 import MapView, { Circle, Marker, PROVIDER_GOOGLE } from 'react-native-maps';
 
 import { useUpdateUserSettings } from '@/api/user';
@@ -242,6 +242,27 @@ const LocationSection = ({ isExpanded }: { isExpanded: boolean }) => {
   const handleEditSafeZone = useCallback(() => {
     router.push(ROUTES.EDIT_SAFE_ZONE);
   }, []);
+
+  // Carereceiver: Turn off location sharing
+  const handleTurnOffLocationSharing = useCallback(() => {
+    Alert.alert(
+      t('Turn Off Location Sharing'),
+      t(
+        'Are you sure you want to turn off location sharing? Your linked user will not be able to track your location.',
+      ),
+      [
+        { text: tCommon('Cancel'), style: 'cancel' },
+        {
+          text: tCommon('Confirm'),
+          style: 'destructive',
+          onPress: () => {
+            updateUserSettingsMutation.mutate({ allowShareLocation: false });
+          },
+        },
+      ],
+      { cancelable: true },
+    );
+  }, [t, tCommon, updateUserSettingsMutation]);
 
   // Check if the user is inside the safe zone
   const isInSafeZone = useMemo(() => {
@@ -518,6 +539,12 @@ const LocationSection = ({ isExpanded }: { isExpanded: boolean }) => {
           <ThemedButton mode="contained" icon="gearshape" onPress={handleEditSafeZone}>
             {t('Edit Safe Zone')}
           </ThemedButton>
+          {/* Carereceiver: Turn off location sharing button */}
+          {user.role === Role.CARERECEIVER && user.settings.allowShareLocation && (
+            <ThemedButton mode="outlined" color="error" onPress={handleTurnOffLocationSharing}>
+              {t('Turn Off Location Sharing')}
+            </ThemedButton>
+          )}
         </View>
       )}
     </View>

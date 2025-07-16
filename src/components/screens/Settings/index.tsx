@@ -105,16 +105,16 @@ const SettingsScreen = () => {
   const handleLogout = useCallback(() => {
     Alert.alert(t('Logout'), t('Are you sure you want to logout?'), [
       {
-        text: tCommon('Confirm'),
+        text: tCommon('Cancel'),
         style: 'cancel',
+      },
+      {
+        text: tCommon('Confirm'),
+        style: 'destructive',
         onPress: () => {
           logoutMutation();
           router.push(ROUTES.LOGIN);
         },
-      },
-      {
-        text: tCommon('Cancel'),
-        style: 'destructive',
       },
     ]);
   }, [logoutMutation, router, t, tCommon]);
