@@ -30,7 +30,14 @@ const SectionContainer = ({ title, children, ...props }: SectionContainerProps) 
   return (
     <ThemedView style={styles.sectionContainer}>
       <View style={styles.sectionHeader}>
-        <Text style={styles.sectionTitle}>{title}</Text>
+        <Text
+          style={[
+            styles.sectionTitle,
+            !props.hideToggle && props.isExpanded && styles.sectionTitleHighlight,
+          ]}
+        >
+          {title}
+        </Text>
         {!props.hideToggle && (
           <ThemedIconButton
             name={props.isExpanded ? 'chevron.down' : 'chevron.right'}
@@ -44,7 +51,9 @@ const SectionContainer = ({ title, children, ...props }: SectionContainerProps) 
   );
 };
 
-const getStyles = createStyles<StyleRecord<'sectionContainer' | 'sectionHeader', 'sectionTitle'>>({
+const getStyles = createStyles<
+  StyleRecord<'sectionContainer' | 'sectionHeader', 'sectionTitle' | 'sectionTitleHighlight'>
+>({
   sectionContainer: {
     gap: StaticTheme.spacing.xs,
   },
@@ -59,6 +68,9 @@ const getStyles = createStyles<StyleRecord<'sectionContainer' | 'sectionHeader',
     lineHeight: ({ fonts }) => fonts.titleLarge.lineHeight,
     color: ({ colors }) => colors.onSurface,
     marginBottom: StaticTheme.spacing.sm,
+  },
+  sectionTitleHighlight: {
+    color: ({ colors }) => colors.primary,
   },
 });
 
