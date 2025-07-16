@@ -32,6 +32,7 @@ import IconSymbol from '@/components/atoms/IconSymbol';
 import Skeleton from '@/components/atoms/Skeleton';
 import ThemedButton from '@/components/atoms/ThemedButton';
 import ThemedIconButton from '@/components/atoms/ThemedIconButton';
+import NoteMessage from '@/components/screens/Connect/NoteMessage';
 
 // Status enum for location section UI
 export enum Status {
@@ -328,10 +329,13 @@ const LocationSection = ({ isExpanded }: { isExpanded: boolean }) => {
   // If not authenticated, show sign in button
   if (!token) {
     return (
-      <View style={styles.note}>
-        <Text style={styles.noteText}>{t('Please sign in to use this feature.')}</Text>
-        <ThemedButton onPress={handleLogin}>{tCommon('Login / Sign Up')}</ThemedButton>
-      </View>
+      <NoteMessage
+        message={t('Please sign in to use this feature.')}
+        buttonProps={{
+          onPress: handleLogin,
+          children: tCommon('Login / Sign Up'),
+        }}
+      />
     );
   }
 
@@ -345,91 +349,103 @@ const LocationSection = ({ isExpanded }: { isExpanded: boolean }) => {
 
   if (status === Status.NO_LINKED) {
     return (
-      <View style={styles.note}>
-        <Text style={styles.noteText}>{t('Connect with someone first to use this feature.')}</Text>
-        <ThemedButton onPress={handleLinkAccount}>{t('Link Now')}</ThemedButton>
-      </View>
+      <NoteMessage
+        message={t('Connect with someone first to use this feature.')}
+        buttonProps={{
+          onPress: handleLinkAccount,
+          children: t('Link Now'),
+        }}
+      />
     );
   }
 
   if (status === Status.NO_AGREEMENT) {
     return user.role === Role.CAREGIVER ? (
-      <View style={styles.note}>
-        <Text style={styles.noteText}>
-          {t(
-            'The linked user has not enabled location sharing. Please ask them to turn on location sharing in their app then refresh.',
-          )}
-        </Text>
-        <ThemedButton onPress={handleRefresh} loading={isRefreshing} disabled={isRefreshing}>
-          {tCommon('Refresh')}
-        </ThemedButton>
-      </View>
+      <NoteMessage
+        message={t(
+          'The linked user has not enabled location sharing. Please ask them to turn on location sharing in their app then refresh.',
+        )}
+        buttonProps={{
+          onPress: handleRefresh,
+          loading: isRefreshing,
+          disabled: isRefreshing,
+          children: tCommon('Refresh'),
+        }}
+      />
     ) : (
-      <View style={styles.note}>
-        <Text style={styles.noteText}>
-          {t("Location sharing is off. Turn it on to let your companions know you're safe.")}
-        </Text>
-        <ThemedButton onPress={handleTurnOnLocationSharing}>
-          {t('Turn On Location Sharing')}
-        </ThemedButton>
-      </View>
+      <NoteMessage
+        message={t("Location sharing is off. Turn it on to let your companions know you're safe.")}
+        buttonProps={{
+          onPress: handleTurnOnLocationSharing,
+          children: t('Turn On Location Sharing'),
+        }}
+      />
     );
   }
 
   if (status === Status.NO_PERMISSION) {
     return (
-      <View style={styles.note}>
-        <Text style={styles.noteText}>
-          {t("You're sharing your location, but the app still needs permission from your phone.")}
-        </Text>
-        <ThemedButton onPress={requestPermission}>{tCommon('Go to Settings')}</ThemedButton>
-      </View>
+      <NoteMessage
+        message={t(
+          "You're sharing your location, but the app still needs permission from your phone.",
+        )}
+        buttonProps={{
+          onPress: requestPermission,
+          children: tCommon('Go to Settings'),
+        }}
+      />
     );
   }
 
   if (status === Status.NO_DATA) {
     return user.role === Role.CAREGIVER ? (
-      <View style={styles.note}>
-        <Text style={styles.noteText}>
-          {t(
-            'We cannot get the current location. The linked user may have just turned on location sharing or has not allowed location access on their device. Please check their settings or try again.',
-          )}
-        </Text>
-        <ThemedButton onPress={handleRefresh} loading={isRefreshing} disabled={isRefreshing}>
-          {t('Try Again')}
-        </ThemedButton>
-      </View>
+      <NoteMessage
+        message={t(
+          'We cannot get the current location. The linked user may have just turned on location sharing or has not allowed location access on their device. Please check their settings or try again.',
+        )}
+        buttonProps={{
+          onPress: handleRefresh,
+          loading: isRefreshing,
+          disabled: isRefreshing,
+          children: t('Try Again'),
+        }}
+      />
     ) : (
-      <View style={styles.note}>
-        <Text style={styles.noteText}>{t('Can’t find your location right now. Try again.')}</Text>
-        <ThemedButton onPress={handleRefresh} loading={isRefreshing} disabled={isRefreshing}>
-          {t('Try Again')}
-        </ThemedButton>
-      </View>
+      <NoteMessage
+        message={t('Can’t find your location right now. Try again.')}
+        buttonProps={{
+          onPress: handleRefresh,
+          loading: isRefreshing,
+          disabled: isRefreshing,
+          children: t('Try Again'),
+        }}
+      />
     );
   }
 
   if (status === Status.ONLY_SAFEZONE || !location) {
     return user.role === Role.CAREGIVER ? (
-      <View style={styles.note}>
-        <Text style={styles.noteText}>
-          {t(
-            "No location data available yet. Please check the linked user's settings or try again.",
-          )}
-        </Text>
-        <ThemedButton onPress={handleRefresh} loading={isRefreshing} disabled={isRefreshing}>
-          {t('Try Again')}
-        </ThemedButton>
-      </View>
+      <NoteMessage
+        message={t(
+          "No location data available yet. Please check the linked user's settings or try again.",
+        )}
+        buttonProps={{
+          onPress: handleRefresh,
+          loading: isRefreshing,
+          disabled: isRefreshing,
+          children: t('Try Again'),
+        }}
+      />
     ) : (
-      <View style={styles.note}>
-        <Text style={styles.noteText}>
-          {t('No location data available. Please refresh to update your location.')}
-        </Text>
-        <ThemedButton onPress={handleRefresh} loading={isRefreshing} disabled={isRefreshing}>
-          {tCommon('Refresh')}
-        </ThemedButton>
-      </View>
+      <NoteMessage
+        message={t('No location data available. Please refresh to update your location.')}
+        buttonProps={{
+          onPress: handleRefresh,
+          loading: isRefreshing,
+          disabled: isRefreshing,
+          children: tCommon('Refresh'),
+        }}
+      />
     );
   }
 
@@ -587,9 +603,8 @@ const getStyles = createStyles<
     | 'updateWrapper'
     | 'expandedOptions'
     | 'optionsRow'
-    | 'optionButton'
-    | 'note',
-    'markerName' | 'warningText' | 'updateText' | 'noteText'
+    | 'optionButton',
+    'markerName' | 'warningText' | 'updateText'
   >
 >({
   container: {
@@ -684,19 +699,6 @@ const getStyles = createStyles<
   },
   optionButton: {
     flex: 1,
-  },
-  note: {
-    backgroundColor: ({ colors }) => colors.surfaceVariant,
-    paddingVertical: StaticTheme.spacing.md * 1.25,
-    paddingHorizontal: StaticTheme.spacing.md,
-    borderRadius: StaticTheme.borderRadius.s,
-    gap: StaticTheme.spacing.sm * 1.25,
-  },
-  noteText: {
-    fontSize: ({ fonts }) => fonts.bodyLarge.fontSize,
-    fontWeight: ({ fonts }) => fonts.bodyLarge.fontWeight,
-    lineHeight: ({ fonts }) => fonts.bodyLarge.lineHeight,
-    color: ({ colors }) => colors.onSurface,
   },
 });
 

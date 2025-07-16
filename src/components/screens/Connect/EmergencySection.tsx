@@ -10,6 +10,7 @@ import { createStyles, type StyleRecord } from '@/utils/createStyles';
 
 import ThemedButton from '@/components/atoms/ThemedButton';
 import ThemedIconButton from '@/components/atoms/ThemedIconButton';
+import NoteMessage from '@/components/screens/Connect/NoteMessage';
 import ROUTES from '@/constants/routes';
 
 // TODO: Replace with real API data
@@ -74,59 +75,67 @@ const EmergencySection = ({ isExpanded }: { isExpanded: boolean }) => {
     [router],
   );
 
+  if (!mockEmergencyContacts.length) {
+    return (
+      <NoteMessage
+        message={t('No emergency contacts yet. Add contacts below for quick access.')}
+        buttonProps={{
+          mode: 'contained',
+          icon: 'plus',
+          onPress: handleAddContact,
+          children: t('Add Contact'),
+        }}
+      />
+    );
+  }
+
   return (
     <View style={styles.root}>
       {/* Emergency Contacts List */}
       <View style={styles.contactsContainer}>
-        {mockEmergencyContacts.length > 0 ? (
-          <View style={styles.contactList}>
-            {mockEmergencyContacts.map((contact, idx) => (
-              <View key={idx} style={styles.contactRow}>
-                <Text style={styles.contactText}>
-                  {contact.name} ({contact.phoneNumber})
-                </Text>
-                <View style={styles.contactActions}>
+        <View style={styles.contactList}>
+          {mockEmergencyContacts.map((contact, idx) => (
+            <View key={idx} style={styles.contactRow}>
+              <Text style={styles.contactText}>
+                {contact.name} ({contact.phoneNumber})
+              </Text>
+              <View style={styles.contactActions}>
+                <ThemedIconButton
+                  mode="outlined"
+                  name="phone.fill"
+                  size={'medium'}
+                  color={theme.colors.primary}
+                  onPress={() => handleEmergencyCall(contact)}
+                  accessibilityLabel={t('Call {{name}}', { name: contact.name })}
+                />
+                <ThemedIconButton
+                  mode="outlined"
+                  name="message.fill"
+                  size={'medium'}
+                  color={whatsAppColor}
+                  onPress={() => handleWhatsAppMessage(contact)}
+                  accessibilityLabel={t('Send WhatsApp to {{name}}', { name: contact.name })}
+                />
+                {isExpanded && (
                   <ThemedIconButton
                     mode="outlined"
-                    name="phone.fill"
+                    name="pencil"
                     size={'medium'}
-                    color={theme.colors.primary}
-                    onPress={() => handleEmergencyCall(contact)}
-                    accessibilityLabel={t('Call {{name}}', { name: contact.name })}
+                    color={theme.colors.outline}
+                    onPress={() => handleEditContact(contact)}
+                    accessibilityLabel={t('Edit {{name}}', { name: contact.name })}
                   />
-                  <ThemedIconButton
-                    mode="outlined"
-                    name="message.fill"
-                    size={'medium'}
-                    color={whatsAppColor}
-                    onPress={() => handleWhatsAppMessage(contact)}
-                    accessibilityLabel={t('Send WhatsApp to {{name}}', { name: contact.name })}
-                  />
-                  {isExpanded && (
-                    <ThemedIconButton
-                      mode="outlined"
-                      name="pencil"
-                      size={'medium'}
-                      color={theme.colors.outline}
-                      onPress={() => handleEditContact(contact)}
-                      accessibilityLabel={t('Edit {{name}}', { name: contact.name })}
-                    />
-                  )}
-                </View>
+                )}
               </View>
-            ))}
-          </View>
-        ) : (
-          <Text style={styles.noteText}>
-            {t('No emergency contacts yet. Add contacts below for quick access.')}
-          </Text>
-        )}
+            </View>
+          ))}
+        </View>
         {isExpanded && (
           <ThemedButton
             mode="contained"
             icon="plus"
             onPress={handleAddContact}
-            style={styles.addButton}
+            style={styles.button}
           >
             {t('Add Contact')}
           </ThemedButton>
@@ -138,8 +147,8 @@ const EmergencySection = ({ isExpanded }: { isExpanded: boolean }) => {
 
 const getStyles = createStyles<
   StyleRecord<
-    'root' | 'contactsContainer' | 'contactList' | 'contactRow' | 'contactActions' | 'addButton',
-    'noteText' | 'contactText'
+    'root' | 'contactsContainer' | 'contactList' | 'contactRow' | 'contactActions' | 'button',
+    'contactText'
   >
 >({
   root: {
@@ -147,14 +156,6 @@ const getStyles = createStyles<
   },
   contactsContainer: {
     gap: StaticTheme.spacing.sm,
-  },
-  noteText: {
-    fontSize: ({ fonts }) => fonts.bodyMedium.fontSize,
-    fontWeight: ({ fonts }) => fonts.bodyMedium.fontWeight,
-    lineHeight: ({ fonts }) => fonts.bodyMedium.lineHeight,
-    color: ({ colors }) => colors.outline,
-    textAlign: 'center',
-    fontStyle: 'italic',
   },
   contactList: {
     gap: StaticTheme.spacing.sm * 1.5,
@@ -180,7 +181,7 @@ const getStyles = createStyles<
     flexDirection: 'row',
     gap: StaticTheme.spacing.sm * 1.25,
   },
-  addButton: {
+  button: {
     marginTop: StaticTheme.spacing.sm,
   },
 });
