@@ -9,6 +9,7 @@ import { z } from 'zod';
 
 import { axiosClientWithAuth } from '@/api/axiosClient';
 import API_PATH from '@/api/path';
+import type { SafeZone } from '@/types/connect';
 import type { LocationData } from '@/types/location';
 
 /* =============================================================================
@@ -17,23 +18,27 @@ import type { LocationData } from '@/types/location';
 
 const UserLocationResponseSchema = z.object({
   id: z.string(),
-  user_id: z.string(),
   latitude: z.number(),
   longitude: z.number(),
-  created_at: z.string(), // ISO timestamp
-  updated_at: z.string(), // ISO timestamp
+  timestamp: z.string(), // ISO timestamp
 });
 
-const CanGetLocationResponseSchema = z.boolean();
+const CanGetLocationResponseSchema = z.object({
+  can_get_location: z.boolean(),
+});
 
 const SafeZoneResponseSchema = z.object({
-  location: z.object({
-    name: z.string(),
-    address: z.string(),
-    latitude: z.number(),
-    longitude: z.number(),
-  }),
-  radius: z.number(),
+  safe_zone: z
+    .object({
+      location: z.object({
+        name: z.string(),
+        address: z.string(),
+        latitude: z.number(),
+        longitude: z.number(),
+      }),
+      radius: z.number(),
+    })
+    .nullable(),
 });
 
 /* =============================================================================
@@ -46,10 +51,6 @@ type UserLocationCreate = {
 };
 type UserLocationResponse = z.infer<typeof UserLocationResponseSchema>;
 
-type CanGetLocationResponse = z.infer<typeof CanGetLocationResponseSchema>;
-
-type SafeZoneResponse = z.infer<typeof SafeZoneResponseSchema>;
-
 /* =============================================================================
  * Data Transform Functions
  * ============================================================================= */
@@ -58,7 +59,7 @@ type SafeZoneResponse = z.infer<typeof SafeZoneResponseSchema>;
 const transformUserLocationFromAPI = (apiLocation: UserLocationResponse): LocationData => ({
   latitude: apiLocation.latitude,
   longitude: apiLocation.longitude,
-  lastUpdate: apiLocation.updated_at,
+  lastUpdate: apiLocation.timestamp,
 });
 
 // Transform frontend location to API format
@@ -82,7 +83,6 @@ export const useGetLinkedLocation = (
     queryKey: ['linkedLocation', targetEmail],
     queryFn: async (): Promise<ReturnType<typeof transformUserLocationFromAPI> | null> => {
       const res = await axiosClientWithAuth.get(`${API_PATH.USER_LINKED_LOCATION}/${targetEmail}`);
-      if (!res.data) return null;
       const validatedData = UserLocationResponseSchema.parse(res.data);
       return transformUserLocationFromAPI(validatedData);
     },
@@ -92,30 +92,14 @@ export const useGetLinkedLocation = (
 
 export const useGetCanGetLocation = (
   targetEmail: string,
-  options?: Omit<UseQueryOptions<CanGetLocationResponse>, 'queryKey' | 'queryFn'>,
+  options?: Omit<UseQueryOptions<boolean>, 'queryKey' | 'queryFn'>,
 ) =>
   useQuery({
     queryKey: ['canGetLocation', targetEmail],
     queryFn: async (): Promise<boolean> => {
       const res = await axiosClientWithAuth.get(`${API_PATH.USER_CAN_GET_LOCATION}/${targetEmail}`);
       const validatedData = CanGetLocationResponseSchema.parse(res.data);
-      return validatedData;
-    },
-    enabled: !!targetEmail,
-    ...options,
-  });
-
-export const useGetLinkedSafeZone = (
-  targetEmail: string,
-  options?: Omit<UseQueryOptions<SafeZoneResponse | null>, 'queryKey' | 'queryFn'>,
-) =>
-  useQuery({
-    queryKey: ['linkedSafeZone', targetEmail],
-    queryFn: async (): Promise<SafeZoneResponse | null> => {
-      const res = await axiosClientWithAuth.get(`${API_PATH.USER_LINKED_SAFE_ZONE}/${targetEmail}`);
-      if (!res.data) return null;
-      const validatedData = SafeZoneResponseSchema.parse(res.data);
-      return validatedData;
+      return validatedData.can_get_location;
     },
     enabled: !!targetEmail,
     ...options,
@@ -142,5 +126,40 @@ export const useUpdateLocation = (
       queryClient.invalidateQueries({ queryKey: ['linkedLocation'] });
     },
     ...options,
+  });
+};
+
+export const useGetLinkedSafeZone = (
+  targetEmail: string,
+  options?: Omit<UseQueryOptions<SafeZone | null>, 'queryKey' | 'queryFn'>,
+) =>
+  useQuery({
+    queryKey: ['linkedSafeZone', targetEmail],
+    queryFn: async (): Promise<SafeZone | null> => {
+      const res = await axiosClientWithAuth.get(`${API_PATH.SAFE_ZONE}/${targetEmail}`);
+      const validatedData = SafeZoneResponseSchema.parse(res.data);
+      return validatedData.safe_zone || null;
+    },
+    enabled: !!targetEmail,
+    ...options,
+  });
+
+export const useUpdateSafeZone = (
+  options?: Omit<
+    UseMutationOptions<void, Error, { targetEmail: string; safeZone: SafeZone }>,
+    'mutationFn'
+  >,
+) => {
+  const queryClient = useQueryClient();
+  const { onSuccess, ...restOptions } = options || {};
+  return useMutation({
+    mutationFn: async ({ targetEmail, safeZone }) => {
+      await axiosClientWithAuth.post(`${API_PATH.SAFE_ZONE}/${targetEmail}`, safeZone);
+    },
+    onSuccess: (...args) => {
+      queryClient.invalidateQueries({ queryKey: ['linkedSafeZone', args[1].targetEmail] });
+      if (onSuccess) onSuccess(...args);
+    },
+    ...restOptions,
   });
 };

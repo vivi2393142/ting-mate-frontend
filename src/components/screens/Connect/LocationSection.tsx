@@ -1,5 +1,5 @@
 import { router } from 'expo-router';
-import { useCallback, useMemo, useRef } from 'react';
+import { useCallback, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import { Text, View } from 'react-native';
@@ -25,7 +25,7 @@ import type { LocationData } from '@/types/location';
 import { Role, User } from '@/types/user';
 import colorWithAlpha from '@/utils/colorWithAlpha';
 import { createStyles, type StyleRecord } from '@/utils/createStyles';
-import { isPointInCircle } from '@/utils/locationUtils';
+import { getMapDelta, isPointInCircle } from '@/utils/locationUtils';
 
 import IconSymbol from '@/components/atoms/IconSymbol';
 import Skeleton from '@/components/atoms/Skeleton';
@@ -92,6 +92,14 @@ const getLocationSectionStatus = ({
   }
 };
 
+const getCanGetSafeZone = (user: User | null, canCaregiverGetLocation: boolean) => {
+  if (!user || !user.email) return false;
+  if (user.role === Role.CARERECEIVER)
+    return user.settings.allowShareLocation && user.settings.linked.length > 0;
+  if (user.role === Role.CAREGIVER) return canCaregiverGetLocation;
+  return false;
+};
+
 const LocationSection = ({ isExpanded }: { isExpanded: boolean }) => {
   const theme = useAppTheme();
   const styles = getStyles(theme);
@@ -103,8 +111,10 @@ const LocationSection = ({ isExpanded }: { isExpanded: boolean }) => {
   const mapRef = useRef<MapView>(null);
 
   // Use custom hooks for permission and sync
-  const { isGranted } = useLocationPermission();
+  const { isGranted, requestPermission } = useLocationPermission();
   const { syncNow } = useSyncCurrentLocation();
+
+  const [isRefreshing, setIsRefreshing] = useState(false);
 
   const targetEmail = useMemo<string | undefined>(() => {
     if (!user || !user.email) return undefined;
@@ -112,28 +122,31 @@ const LocationSection = ({ isExpanded }: { isExpanded: boolean }) => {
     return user.settings.linked[0]?.email;
   }, [user]);
 
+  // Carereceiver get linked user's location
+  const shouldCheckLocationPermission = user?.role === Role.CAREGIVER && !!targetEmail;
+  const {
+    data: canCaregiverGetLocationResult,
+    isFetched: isFetchedCanCaregiverGetLocation,
+    refetch: refetchCanCaregiverGetLocation,
+  } = useGetCanGetLocation(targetEmail || '', {
+    enabled: shouldCheckLocationPermission,
+  });
+  const isInitialingCanCaregiverGetLocation =
+    shouldCheckLocationPermission && !isFetchedCanCaregiverGetLocation;
+  const canCaregiverGetLocation = !!canCaregiverGetLocationResult;
+
   // Caregiver get it's own safe zone, carereceiver get linked user's safe zone
+  const canGetSafeZone = getCanGetSafeZone(user, canCaregiverGetLocation);
+  const shouldGetSafeZone = !!(targetEmail && canGetSafeZone);
   const {
     data: safeZone,
     isLoading: isLoadingSafeZone,
     isFetched: isFetchedSafeZone,
     refetch: refetchLinkedSafeZone,
   } = useGetLinkedSafeZone(targetEmail || '', {
-    enabled: !!targetEmail,
+    enabled: shouldGetSafeZone,
   });
-  const isInitialingSafeZone = !!targetEmail && !isFetchedSafeZone;
-
-  // Carereceiver get linked user's location
-  const shouldCheckLocationPermission = user?.role === Role.CAREGIVER && !!targetEmail;
-  const {
-    data: canCaregiverGetLocation,
-    isFetched: isFetchedCanCaregiverGetLocation,
-    refetch: refetchCarCaregiverGetLocation,
-  } = useGetCanGetLocation(targetEmail || '', {
-    enabled: shouldCheckLocationPermission,
-  });
-  const isInitialingCanCaregiverGetLocation =
-    shouldCheckLocationPermission && !isFetchedCanCaregiverGetLocation;
+  const isInitialingSafeZone = shouldGetSafeZone && !isFetchedSafeZone;
 
   // Carereceiver get linked user's location
   const {
@@ -147,7 +160,10 @@ const LocationSection = ({ isExpanded }: { isExpanded: boolean }) => {
   });
   const isInitialingCaregiverLocation = !!canCaregiverGetLocation && !isFetchedLocation;
   const isInitialingCarereceiverLocation =
-    user?.role === Role.CARERECEIVER && user.settings.allowShareLocation && !currentLocation;
+    user?.role === Role.CARERECEIVER &&
+    user.settings.allowShareLocation &&
+    isGranted &&
+    !currentLocation;
 
   // Use correct type for location
   const location: LocationData | null = useMemo(() => {
@@ -174,22 +190,20 @@ const LocationSection = ({ isExpanded }: { isExpanded: boolean }) => {
   }, [updateUserSettingsMutation]);
 
   // Handles refresh for both caregiver and carereceiver
-  const handleRefresh = useCallback(() => {
-    refetchLinkedSafeZone();
+  const handleRefresh = useCallback(async () => {
+    setIsRefreshing(true);
     if (user?.role === Role.CAREGIVER) {
-      refetchCarCaregiverGetLocation();
-      refetchLinkedLocation();
+      const { data: newCanCaregiverGetLocation } = await refetchCanCaregiverGetLocation();
+      const isNewCanGetSafeZone = getCanGetSafeZone(user, !!newCanCaregiverGetLocation);
+      if (isNewCanGetSafeZone) {
+        await refetchLinkedSafeZone();
+        await refetchLinkedLocation();
+      }
     } else {
-      // Carereceiver: manual sync
-      syncNow();
+      await syncNow(); // Carereceiver: manual sync
     }
-  }, [
-    refetchLinkedSafeZone,
-    user?.role,
-    refetchCarCaregiverGetLocation,
-    refetchLinkedLocation,
-    syncNow,
-  ]);
+    setIsRefreshing(false);
+  }, [user, refetchCanCaregiverGetLocation, refetchLinkedSafeZone, refetchLinkedLocation, syncNow]);
 
   // Pan to the current user or linked location on the map
   const handlePanToLocation = useCallback(() => {
@@ -208,12 +222,17 @@ const LocationSection = ({ isExpanded }: { isExpanded: boolean }) => {
   // Pan to the safe zone on the map
   const handlePanToSafeZone = useCallback(() => {
     if (!safeZone) return;
+    // Auto-zoom to fit the entire safe zone
+    const { latitudeDelta, longitudeDelta } = getMapDelta(
+      safeZone.radius,
+      safeZone.location.latitude,
+    );
     mapRef.current?.animateToRegion(
       {
         latitude: safeZone.location.latitude,
         longitude: safeZone.location.longitude,
-        latitudeDelta: 0.01,
-        longitudeDelta: 0.01,
+        latitudeDelta,
+        longitudeDelta,
       },
       1000,
     );
@@ -249,7 +268,22 @@ const LocationSection = ({ isExpanded }: { isExpanded: boolean }) => {
     permissionStatus: isGranted,
   });
 
-  console.log({ status, user });
+  const markerName = useMemo(() => {
+    if (user?.role === Role.CAREGIVER) return user.settings.linked?.[0]?.name;
+    return t('Me');
+  }, [user, t]);
+
+  const warningText = useMemo(() => {
+    if (user?.role === Role.CAREGIVER) {
+      return isInSafeZone
+        ? t('{{name}} is inside the safe zone.', { name: markerName })
+        : t('{{name}} is outside the safe zone.', { name: markerName });
+    } else {
+      return isInSafeZone
+        ? t('You are inside the safe zone.')
+        : t('You are outside the safe zone.');
+    }
+  }, [isInSafeZone, t, user, markerName]);
 
   // --- UI: Not ready ---
   if (status === Status.INITIALIZING || !user) {
@@ -263,7 +297,7 @@ const LocationSection = ({ isExpanded }: { isExpanded: boolean }) => {
   if (status === Status.NO_LINKED) {
     return (
       <View style={styles.note}>
-        <Text>{t('Connect with someone first to use this feature.')}</Text>
+        <Text style={styles.noteText}>{t('Connect with someone first to use this feature.')}</Text>
         <ThemedButton
           onPress={() => {
             router.push(ROUTES.ACCOUNT_LINKING);
@@ -278,16 +312,18 @@ const LocationSection = ({ isExpanded }: { isExpanded: boolean }) => {
   if (status === Status.NO_AGREEMENT) {
     return user.role === Role.CAREGIVER ? (
       <View style={styles.note}>
-        <Text>
+        <Text style={styles.noteText}>
           {t(
             'The linked user has not enabled location sharing. Please ask them to turn on location sharing in their app then refresh.',
           )}
         </Text>
-        <ThemedButton onPress={handleRefresh}>{tCommon('Refresh')}</ThemedButton>
+        <ThemedButton onPress={handleRefresh} loading={isRefreshing} disabled={isRefreshing}>
+          {tCommon('Refresh')}
+        </ThemedButton>
       </View>
     ) : (
       <View style={styles.note}>
-        <Text>
+        <Text style={styles.noteText}>
           {t("Location sharing is off. Turn it on to let your companions know you're safe.")}
         </Text>
         <ThemedButton onPress={handleTurnOnLocationSharing}>
@@ -300,10 +336,10 @@ const LocationSection = ({ isExpanded }: { isExpanded: boolean }) => {
   if (status === Status.NO_PERMISSION) {
     return (
       <View style={styles.note}>
-        <Text>
+        <Text style={styles.noteText}>
           {t("You're sharing your location, but the app still needs permission from your phone.")}
         </Text>
-        {/* Should pop up modal from LocationSyncHandler */}
+        <ThemedButton onPress={requestPermission}>{tCommon('Go to Settings')}</ThemedButton>
       </View>
     );
   }
@@ -311,17 +347,21 @@ const LocationSection = ({ isExpanded }: { isExpanded: boolean }) => {
   if (status === Status.NO_DATA) {
     return user.role === Role.CAREGIVER ? (
       <View style={styles.note}>
-        <Text>
+        <Text style={styles.noteText}>
           {t(
             'We cannot get the current location. The linked user may have just turned on location sharing or has not allowed location access on their device. Please check their settings or try again.',
           )}
         </Text>
-        <ThemedButton onPress={handleRefresh}>{t('Try Again')}</ThemedButton>
+        <ThemedButton onPress={handleRefresh} loading={isRefreshing} disabled={isRefreshing}>
+          {t('Try Again')}
+        </ThemedButton>
       </View>
     ) : (
       <View style={styles.note}>
-        <Text>{t('Can’t find your location right now. Try again.')}</Text>
-        <ThemedButton onPress={handleRefresh}>{t('Try Again')}</ThemedButton>
+        <Text style={styles.noteText}>{t('Can’t find your location right now. Try again.')}</Text>
+        <ThemedButton onPress={handleRefresh} loading={isRefreshing} disabled={isRefreshing}>
+          {t('Try Again')}
+        </ThemedButton>
       </View>
     );
   }
@@ -329,17 +369,23 @@ const LocationSection = ({ isExpanded }: { isExpanded: boolean }) => {
   if (status === Status.ONLY_SAFEZONE || !location) {
     return user.role === Role.CAREGIVER ? (
       <View style={styles.note}>
-        <Text>
+        <Text style={styles.noteText}>
           {t(
             "No location data available yet. Please check the linked user's settings or try again.",
           )}
         </Text>
-        <ThemedButton onPress={handleRefresh}>{t('Try Again')}</ThemedButton>
+        <ThemedButton onPress={handleRefresh} loading={isRefreshing} disabled={isRefreshing}>
+          {t('Try Again')}
+        </ThemedButton>
       </View>
     ) : (
       <View style={styles.note}>
-        <Text>{t('No location data available. Please refresh to update your location.')}</Text>
-        <ThemedButton onPress={handleRefresh}>{tCommon('Refresh')}</ThemedButton>
+        <Text style={styles.noteText}>
+          {t('No location data available. Please refresh to update your location.')}
+        </Text>
+        <ThemedButton onPress={handleRefresh} loading={isRefreshing} disabled={isRefreshing}>
+          {tCommon('Refresh')}
+        </ThemedButton>
       </View>
     );
   }
@@ -395,7 +441,7 @@ const LocationSection = ({ isExpanded }: { isExpanded: boolean }) => {
                 size={StaticTheme.iconSize.l}
                 color={theme.colors.primary}
               />
-              {user?.settings.name && <Text style={styles.markerName}>{user.settings.name}</Text>}
+              {markerName && <Text style={styles.markerName}>{markerName}</Text>}
             </View>
           </Marker>
           {/* Safe Zone Circle */}
@@ -417,20 +463,18 @@ const LocationSection = ({ isExpanded }: { isExpanded: boolean }) => {
           )}
         </MapView>
         {/* Warning Container */}
-        <View style={[styles.warningChip, !isInSafeZone && safeZone && styles.warningChipOut]}>
-          {!isInSafeZone && safeZone && (
-            <IconSymbol
-              name="exclamationmark.triangle"
-              size={StaticTheme.iconSize.xs}
-              color={theme.colors.onPrimary}
-            />
-          )}
-          <Text style={styles.warningText}>
-            {isInSafeZone
-              ? t('You are inside the safe zone.')
-              : t('You are outside the safe zone.')}
-          </Text>
-        </View>
+        {safeZone && (
+          <View style={[styles.warningChip, !isInSafeZone && safeZone && styles.warningChipOut]}>
+            {!isInSafeZone && (
+              <IconSymbol
+                name="exclamationmark.triangle"
+                size={StaticTheme.iconSize.xs}
+                color={theme.colors.onPrimary}
+              />
+            )}
+            <Text style={styles.warningText}>{warningText}</Text>
+          </View>
+        )}
       </View>
       {/* Last Update Time and Refresh Button */}
       <View style={styles.updateWrapper}>
@@ -441,8 +485,9 @@ const LocationSection = ({ isExpanded }: { isExpanded: boolean }) => {
           name={isLoadingLocation ? 'arrow.clockwise.circle' : 'arrow.clockwise'}
           onPress={handleRefresh}
           size={'tiny'}
-          disabled={isLoadingLocation}
           color={theme.colors.onSurfaceVariant}
+          loading={isRefreshing}
+          disabled={isLoadingLocation || isRefreshing}
         />
       </View>
       {/* Expanded Options */}
@@ -495,7 +540,7 @@ const getStyles = createStyles<
     | 'optionsRow'
     | 'optionButton'
     | 'note',
-    'markerName' | 'warningText' | 'updateText'
+    'markerName' | 'warningText' | 'updateText' | 'noteText'
   >
 >({
   container: {
@@ -594,6 +639,12 @@ const getStyles = createStyles<
     paddingHorizontal: StaticTheme.spacing.md,
     borderRadius: StaticTheme.borderRadius.s,
     gap: StaticTheme.spacing.sm * 1.25,
+  },
+  noteText: {
+    fontSize: ({ fonts }) => fonts.bodyLarge.fontSize,
+    fontWeight: ({ fonts }) => fonts.bodyLarge.fontWeight,
+    lineHeight: ({ fonts }) => fonts.bodyLarge.lineHeight,
+    color: ({ colors }) => colors.onSurface,
   },
 });
 

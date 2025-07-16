@@ -31,6 +31,7 @@
   "Location": "Location",
   "Location sharing is off. Turn it on to let your companions know you're safe.": "Location sharing is off. Turn it on to let your companions know you're safe.",
   "Log Detail": "Log Detail",
+  "Me": "Me",
   "Methods": "Methods",
   "Name": "Name",
   "New Note": "New Note",
@@ -66,5 +67,7 @@
   "You are outside the safe zone.": "You are outside the safe zone.",
   "You're sharing your location, but the app still needs permission from your phone.": "You're sharing your location, but the app still needs permission from your phone.",
   "km": "km",
-  "m": "m"
+  "m": "m",
+  "{{name}} is inside the safe zone.": "{{name}} is inside the safe zone.",
+  "{{name}} is outside the safe zone.": "{{name}} is outside the safe zone."
 }

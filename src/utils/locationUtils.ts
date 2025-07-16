@@ -27,3 +27,17 @@ export const isPointInCircle = (
   const distance = calculateDistance(pointLat, pointLon, centerLat, centerLon);
   return distance <= radiusKm;
 };
+
+/**
+ * Calculate latitudeDelta and longitudeDelta so the entire circle (safe zone) is visible on the map.
+ * 1 degree latitude ≈ 111,000 meters; longitude needs to be adjusted by latitude.
+ */
+export const getMapDelta = (
+  radius: number,
+  latitude: number,
+  buffer = 1.1,
+): { latitudeDelta: number; longitudeDelta: number } => {
+  const latitudeDelta = (radius * 2 * buffer) / 111000;
+  const longitudeDelta = latitudeDelta / Math.cos((latitude * Math.PI) / 180);
+  return { latitudeDelta, longitudeDelta };
+};
