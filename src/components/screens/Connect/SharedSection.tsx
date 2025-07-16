@@ -12,6 +12,7 @@ import colorWithAlpha from '@/utils/colorWithAlpha';
 import { createStyles, type StyleRecord } from '@/utils/createStyles';
 
 import ThemedIconButton from '@/components/atoms/ThemedIconButton';
+import SectionContainer from '@/components/screens/Connect/SectionContainer';
 
 const MIN_ITEM_COUNT = 3;
 
@@ -127,13 +128,18 @@ const mockNotes: NoteEntry[] = [
   { id: 5, name: 'Note 5', text: 'Schedule follow-up appointment' },
 ];
 
-const SharedSection = ({ isExpanded }: { isExpanded: boolean }) => {
+const SharedSection = () => {
   const theme = useAppTheme();
   const styles = getStyles(theme);
 
   const { t } = useTranslation('connect');
 
+  const [isExpanded, setIsExpanded] = useState(false);
   const [activeTab, setActiveTab] = useState<TabType>(TabType.LOG);
+
+  const handleToggleExpanded = useCallback(() => {
+    setIsExpanded((prev) => !prev);
+  }, []);
 
   const handleAddNote = useCallback(() => {
     router.push({
@@ -191,8 +197,11 @@ const SharedSection = ({ isExpanded }: { isExpanded: boolean }) => {
   ];
 
   return (
-    <View>
-      {/* Tab Navigation */}
+    <SectionContainer
+      title={t('Shared Information')}
+      isExpanded={isExpanded}
+      onToggle={handleToggleExpanded}
+    >
       <View style={styles.tabContainer}>
         {tabs.map((tab) => (
           <TouchableRipple
@@ -252,7 +261,7 @@ const SharedSection = ({ isExpanded }: { isExpanded: boolean }) => {
           </Fragment>
         )}
       </View>
-    </View>
+    </SectionContainer>
   );
 };
 

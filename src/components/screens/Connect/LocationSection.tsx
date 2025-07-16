@@ -33,6 +33,7 @@ import Skeleton from '@/components/atoms/Skeleton';
 import ThemedButton from '@/components/atoms/ThemedButton';
 import ThemedIconButton from '@/components/atoms/ThemedIconButton';
 import NoteMessage from '@/components/screens/Connect/NoteMessage';
+import SectionContainer from '@/components/screens/Connect/SectionContainer';
 
 // Status enum for location section UI
 export enum Status {
@@ -102,7 +103,7 @@ const getCanGetSafeZone = (user: User | null, canCaregiverGetLocation: boolean) 
   return false;
 };
 
-const LocationSection = ({ isExpanded }: { isExpanded: boolean }) => {
+const LocationSection = () => {
   const theme = useAppTheme();
   const styles = getStyles(theme);
   const { t } = useTranslation('connect');
@@ -117,6 +118,7 @@ const LocationSection = ({ isExpanded }: { isExpanded: boolean }) => {
   const { isGranted, requestPermission } = useLocationPermission();
   const { syncNow } = useSyncCurrentLocation();
 
+  const [isExpanded, setIsExpanded] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(false);
 
   const targetEmail = useMemo<string | undefined>(() => {
@@ -178,6 +180,10 @@ const LocationSection = ({ isExpanded }: { isExpanded: boolean }) => {
   const updateUserSettingsMutation = useUpdateUserSettings();
 
   // --- Handlers ---
+  const handleToggleExpanded = useCallback(() => {
+    setIsExpanded((prev) => !prev);
+  }, []);
+
   const handleTurnOnLocationSharing = useCallback(() => {
     updateUserSettingsMutation.mutate(
       { allowShareLocation: true },
@@ -329,263 +335,287 @@ const LocationSection = ({ isExpanded }: { isExpanded: boolean }) => {
   // If not authenticated, show sign in button
   if (!token) {
     return (
-      <NoteMessage
-        message={t('Please sign in to use this feature.')}
-        buttonProps={{
-          onPress: handleLogin,
-          children: tCommon('Login / Sign Up'),
-        }}
-      />
+      <SectionContainer title={t('Location')} hideToggle>
+        <NoteMessage
+          message={t('Please sign in to use this feature.')}
+          buttonProps={{
+            onPress: handleLogin,
+            children: tCommon('Login / Sign Up'),
+          }}
+        />
+      </SectionContainer>
     );
   }
 
   if (status === Status.INITIALIZING || !user) {
     return (
-      <View style={styles.container}>
-        <Skeleton width={'100%'} height={150} />
-      </View>
+      <SectionContainer title={t('Location')} hideToggle>
+        <View style={styles.container}>
+          <Skeleton width={'100%'} height={150} />
+        </View>
+      </SectionContainer>
     );
   }
 
   if (status === Status.NO_LINKED) {
     return (
-      <NoteMessage
-        message={t('Connect with someone first to use this feature.')}
-        buttonProps={{
-          onPress: handleLinkAccount,
-          children: t('Link Now'),
-        }}
-      />
+      <SectionContainer title={t('Location')} hideToggle>
+        <NoteMessage
+          message={t('Connect with someone first to use this feature.')}
+          buttonProps={{
+            onPress: handleLinkAccount,
+            children: t('Link Now'),
+          }}
+        />
+      </SectionContainer>
     );
   }
 
   if (status === Status.NO_AGREEMENT) {
-    return user.role === Role.CAREGIVER ? (
-      <NoteMessage
-        message={t(
-          'The linked user has not enabled location sharing. Please ask them to turn on location sharing in their app then refresh.',
+    return (
+      <SectionContainer title={t('Location')} hideToggle>
+        {user.role === Role.CAREGIVER ? (
+          <NoteMessage
+            message={t(
+              'The linked user has not enabled location sharing. Please ask them to turn on location sharing in their app then refresh.',
+            )}
+            buttonProps={{
+              onPress: handleRefresh,
+              loading: isRefreshing,
+              disabled: isRefreshing,
+              children: tCommon('Refresh'),
+            }}
+          />
+        ) : (
+          <NoteMessage
+            message={t(
+              "Location sharing is off. Turn it on to let your companions know you're safe.",
+            )}
+            buttonProps={{
+              onPress: handleTurnOnLocationSharing,
+              children: t('Turn On Location Sharing'),
+            }}
+          />
         )}
-        buttonProps={{
-          onPress: handleRefresh,
-          loading: isRefreshing,
-          disabled: isRefreshing,
-          children: tCommon('Refresh'),
-        }}
-      />
-    ) : (
-      <NoteMessage
-        message={t("Location sharing is off. Turn it on to let your companions know you're safe.")}
-        buttonProps={{
-          onPress: handleTurnOnLocationSharing,
-          children: t('Turn On Location Sharing'),
-        }}
-      />
+      </SectionContainer>
     );
   }
 
   if (status === Status.NO_PERMISSION) {
     return (
-      <NoteMessage
-        message={t(
-          "You're sharing your location, but the app still needs permission from your phone.",
-        )}
-        buttonProps={{
-          onPress: requestPermission,
-          children: tCommon('Go to Settings'),
-        }}
-      />
+      <SectionContainer title={t('Location')} hideToggle>
+        <NoteMessage
+          message={t(
+            "You're sharing your location, but the app still needs permission from your phone.",
+          )}
+          buttonProps={{
+            onPress: requestPermission,
+            children: tCommon('Go to Settings'),
+          }}
+        />
+      </SectionContainer>
     );
   }
 
   if (status === Status.NO_DATA) {
-    return user.role === Role.CAREGIVER ? (
-      <NoteMessage
-        message={t(
-          'We cannot get the current location. The linked user may have just turned on location sharing or has not allowed location access on their device. Please check their settings or try again.',
+    return (
+      <SectionContainer title={t('Location')} hideToggle>
+        {user.role === Role.CAREGIVER ? (
+          <NoteMessage
+            message={t(
+              'We cannot get the current location. The linked user may have just turned on location sharing or has not allowed location access on their device. Please check their settings or try again.',
+            )}
+            buttonProps={{
+              onPress: handleRefresh,
+              loading: isRefreshing,
+              disabled: isRefreshing,
+              children: t('Try Again'),
+            }}
+          />
+        ) : (
+          <NoteMessage
+            message={t('Can’t find your location right now. Try again.')}
+            buttonProps={{
+              onPress: handleRefresh,
+              loading: isRefreshing,
+              disabled: isRefreshing,
+              children: t('Try Again'),
+            }}
+          />
         )}
-        buttonProps={{
-          onPress: handleRefresh,
-          loading: isRefreshing,
-          disabled: isRefreshing,
-          children: t('Try Again'),
-        }}
-      />
-    ) : (
-      <NoteMessage
-        message={t('Can’t find your location right now. Try again.')}
-        buttonProps={{
-          onPress: handleRefresh,
-          loading: isRefreshing,
-          disabled: isRefreshing,
-          children: t('Try Again'),
-        }}
-      />
+      </SectionContainer>
     );
   }
 
   if (status === Status.ONLY_SAFEZONE || !location) {
-    return user.role === Role.CAREGIVER ? (
-      <NoteMessage
-        message={t(
-          "No location data available yet. Please check the linked user's settings or try again.",
+    return (
+      <SectionContainer title={t('Location')} hideToggle>
+        {user.role === Role.CAREGIVER ? (
+          <NoteMessage
+            message={t(
+              "No location data available yet. Please check the linked user's settings or try again.",
+            )}
+            buttonProps={{
+              onPress: handleRefresh,
+              loading: isRefreshing,
+              disabled: isRefreshing,
+              children: t('Try Again'),
+            }}
+          />
+        ) : (
+          <NoteMessage
+            message={t('No location data available. Please refresh to update your location.')}
+            buttonProps={{
+              onPress: handleRefresh,
+              loading: isRefreshing,
+              disabled: isRefreshing,
+              children: tCommon('Refresh'),
+            }}
+          />
         )}
-        buttonProps={{
-          onPress: handleRefresh,
-          loading: isRefreshing,
-          disabled: isRefreshing,
-          children: t('Try Again'),
-        }}
-      />
-    ) : (
-      <NoteMessage
-        message={t('No location data available. Please refresh to update your location.')}
-        buttonProps={{
-          onPress: handleRefresh,
-          loading: isRefreshing,
-          disabled: isRefreshing,
-          children: tCommon('Refresh'),
-        }}
-      />
+      </SectionContainer>
     );
   }
 
   // --- UI: Ready ---
   return (
-    <View style={styles.container}>
-      {/* Map Container */}
-      <View
-        style={[
-          styles.mapContainer,
-          isExpanded && styles.mapContainerExpanded,
-          !isInSafeZone && safeZone && styles.mapContainerWarning,
-        ]}
-      >
-        <MapView
-          ref={mapRef}
-          style={styles.map}
-          mapType="standard"
-          provider={PROVIDER_GOOGLE}
-          initialRegion={{
-            latitude: location.latitude,
-            longitude: location.longitude,
-            latitudeDelta: 0.01,
-            longitudeDelta: 0.01,
-          }}
-          customMapStyle={googleMapStyles}
-          showsUserLocation={false}
-          showsMyLocationButton={false}
-          showsCompass={true}
-          showsScale={true}
-          zoomEnabled={true}
-          scrollEnabled={true}
-          rotateEnabled={true}
-          pitchEnabled={true}
-          toolbarEnabled={false}
-          loadingEnabled={true}
-          loadingIndicatorColor={theme.colors.primary}
-          loadingBackgroundColor={theme.colors.surface}
+    <SectionContainer title={t('Location')} isExpanded={isExpanded} onToggle={handleToggleExpanded}>
+      <View style={styles.container}>
+        {/* Map Container */}
+        <View
+          style={[
+            styles.mapContainer,
+            isExpanded && styles.mapContainerExpanded,
+            !isInSafeZone && safeZone && styles.mapContainerWarning,
+          ]}
         >
-          {/* User Location Marker */}
-          <Marker
-            coordinate={{
+          <MapView
+            ref={mapRef}
+            style={styles.map}
+            mapType="standard"
+            provider={PROVIDER_GOOGLE}
+            initialRegion={{
               latitude: location.latitude,
               longitude: location.longitude,
+              latitudeDelta: 0.01,
+              longitudeDelta: 0.01,
             }}
-            tracksViewChanges={false}
-            anchor={{ x: 0.5, y: 0.5 }}
+            customMapStyle={googleMapStyles}
+            showsUserLocation={false}
+            showsMyLocationButton={false}
+            showsCompass={true}
+            showsScale={true}
+            zoomEnabled={true}
+            scrollEnabled={true}
+            rotateEnabled={true}
+            pitchEnabled={true}
+            toolbarEnabled={false}
+            loadingEnabled={true}
+            loadingIndicatorColor={theme.colors.primary}
+            loadingBackgroundColor={theme.colors.surface}
           >
-            <View style={styles.markerContainer}>
-              <IconSymbol
-                name="figure.wave"
-                size={StaticTheme.iconSize.l}
-                color={theme.colors.primary}
-              />
-              {markerName && <Text style={styles.markerName}>{markerName}</Text>}
-            </View>
-          </Marker>
-          {/* Safe Zone Circle */}
-          {safeZone && (
-            <Circle
-              center={{
-                latitude: safeZone.location.latitude,
-                longitude: safeZone.location.longitude,
+            {/* User Location Marker */}
+            <Marker
+              coordinate={{
+                latitude: location.latitude,
+                longitude: location.longitude,
               }}
-              radius={safeZone.radius}
-              fillColor={colorWithAlpha(
-                isInSafeZone ? theme.colors.primary : theme.colors.error,
-                0.2,
-              )}
-              strokeColor={theme.colors.primary}
-              strokeWidth={2}
-              zIndex={1}
-            />
-          )}
-        </MapView>
-        {/* Warning Container */}
-        {safeZone && (
-          <View style={[styles.warningChip, !isInSafeZone && safeZone && styles.warningChipOut]}>
-            {!isInSafeZone && (
-              <IconSymbol
-                name="exclamationmark.triangle"
-                size={StaticTheme.iconSize.xs}
-                color={theme.colors.onPrimary}
+              tracksViewChanges={false}
+              anchor={{ x: 0.5, y: 0.5 }}
+            >
+              <View style={styles.markerContainer}>
+                <IconSymbol
+                  name="figure.wave"
+                  size={StaticTheme.iconSize.l}
+                  color={theme.colors.primary}
+                />
+                {markerName && <Text style={styles.markerName}>{markerName}</Text>}
+              </View>
+            </Marker>
+            {/* Safe Zone Circle */}
+            {safeZone && (
+              <Circle
+                center={{
+                  latitude: safeZone.location.latitude,
+                  longitude: safeZone.location.longitude,
+                }}
+                radius={safeZone.radius}
+                fillColor={colorWithAlpha(
+                  isInSafeZone ? theme.colors.primary : theme.colors.error,
+                  0.2,
+                )}
+                strokeColor={theme.colors.primary}
+                strokeWidth={2}
+                zIndex={1}
               />
             )}
-            <Text style={styles.warningText}>{warningText}</Text>
-          </View>
-        )}
-      </View>
-      {/* Last Update Time and Refresh Button */}
-      <View style={styles.updateWrapper}>
-        <Text style={styles.updateText}>
-          {t('Last updated:')} {location.lastUpdate}
-        </Text>
-        <ThemedIconButton
-          name={isLoadingLocation ? 'arrow.clockwise.circle' : 'arrow.clockwise'}
-          onPress={handleRefresh}
-          size={'tiny'}
-          color={theme.colors.onSurfaceVariant}
-          loading={isRefreshing}
-          disabled={isLoadingLocation || isRefreshing}
-        />
-      </View>
-      {/* Expanded Options */}
-      {isExpanded && (
-        <View style={styles.expandedOptions}>
-          <View style={styles.optionsRow}>
-            <ThemedButton
-              mode="outlined"
-              icon="location"
-              onPress={handlePanToLocation}
-              style={styles.optionButton}
-              disabled={isLoadingLocation}
-            >
-              {t('Go to User')}
-            </ThemedButton>
-            {safeZone && (
+          </MapView>
+          {/* Warning Container */}
+          {safeZone && (
+            <View style={[styles.warningChip, !isInSafeZone && safeZone && styles.warningChipOut]}>
+              {!isInSafeZone && (
+                <IconSymbol
+                  name="exclamationmark.triangle"
+                  size={StaticTheme.iconSize.xs}
+                  color={theme.colors.onPrimary}
+                />
+              )}
+              <Text style={styles.warningText}>{warningText}</Text>
+            </View>
+          )}
+        </View>
+        {/* Last Update Time and Refresh Button */}
+        <View style={styles.updateWrapper}>
+          <Text style={styles.updateText}>
+            {t('Last updated:')} {location.lastUpdate}
+          </Text>
+          <ThemedIconButton
+            name={isLoadingLocation ? 'arrow.clockwise.circle' : 'arrow.clockwise'}
+            onPress={handleRefresh}
+            size={'tiny'}
+            color={theme.colors.onSurfaceVariant}
+            loading={isRefreshing}
+            disabled={isLoadingLocation || isRefreshing}
+          />
+        </View>
+        {/* Expanded Options */}
+        {isExpanded && (
+          <View style={styles.expandedOptions}>
+            <View style={styles.optionsRow}>
               <ThemedButton
                 mode="outlined"
-                icon="shield"
-                onPress={handlePanToSafeZone}
+                icon="location"
+                onPress={handlePanToLocation}
                 style={styles.optionButton}
-                disabled={isLoadingSafeZone}
+                disabled={isLoadingLocation}
               >
-                {t('Go to Safe Zone')}
+                {t('Go to User')}
+              </ThemedButton>
+              {safeZone && (
+                <ThemedButton
+                  mode="outlined"
+                  icon="shield"
+                  onPress={handlePanToSafeZone}
+                  style={styles.optionButton}
+                  disabled={isLoadingSafeZone}
+                >
+                  {t('Go to Safe Zone')}
+                </ThemedButton>
+              )}
+            </View>
+            <ThemedButton mode="contained" icon="gearshape" onPress={handleEditSafeZone}>
+              {t('Edit Safe Zone')}
+            </ThemedButton>
+            {/* Carereceiver: Turn off location sharing button */}
+            {user.role === Role.CARERECEIVER && user.settings.allowShareLocation && (
+              <ThemedButton mode="outlined" color="error" onPress={handleTurnOffLocationSharing}>
+                {t('Turn Off Location Sharing')}
               </ThemedButton>
             )}
           </View>
-          <ThemedButton mode="contained" icon="gearshape" onPress={handleEditSafeZone}>
-            {t('Edit Safe Zone')}
-          </ThemedButton>
-          {/* Carereceiver: Turn off location sharing button */}
-          {user.role === Role.CARERECEIVER && user.settings.allowShareLocation && (
-            <ThemedButton mode="outlined" color="error" onPress={handleTurnOffLocationSharing}>
-              {t('Turn Off Location Sharing')}
-            </ThemedButton>
-          )}
-        </View>
-      )}
-    </View>
+        )}
+      </View>
+    </SectionContainer>
   );
 };
 
