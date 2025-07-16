@@ -8,13 +8,17 @@ import ROUTES from '@/constants/routes';
 import useAppTheme from '@/hooks/useAppTheme';
 import useUserStore from '@/store/useUserStore';
 import { StaticTheme } from '@/theme';
+import { ContactMethod } from '@/types/connect';
 import type { EmergencyContact } from '@/types/user';
 import { createStyles, type StyleRecord } from '@/utils/createStyles';
+import { formatPhoneDisplay } from '@/utils/phoneNumberUtils';
 
 import ThemedButton from '@/components/atoms/ThemedButton';
 import ThemedIconButton from '@/components/atoms/ThemedIconButton';
 import NoteMessage from '@/components/screens/Connect/NoteMessage';
 import SectionContainer from '@/components/screens/Connect/SectionContainer';
+
+const MIN_ITEM_COUNT = 3;
 
 const whatsAppColor = '#25A366';
 
@@ -51,26 +55,31 @@ const ContactRow = ({
 
   return (
     <View style={styles.contactRow}>
-      <Text style={styles.contactText}>
-        {contact.name} ({contact.phone})
-      </Text>
+      <View style={styles.contactInfo}>
+        <Text style={styles.contactName}>{contact.name}</Text>
+        {isExpanded && <Text style={styles.contactPhone}>{formatPhoneDisplay(contact.phone)}</Text>}
+      </View>
       <View style={styles.contactActions}>
-        <ThemedIconButton
-          mode="outlined"
-          name="phone.fill"
-          size={'medium'}
-          color={theme.colors.primary}
-          onPress={handleEmergencyCall}
-          accessibilityLabel={t('Call {{name}}', { name: contact.name })}
-        />
-        <ThemedIconButton
-          mode="outlined"
-          name="message.fill"
-          size={'medium'}
-          color={whatsAppColor}
-          onPress={handleWhatsAppMessage}
-          accessibilityLabel={t('Send WhatsApp to {{name}}', { name: contact.name })}
-        />
+        {contact.methods.includes(ContactMethod.PHONE) && (
+          <ThemedIconButton
+            mode="outlined"
+            name="phone.fill"
+            size={'medium'}
+            color={theme.colors.primary}
+            onPress={handleEmergencyCall}
+            accessibilityLabel={t('Call {{name}}', { name: contact.name })}
+          />
+        )}
+        {contact.methods.includes(ContactMethod.WHATSAPP) && (
+          <ThemedIconButton
+            mode="outlined"
+            name="message.fill"
+            size={'medium'}
+            color={whatsAppColor}
+            onPress={handleWhatsAppMessage}
+            accessibilityLabel={t('Send WhatsApp to {{name}}', { name: contact.name })}
+          />
+        )}
         {isExpanded && (
           <ThemedIconButton
             mode="outlined"
@@ -121,9 +130,11 @@ const EmergencySection = () => {
           {/* Emergency Contacts List */}
           <View style={styles.contactsContainer}>
             <View style={styles.contactList}>
-              {user?.settings?.emergencyContacts?.map((contact) => (
-                <ContactRow key={contact.id} contact={contact} isExpanded={isExpanded} />
-              ))}
+              {user?.settings?.emergencyContacts?.map((contact, idx) =>
+                isExpanded || idx < MIN_ITEM_COUNT ? (
+                  <ContactRow key={contact.id} contact={contact} isExpanded={isExpanded} />
+                ) : null,
+              )}
             </View>
             {isExpanded && (
               <ThemedButton
@@ -153,7 +164,7 @@ const EmergencySection = () => {
 };
 
 const getContactRowStyles = createStyles<
-  StyleRecord<'contactRow' | 'contactActions', 'contactText'>
+  StyleRecord<'contactRow' | 'contactInfo' | 'contactActions', 'contactName' | 'contactPhone'>
 >({
   contactRow: {
     alignItems: 'center',
@@ -161,16 +172,24 @@ const getContactRowStyles = createStyles<
     gap: StaticTheme.spacing.sm,
     borderRadius: StaticTheme.borderRadius.s,
     paddingHorizontal: StaticTheme.spacing.md,
-    paddingVertical: StaticTheme.spacing.sm,
+    paddingVertical: StaticTheme.spacing.xs * 1.5,
     borderWidth: 1,
     borderColor: ({ colors }) => colors.outline,
   },
-  contactText: {
+  contactInfo: {
     flex: 1,
+  },
+  contactName: {
     fontSize: ({ fonts }) => fonts.bodyLarge.fontSize,
     fontWeight: ({ fonts }) => fonts.bodyLarge.fontWeight,
     lineHeight: ({ fonts }) => fonts.bodyLarge.lineHeight,
     color: ({ colors }) => colors.onSurface,
+  },
+  contactPhone: {
+    fontSize: ({ fonts }) => fonts.bodyMedium.fontSize,
+    fontWeight: ({ fonts }) => fonts.bodyMedium.fontWeight,
+    lineHeight: ({ fonts }) => fonts.bodyMedium.lineHeight,
+    color: ({ colors }) => colors.onSurfaceVariant,
   },
   contactActions: {
     flexDirection: 'row',

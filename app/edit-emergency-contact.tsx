@@ -1,3 +1,3 @@
-import ContactForm from '@/components/screens/Connect/ContactForm';
+import ContactFormScreen from '@/components/screens/Connect/ContactForm';
 
-export default ContactForm;
+export default ContactFormScreen;
