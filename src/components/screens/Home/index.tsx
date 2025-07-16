@@ -194,9 +194,17 @@ const HomeScreen = () => {
     // TODO: add voice assistant button
     // TODO: add animation for collapsed tasks
     <ScreenContainer style={styles.root} scrollable>
-      <Text variant="headlineSmall" style={styles.headline}>
-        {t('Todays Tasks')}
-      </Text>
+      <View style={styles.headlineRow}>
+        <Text style={styles.headline}>{t('Todays Tasks')}</Text>
+        {user?.settings.linked && user.settings.linked.length > 0 && (
+          <View style={styles.linkedUserIndicator}>
+            <IconSymbol name="link" size={StaticTheme.iconSize.xs} color={theme.colors.secondary} />
+            <Text style={styles.linkedUserText}>
+              {user.settings.linked[0].name || user.settings.linked[0].email}
+            </Text>
+          </View>
+        )}
+      </View>
       {isLoading && (
         <View style={styles.loadingContainer}>
           {Array.from({ length: 3 }).map((_, idx) => (
@@ -293,6 +301,8 @@ interface StyleParams {
 const getStyles = createStyles<
   StyleRecord<
     | 'root'
+    | 'headlineRow'
+    | 'linkedUserIndicator'
     | 'listSection'
     | 'divider'
     | 'addTaskButton'
@@ -301,19 +311,35 @@ const getStyles = createStyles<
     | 'emptyContainer'
     | 'noLinkContainer'
     | 'warningContainer',
-    'headline' | 'hintText' | 'warmingIcon' | 'warningText'
+    'headline' | 'linkedUserText' | 'hintText' | 'warmingIcon' | 'warningText'
   >,
   StyleParams
 >({
   root: {
     gap: StaticTheme.spacing.xs,
   },
+  headlineRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: StaticTheme.spacing.sm,
+    marginBottom: StaticTheme.spacing.sm,
+  },
   headline: {
     paddingVertical: StaticTheme.spacing.xs,
     fontSize: ({ fonts }) => fonts.titleLarge.fontSize,
     fontWeight: ({ fonts }) => fonts.titleLarge.fontWeight,
     lineHeight: ({ fonts }) => fonts.titleLarge.lineHeight,
-    marginBottom: StaticTheme.spacing.sm,
+  },
+  linkedUserIndicator: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: StaticTheme.spacing.xs * 0.25,
+  },
+  linkedUserText: {
+    fontSize: ({ fonts }) => fonts.bodyMedium.fontSize,
+    fontWeight: ({ fonts }) => fonts.bodyMedium.fontWeight,
+    lineHeight: ({ fonts }) => fonts.titleLarge.lineHeight,
+    color: ({ colors }) => colors.secondary,
   },
   listSection: {
     gap: StaticTheme.spacing.md,

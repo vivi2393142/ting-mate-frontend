@@ -16,6 +16,7 @@ import { createStyles, StyleRecord } from '@/utils/createStyles';
 import CommonModal from '@/components/atoms/CommonModal';
 import ThemedButton from '@/components/atoms/ThemedButton';
 
+// TODO: Sync location in background
 const LocationSyncHandler = () => {
   const { t } = useTranslation('common');
   const theme = useAppTheme();
