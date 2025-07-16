@@ -4,7 +4,9 @@ import { useTranslation } from 'react-i18next';
 import { Alert, Button } from 'react-native';
 
 import { useUpdateUserSettings } from '@/api/user';
+import ROUTES from '@/constants/routes';
 import useAppTheme from '@/hooks/useAppTheme';
+import useStackScreenOptionsHelper from '@/hooks/useStackScreenOptionsHelper';
 import useUserStore from '@/store/useUserStore';
 import { StaticTheme } from '@/theme';
 import { createStyles, type StyleRecord } from '@/utils/createStyles';
@@ -16,6 +18,7 @@ import ThemedView from '@/components/atoms/ThemedView';
 const EditNameScreen = () => {
   const { t } = useTranslation('settings');
   const { t: tCommon } = useTranslation('common');
+  const getStackScreenOptions = useStackScreenOptionsHelper();
 
   const theme = useAppTheme();
   const styles = getStyles(theme);
@@ -59,7 +62,7 @@ const EditNameScreen = () => {
     <Fragment>
       <Stack.Screen
         options={{
-          title: t('Edit Name'),
+          ...getStackScreenOptions({ title: ROUTES.EDIT_NAME }),
           headerLeft: () => (
             <Button color={theme.colors.primary} onPress={handleCancel} title={tCommon('Cancel')} />
           ),

@@ -240,11 +240,6 @@ const LocationSection = ({ isExpanded }: { isExpanded: boolean }) => {
     );
   }, [safeZone]);
 
-  // Navigate to the edit safe zone screen
-  const handleEditSafeZone = useCallback(() => {
-    router.push(ROUTES.EDIT_SAFE_ZONE);
-  }, []);
-
   // Carereceiver: Turn off location sharing
   const handleTurnOffLocationSharing = useCallback(() => {
     Alert.alert(
@@ -265,6 +260,27 @@ const LocationSection = ({ isExpanded }: { isExpanded: boolean }) => {
       { cancelable: true },
     );
   }, [t, tCommon, updateUserSettingsMutation]);
+
+  const handleLogin = useCallback(() => {
+    router.push({
+      pathname: ROUTES.LOGIN,
+      params: { from: ROUTES.CONNECT },
+    });
+  }, []);
+
+  const handleLinkAccount = useCallback(() => {
+    router.push({
+      pathname: ROUTES.ACCOUNT_LINKING,
+      params: { from: ROUTES.CONNECT },
+    });
+  }, []);
+
+  const handleEditSafeZone = useCallback(() => {
+    router.push({
+      pathname: ROUTES.EDIT_SAFE_ZONE,
+      params: { from: ROUTES.CONNECT },
+    });
+  }, []);
 
   // Check if the user is inside the safe zone
   const isInSafeZone = useMemo(() => {
@@ -314,13 +330,7 @@ const LocationSection = ({ isExpanded }: { isExpanded: boolean }) => {
     return (
       <View style={styles.note}>
         <Text style={styles.noteText}>{t('Please sign in to use this feature.')}</Text>
-        <ThemedButton
-          onPress={() => {
-            router.push(ROUTES.LOGIN);
-          }}
-        >
-          {tCommon('Sign In / Sign Up')}
-        </ThemedButton>
+        <ThemedButton onPress={handleLogin}>{tCommon('Login / Sign Up')}</ThemedButton>
       </View>
     );
   }
@@ -337,13 +347,7 @@ const LocationSection = ({ isExpanded }: { isExpanded: boolean }) => {
     return (
       <View style={styles.note}>
         <Text style={styles.noteText}>{t('Connect with someone first to use this feature.')}</Text>
-        <ThemedButton
-          onPress={() => {
-            router.push(ROUTES.ACCOUNT_LINKING);
-          }}
-        >
-          {t('Link Now')}
-        </ThemedButton>
+        <ThemedButton onPress={handleLinkAccount}>{t('Link Now')}</ThemedButton>
       </View>
     );
   }

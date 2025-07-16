@@ -136,7 +136,10 @@ const SharedSection = ({ isExpanded }: { isExpanded: boolean }) => {
   const [activeTab, setActiveTab] = useState<TabType>(TabType.LOG);
 
   const handleAddNote = useCallback(() => {
-    router.push(ROUTES.NOTE_EDIT);
+    router.push({
+      pathname: ROUTES.NOTE_EDIT,
+      params: { from: ROUTES.CONNECT },
+    });
   }, []);
 
   const handleLogPress = useCallback((log: LogEntry) => {
@@ -144,6 +147,7 @@ const SharedSection = ({ isExpanded }: { isExpanded: boolean }) => {
       pathname: ROUTES.LOG_DETAIL,
       params: {
         id: log.id.toString(),
+        from: ROUTES.CONNECT,
       },
     });
   }, []);
@@ -153,6 +157,7 @@ const SharedSection = ({ isExpanded }: { isExpanded: boolean }) => {
       pathname: ROUTES.NOTE_EDIT,
       params: {
         id: note.id.toString(),
+        from: ROUTES.CONNECT,
       },
     });
   }, []);

@@ -7,7 +7,9 @@ import { Image, StyleSheet } from 'react-native';
 import { Text, TextInput } from 'react-native-paper';
 
 import { useLogin, useRegister } from '@/api/auth';
+import ROUTES from '@/constants/routes';
 import useAppTheme from '@/hooks/useAppTheme';
+import useStackScreenOptionsHelper from '@/hooks/useStackScreenOptionsHelper';
 import useAuthStore from '@/store/useAuthStore';
 import { StaticTheme } from '@/theme';
 import { Role } from '@/types/user';
@@ -15,14 +17,14 @@ import { createStyles, type StyleRecord } from '@/utils/createStyles';
 
 import ThemedButton from '@/components/atoms/ThemedButton';
 import ThemedView from '@/components/atoms/ThemedView';
-import ROUTES from '@/constants/routes';
 
 const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 // TODO: Should add name when sign up
 const LoginScreen = () => {
   const { t } = useTranslation('login');
-  const { t: tCommon } = useTranslation('common');
+  const getStackScreenOptions = useStackScreenOptionsHelper();
+
   const theme = useAppTheme();
   const styles = getStyles(theme);
 
@@ -111,12 +113,7 @@ const LoginScreen = () => {
 
   return (
     <Fragment>
-      <Stack.Screen
-        options={{
-          title: t('Login'),
-          headerBackTitle: tCommon('Settings'),
-        }}
-      />
+      <Stack.Screen options={getStackScreenOptions({ title: ROUTES.LOGIN })} />
       <ThemedView style={styles.root}>
         <Image
           // eslint-disable-next-line i18next/no-literal-string

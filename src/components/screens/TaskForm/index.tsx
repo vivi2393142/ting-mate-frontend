@@ -10,6 +10,7 @@ import EmojiPicker from 'rn-emoji-keyboard';
 import { useCreateTask, useDeleteTask, useGetTask, useUpdateTask } from '@/api/tasks';
 import useAppTheme from '@/hooks/useAppTheme';
 import useRecurrenceText from '@/hooks/useRecurrenceText';
+import useStackScreenOptionsHelper from '@/hooks/useStackScreenOptionsHelper';
 import { useUserTextSize } from '@/store/useUserStore';
 import { StaticTheme } from '@/theme';
 import { type RecurrenceRule, RecurrenceUnit, type TaskFormData } from '@/types/task';
@@ -73,6 +74,7 @@ const TaskForm = () => {
   const { t } = useTranslation('taskForm');
   const { t: tCommon } = useTranslation('common');
   const { tRecurrenceText } = useRecurrenceText();
+  const getStackScreenOptions = useStackScreenOptionsHelper();
 
   const router = useRouter();
   const params = useLocalSearchParams();
@@ -286,6 +288,7 @@ const TaskForm = () => {
       <Fragment>
         <Stack.Screen
           options={{
+            ...getStackScreenOptions({}),
             title: t('Edit Task'),
             headerLeft: () => (
               <Button color={theme.colors.primary} onPress={handleCancel} title={t('Cancel')} />
@@ -308,6 +311,7 @@ const TaskForm = () => {
     <Fragment>
       <Stack.Screen
         options={{
+          ...getStackScreenOptions({}),
           title: isEditMode ? t('Edit Task') : t('Add Task'),
           headerLeft: () => (
             <Button color={theme.colors.primary} onPress={handleCancel} title={t('Cancel')} />

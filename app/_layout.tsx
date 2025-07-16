@@ -9,12 +9,13 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 import queryClient from '@/api/queryClient';
 import useColorScheme from '@/hooks/useColorScheme';
 import '@/i18n';
-import { useTranslation } from 'react-i18next';
 
 import CombinedThemeProvider from '@/components/providers/CombinedThemeProvider';
 import LocationSyncHandler from '@/components/providers/LocationSyncHandler';
 import NotificationHandler from '@/components/providers/NotificationHandler';
 import UserSyncHandler from '@/components/providers/UserSyncHandler';
+import ROUTES from '@/constants/routes';
+import useStackScreenOptionsHelper from '@/hooks/useStackScreenOptionsHelper';
 
 const RootLayout = () => {
   const colorScheme = useColorScheme();
@@ -22,7 +23,7 @@ const RootLayout = () => {
     SpaceMono: require('../src/assets/fonts/SpaceMono-Regular.ttf'),
   });
 
-  const { t } = useTranslation('common');
+  const getStackScreenOptions = useStackScreenOptionsHelper();
 
   // Async font loading only occurs in development.
   if (!loaded) return null;
@@ -34,7 +35,10 @@ const RootLayout = () => {
         <CombinedThemeProvider>
           <LocationSyncHandler />
           <Stack>
-            <Stack.Screen name="(tabs)" options={{ headerShown: false, title: t('Home') }} />
+            <Stack.Screen
+              name="(tabs)"
+              options={{ headerShown: false, ...getStackScreenOptions({ title: ROUTES.HOME }) }}
+            />
             <Stack.Screen name="+not-found" />
           </Stack>
           <StatusBar style={colorScheme === 'dark' ? 'light' : 'dark'} />

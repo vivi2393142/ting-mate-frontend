@@ -1,0 +1,16 @@
+{
+  "/": "Home",
+  "/account-linking": "Account Linking",
+  "/add-emergency-contact": "Add Contact",
+  "/add-task": "Add Task",
+  "/connect": "Connect",
+  "/edit-emergency-contact": "Edit Contact",
+  "/edit-name": "Edit Name",
+  "/edit-safe-zone": "Edit Safe Zone",
+  "/edit-task": "Edit Task",
+  "/log-detail": "Log Detail",
+  "/login": "Login",
+  "/note-edit": "Edit Note",
+  "/role-selection": "Role Selection",
+  "/settings": "Settings"
+}

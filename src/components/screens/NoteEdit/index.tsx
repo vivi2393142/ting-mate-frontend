@@ -13,10 +13,13 @@ import { createStyles, StyleRecord } from '@/utils/createStyles';
 import FormInput from '@/components/atoms/FormInput';
 import ScreenContainer from '@/components/atoms/ScreenContainer';
 import ThemedButton from '@/components/atoms/ThemedButton';
+import useStackScreenOptionsHelper from '@/hooks/useStackScreenOptionsHelper';
 
-const NoteEdit = () => {
+const NoteEditScreen = () => {
   const { t } = useTranslation('connect');
   const { t: tCommon } = useTranslation('common');
+  const getStackScreenOptions = useStackScreenOptionsHelper();
+
   const insets = useSafeAreaInsets();
 
   const theme = useAppTheme();
@@ -48,7 +51,8 @@ const NoteEdit = () => {
     <Fragment>
       <Stack.Screen
         options={{
-          title: isEditMode ? t('Edit Note') : t('New Note'),
+          ...getStackScreenOptions({}),
+          title: isEditMode ? t('Edit Note') : t('Add Note'),
           headerLeft: () => (
             <Button color={theme.colors.primary} onPress={handleCancel} title={tCommon('Cancel')} />
           ),
@@ -132,4 +136,4 @@ const getStyles = createStyles<
   },
 });
 
-export default NoteEdit;
+export default NoteEditScreen;

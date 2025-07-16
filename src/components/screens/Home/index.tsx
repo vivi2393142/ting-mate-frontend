@@ -126,10 +126,7 @@ const HomeScreen = () => {
         pathname: ROUTES.EDIT_TASK,
         params: {
           id: task.id,
-          title: task.title,
-          icon: task.icon,
-          hour: task.reminderTime.hour.toString(),
-          minute: task.reminderTime.minute.toString(),
+          from: ROUTES.HOME,
         },
       });
     } else {
@@ -150,7 +147,10 @@ const HomeScreen = () => {
   };
 
   const handleAddTask = useCallback(() => {
-    router.push(ROUTES.ADD_TASK);
+    router.push({
+      pathname: ROUTES.ADD_TASK,
+      params: { from: ROUTES.HOME },
+    });
   }, [router]);
 
   const handleOtherTasksToggle = useCallback(() => {
@@ -158,7 +158,10 @@ const HomeScreen = () => {
   }, []);
 
   const handleLinkAccount = useCallback(() => {
-    router.push(ROUTES.ACCOUNT_LINKING);
+    router.push({
+      pathname: ROUTES.ACCOUNT_LINKING,
+      params: { from: ROUTES.HOME },
+    });
   }, [router]);
 
   // Show caregiver warning if user is caregiver without linked accounts

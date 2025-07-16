@@ -10,6 +10,7 @@ import { useTransitionUserRole } from '@/api/user';
 import ROUTES from '@/constants/routes';
 import useAppTheme from '@/hooks/useAppTheme';
 import useRoleTranslation from '@/hooks/useRoleTranslation';
+import useStackScreenOptionsHelper from '@/hooks/useStackScreenOptionsHelper';
 import useAuthStore from '@/store/useAuthStore';
 import useUserStore from '@/store/useUserStore';
 import { StaticTheme } from '@/theme';
@@ -26,6 +27,7 @@ const RoleSelectionScreen = () => {
   const { t } = useTranslation('roleSelection');
   const { t: tCommon } = useTranslation('common');
   const { tRole } = useRoleTranslation();
+  const getStackScreenOptions = useStackScreenOptionsHelper();
 
   const theme = useAppTheme();
   const styles = getStyles(theme);
@@ -120,7 +122,10 @@ const RoleSelectionScreen = () => {
   }, [selectedRole, user, tasks, t, tCommon, router, doTransition]);
 
   const handleSignInPress = useCallback(() => {
-    router.push(ROUTES.LOGIN);
+    router.push({
+      pathname: ROUTES.LOGIN,
+      params: { from: ROUTES.ROLE_SELECTION },
+    });
   }, [router]);
 
   const roles = [
@@ -141,7 +146,7 @@ const RoleSelectionScreen = () => {
     <Fragment>
       <Stack.Screen
         options={{
-          title: t('Role Selection'),
+          ...getStackScreenOptions({ title: ROUTES.ROLE_SELECTION }),
           headerBackTitle: isFromSignup ? undefined : tCommon('Back'),
           headerBackVisible: !isFromSignup,
         }}
@@ -200,7 +205,7 @@ const RoleSelectionScreen = () => {
                 {t('You need to sign in to save your role selection.')}
               </Text>
             </ThemedView>
-            <ThemedButton onPress={handleSignInPress}>{tCommon('Sign In / Sign Up')}</ThemedButton>
+            <ThemedButton onPress={handleSignInPress}>{tCommon('Login / Sign Up')}</ThemedButton>
           </Fragment>
         )}
         {isAuthenticated && (

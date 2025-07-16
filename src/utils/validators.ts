@@ -1,9 +1,14 @@
 import { z } from 'zod';
 
+import ROUTES, { type Route } from '@/constants/routes';
 import { RecurrenceUnit, type DayOfWeek } from '@/types/task';
 
 export const isDayOfWeek = (value: unknown): value is DayOfWeek =>
   z.number().int().min(0).max(6).safeParse(value).success;
+
+export const isRouteValue = (value: unknown): value is Route => {
+  return Object.values(ROUTES).includes(value as Route);
+};
 
 // Zod schema for TaskFormData
 const ReminderTimeSchema = z.object({

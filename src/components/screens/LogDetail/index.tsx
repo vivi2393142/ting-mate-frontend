@@ -5,16 +5,18 @@ import { Fragment } from 'react';
 import { View } from 'react-native';
 import { TextInput } from 'react-native-paper';
 
+import ROUTES from '@/constants/routes';
 import useAppTheme from '@/hooks/useAppTheme';
+import useStackScreenOptionsHelper from '@/hooks/useStackScreenOptionsHelper';
 import { StaticTheme } from '@/theme';
 import { createStyles, type StyleRecord } from '@/utils/createStyles';
 
 import FormInput from '@/components/atoms/FormInput';
 import ScreenContainer from '@/components/atoms/ScreenContainer';
 
-const LogDetail = () => {
+const LogDetailScreen = () => {
   const { t } = useTranslation('connect');
-  const { t: tCommon } = useTranslation('common');
+  const getStackScreenOptions = useStackScreenOptionsHelper();
 
   const theme = useAppTheme();
   const styles = getStyles(theme);
@@ -33,12 +35,7 @@ const LogDetail = () => {
 
   return (
     <Fragment>
-      <Stack.Screen
-        options={{
-          title: t('Log Detail'),
-          headerBackTitle: tCommon('Connect'),
-        }}
-      />
+      <Stack.Screen options={getStackScreenOptions({ title: ROUTES.LOG_DETAIL })} />
       <ScreenContainer isRoot={false} scrollable>
         <FormInput
           label={t('User')}
@@ -93,4 +90,4 @@ const getStyles = createStyles<StyleRecord<'contentInputWrapper', 'contentConten
   },
 });
 
-export default LogDetail;
+export default LogDetailScreen;

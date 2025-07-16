@@ -14,7 +14,9 @@ import MapView, {
 import { Divider } from 'react-native-paper';
 
 import { useGetLinkedSafeZone, useUpdateSafeZone } from '@/api/userLocations';
+import ROUTES from '@/constants/routes';
 import useAppTheme from '@/hooks/useAppTheme';
+import useStackScreenOptionsHelper from '@/hooks/useStackScreenOptionsHelper';
 import useUserStore from '@/store/useUserStore';
 import { StaticTheme } from '@/theme';
 import { googleMapStyles } from '@/theme/mapStyles';
@@ -41,6 +43,7 @@ interface SafeZoneParams {
 const EditSafeZoneScreen = () => {
   const { t } = useTranslation('connect');
   const { t: tCommon } = useTranslation('common');
+  const getStackScreenOptions = useStackScreenOptionsHelper();
 
   const theme = useAppTheme();
   const styles = getStyles(theme);
@@ -185,7 +188,7 @@ const EditSafeZoneScreen = () => {
     <Fragment>
       <Stack.Screen
         options={{
-          title: t('Edit Safe Zone'),
+          ...getStackScreenOptions({ title: ROUTES.EDIT_SAFE_ZONE }),
           headerLeft: () => (
             <Button color={theme.colors.primary} onPress={handleCancel} title={tCommon('Cancel')} />
           ),

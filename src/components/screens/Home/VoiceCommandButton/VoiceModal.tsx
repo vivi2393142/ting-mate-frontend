@@ -137,7 +137,7 @@ const VoiceModal = ({
         {isConfirming && (
           <View style={styles.confirmationContainer}>
             {isConfirmed ? (
-              <Text style={styles.confirmationText}>{t('Done!')}</Text>
+              <Text style={styles.confirmationText}>{t('Done')}</Text>
             ) : (
               <View style={styles.confirmationButtonRow}>
                 <ThemedButton

@@ -90,16 +90,22 @@ const SettingsScreen = () => {
   const handleRolePress = useCallback(() => {
     router.push({
       pathname: ROUTES.ROLE_SELECTION,
-      params: { from: 'settings' },
+      params: { from: ROUTES.SETTINGS },
     });
   }, [router]);
 
   const handleNamePress = useCallback(() => {
-    router.push(ROUTES.EDIT_NAME);
+    router.push({
+      pathname: ROUTES.EDIT_NAME,
+      params: { from: ROUTES.SETTINGS },
+    });
   }, [router]);
 
   const handleAccountAction = useCallback(() => {
-    router.push(ROUTES.LOGIN);
+    router.push({
+      pathname: ROUTES.LOGIN,
+      params: { from: ROUTES.SETTINGS },
+    });
   }, [router]);
 
   const handleLogout = useCallback(() => {
@@ -113,14 +119,17 @@ const SettingsScreen = () => {
         style: 'destructive',
         onPress: () => {
           logoutMutation();
-          router.push(ROUTES.LOGIN);
+          router.push({
+            pathname: ROUTES.LOGIN,
+            params: { from: ROUTES.SETTINGS },
+          });
         },
       },
     ]);
   }, [logoutMutation, router, t, tCommon]);
 
   const handleAccountLinkingPress = useCallback(() => {
-    router.push({ pathname: ROUTES.ACCOUNT_LINKING });
+    router.push({ pathname: ROUTES.ACCOUNT_LINKING, params: { from: ROUTES.SETTINGS } });
   }, [router]);
 
   // TODO: Add a section for reminder settings
@@ -186,7 +195,7 @@ const SettingsScreen = () => {
         />
         {!token && (
           <List.Item
-            title={tCommon('Sign In / Sign Up')}
+            title={tCommon('Login / Sign Up')}
             style={styles.buttonItem}
             containerStyle={styles.buttonContainer}
             contentStyle={styles.buttonContent}

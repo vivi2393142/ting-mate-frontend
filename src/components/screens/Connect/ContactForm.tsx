@@ -6,12 +6,20 @@ import { useTranslation } from 'react-i18next';
 import { Alert, Button, Text, View } from 'react-native';
 import { Divider, TouchableRipple } from 'react-native-paper';
 
+import IconSymbol, { IconName } from '@/components/atoms/IconSymbol';
+import ROUTES from '@/constants/routes';
 import useAppTheme from '@/hooks/useAppTheme';
 import useContactMethodTranslation from '@/hooks/useContactMethodTranslation';
 import { StaticTheme } from '@/theme';
 import { ContactMethod } from '@/types/connect';
 import colorWithAlpha from '@/utils/colorWithAlpha';
 import { createStyles, type StyleRecord } from '@/utils/createStyles';
+
+import FormInput from '@/components/atoms/FormInput';
+import ScreenContainer from '@/components/atoms/ScreenContainer';
+import ThemedButton from '@/components/atoms/ThemedButton';
+import ThemedView from '@/components/atoms/ThemedView';
+import useStackScreenOptionsHelper from '@/hooks/useStackScreenOptionsHelper';
 
 // Phone number utilities
 const cleanPhoneInput = (text: string): string => {
@@ -47,12 +55,6 @@ const validatePhoneNumber = (text: string): boolean => {
   return digits.length >= 7;
 };
 
-import FormInput from '@/components/atoms/FormInput';
-import IconSymbol, { IconName } from '@/components/atoms/IconSymbol';
-import ScreenContainer from '@/components/atoms/ScreenContainer';
-import ThemedButton from '@/components/atoms/ThemedButton';
-import ThemedView from '@/components/atoms/ThemedView';
-
 interface ContactMethodOption {
   type: ContactMethod;
   icon: IconName;
@@ -67,6 +69,7 @@ const ContactForm = () => {
   const { t } = useTranslation('connect');
   const { t: tCommon } = useTranslation('common');
   const { tContactMethod } = useContactMethodTranslation();
+  const getStackScreenOptions = useStackScreenOptionsHelper();
 
   const theme = useAppTheme();
   const styles = getStyles(theme);
@@ -178,7 +181,9 @@ const ContactForm = () => {
     <Fragment>
       <Stack.Screen
         options={{
-          title: isEditMode ? t('Add Contact') : t('Add Contact'),
+          ...getStackScreenOptions({
+            title: isEditMode ? ROUTES.EDIT_EMERGENCY_CONTACT : ROUTES.ADD_EMERGENCY_CONTACT,
+          }),
           headerLeft: () => (
             <Button color={theme.colors.primary} onPress={handleCancel} title={tCommon('Cancel')} />
           ),
@@ -186,7 +191,7 @@ const ContactForm = () => {
             <Button
               color={theme.colors.primary}
               onPress={handleSave}
-              title={isEditMode ? tCommon('Save') : tCommon('Done!')}
+              title={isEditMode ? tCommon('Save') : tCommon('Done')}
             />
           ),
         }}

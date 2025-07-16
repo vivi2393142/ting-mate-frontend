@@ -7,6 +7,7 @@ import enUSConnect from '@/i18n/locales/en-US/connect.json';
 import enUSHome from '@/i18n/locales/en-US/home.json';
 import enUSLogin from '@/i18n/locales/en-US/login.json';
 import enUSRoleSelection from '@/i18n/locales/en-US/roleSelection.json';
+import enUSRoutes from '@/i18n/locales/en-US/routes.json';
 import enUSSettings from '@/i18n/locales/en-US/settings.json';
 import enUSTaskForm from '@/i18n/locales/en-US/taskForm.json';
 
@@ -16,6 +17,7 @@ import zhHantTWConnect from '@/i18n/locales/zh-Hant-TW/connect.json';
 import zhHantTWHome from '@/i18n/locales/zh-Hant-TW/home.json';
 import zhHantTWLogin from '@/i18n/locales/zh-Hant-TW/login.json';
 import zhHantTWRoleSelection from '@/i18n/locales/zh-Hant-TW/roleSelection.json';
+import zhHantTWRoutes from '@/i18n/locales/zh-Hant-TW/routes.json';
 import zhHantTWSettings from '@/i18n/locales/zh-Hant-TW/settings.json';
 import zhHantTWTaskForm from '@/i18n/locales/zh-Hant-TW/taskForm.json';
 
@@ -30,6 +32,7 @@ export const resources = {
     login: enUSLogin,
     roleSelection: enUSRoleSelection,
     accountLinking: enUSAccountLinking,
+    routes: enUSRoutes,
   },
   'zh-Hant-TW': {
     common: zhHantTWCommon,
@@ -40,6 +43,7 @@ export const resources = {
     login: zhHantTWLogin,
     roleSelection: zhHantTWRoleSelection,
     accountLinking: zhHantTWAccountLinking,
+    routes: zhHantTWRoutes,
   },
 } as const;
 
@@ -56,6 +60,7 @@ i18n.use(initReactI18next).init({
     'login',
     'roleSelection',
     'accountLinking',
+    'routes',
   ],
   defaultNS,
   interpolation: {

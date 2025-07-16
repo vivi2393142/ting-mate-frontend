@@ -11,6 +11,7 @@ import { useAcceptInvitation, useGenerateInvitation } from '@/api/invitation';
 import { useRemoveUserLink } from '@/api/user';
 import ROUTES from '@/constants/routes';
 import useAppTheme from '@/hooks/useAppTheme';
+import useStackScreenOptionsHelper from '@/hooks/useStackScreenOptionsHelper';
 import useAuthStore from '@/store/useAuthStore';
 import useUserStore from '@/store/useUserStore';
 import { StaticTheme } from '@/theme';
@@ -28,6 +29,7 @@ import ThemedView from '@/components/atoms/ThemedView';
 const AccountLinkingScreen = () => {
   const { t } = useTranslation('accountLinking');
   const { t: tCommon } = useTranslation('common');
+  const getStackScreenOptions = useStackScreenOptionsHelper();
 
   const theme = useAppTheme();
   const styles = getStyles(theme);
@@ -150,7 +152,12 @@ const AccountLinkingScreen = () => {
   };
 
   const handleSignInPress = useCallback(() => {
-    router.push(ROUTES.LOGIN);
+    router.push({
+      pathname: ROUTES.LOGIN,
+      params: {
+        from: ROUTES.ACCOUNT_LINKING,
+      },
+    });
   }, []);
 
   const purposeItems = [
@@ -163,13 +170,7 @@ const AccountLinkingScreen = () => {
   // TODO: Show accounts that are in same group (same carereceiver)
   return (
     <Fragment>
-      <Stack.Screen
-        options={{
-          title: t('Linking Account'),
-          // TODO: Back to last page but not settings, reset name
-          headerBackTitle: tCommon('Settings'),
-        }}
-      />
+      <Stack.Screen options={getStackScreenOptions({ title: ROUTES.ACCOUNT_LINKING })} />
       <ScreenContainer
         isRoot={false}
         scrollable
@@ -272,7 +273,7 @@ const AccountLinkingScreen = () => {
           </ThemedView>
           {!isLoggedIn && (
             <ThemedButton onPress={handleSignInPress} style={styles.signInButton}>
-              {tCommon('Sign In / Sign Up')}
+              {tCommon('Login / Sign Up')}
             </ThemedButton>
           )}
         </ThemedView>

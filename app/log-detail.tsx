@@ -1,3 +1,3 @@
-import LogDetail from '@/components/screens/LogDetail';
+import LogDetailScreen from '@/components/screens/LogDetail';
 
-export default LogDetail;
+export default LogDetailScreen;

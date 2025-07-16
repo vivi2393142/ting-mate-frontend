@@ -1,3 +1,3 @@
-import NoteEdit from '@/components/screens/NoteEdit';
+import NoteEditScreen from '@/components/screens/NoteEdit';
 
-export default NoteEdit;
+export default NoteEditScreen;

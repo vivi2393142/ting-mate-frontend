@@ -15,4 +15,6 @@ const ROUTES = {
   EDIT_SAFE_ZONE: '/edit-safe-zone',
 } as const;
 
+export type Route = (typeof ROUTES)[keyof typeof ROUTES];
+
 export default ROUTES;

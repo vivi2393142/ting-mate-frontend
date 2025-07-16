@@ -58,14 +58,17 @@ const EmergencySection = ({ isExpanded }: { isExpanded: boolean }) => {
   }, []);
 
   const handleAddContact = useCallback(() => {
-    router.push(ROUTES.ADD_EMERGENCY_CONTACT);
+    router.push({
+      pathname: ROUTES.ADD_EMERGENCY_CONTACT,
+      params: { from: ROUTES.CONNECT },
+    });
   }, [router]);
 
   const handleEditContact = useCallback(
     (contact: EmergencyContact) => {
       router.push({
         pathname: ROUTES.EDIT_EMERGENCY_CONTACT,
-        params: { contactId: contact.id },
+        params: { contactId: contact.id, from: ROUTES.CONNECT },
       });
     },
     [router],
