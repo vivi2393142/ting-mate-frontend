@@ -6,7 +6,7 @@ import { useTranslation } from 'react-i18next';
 import { ScrollView, Text, View } from 'react-native';
 import { TouchableRipple } from 'react-native-paper';
 
-import { useGetActivityLogs } from '@/api/activityLog';
+import { useInfiniteActivityLogs } from '@/api/activityLog';
 import ROUTES from '@/constants/routes';
 import useAppTheme from '@/hooks/useAppTheme';
 import { useLogTranslation } from '@/hooks/useLogTranslation';
@@ -15,6 +15,7 @@ import { Action, type ActivityLogFilter, type ActivityLogResponse } from '@/type
 import colorWithAlpha from '@/utils/colorWithAlpha';
 import { createStyles, type StyleRecord } from '@/utils/createStyles';
 
+import Skeleton from '@/components/atoms/Skeleton';
 import ThemedIconButton from '@/components/atoms/ThemedIconButton';
 import SectionContainer from '@/components/screens/Connect/SectionContainer';
 
@@ -65,7 +66,7 @@ const ContentContainer = ({
               size="medium"
               onPress={onLoadMore}
               style={styles.loadMoreButton}
-              disabled={isLoading}
+              loading={isLoading}
             />
           )}
         </View>
@@ -133,25 +134,30 @@ const SharedSection = () => {
 
   const [isExpanded, setIsExpanded] = useState(false);
   const [activeTab, setActiveTab] = useState<TabType>(TabType.LOG);
-  const [logPage, setLogPage] = useState(0);
 
   const filter: ActivityLogFilter = useMemo(
     () => ({
       actions: logActionsFilter,
       limit: LOGS_PER_PAGE,
-      offset: logPage * LOGS_PER_PAGE,
     }),
-    [logPage],
+    [],
   );
-
   const {
-    data: activityLogsData,
+    data: activityLogsPages,
     isLoading: isLoadingLogs,
     isFetching: isFetchingLogs,
-    isPlaceholderData: isPreviousLogsData,
-  } = useGetActivityLogs(filter, {
-    placeholderData: (previousData) => previousData,
-  });
+    fetchNextPage,
+    hasNextPage,
+  } = useInfiniteActivityLogs(filter);
+
+  const logs = useMemo(
+    () => activityLogsPages?.pages.flatMap((page) => page.logs) || [],
+    [activityLogsPages],
+  );
+
+  const visibleLogCtn = isExpanded ? logs.length : Math.min(MIN_ITEM_COUNT, logs.length);
+  const visibleLogs = useMemo(() => logs.slice(0, visibleLogCtn), [logs, visibleLogCtn]);
+  const hasMoreLogs = hasNextPage;
 
   const handleToggleExpanded = useCallback(() => {
     setIsExpanded((prev) => !prev);
@@ -192,26 +198,17 @@ const SharedSection = () => {
   }, []);
 
   const handleLoadMoreLogs = useCallback(() => {
-    if (!isPreviousLogsData && activityLogsData?.hasMore) {
-      setLogPage((prev) => prev + 1);
-    }
-  }, [isPreviousLogsData, activityLogsData?.hasMore]);
+    if (hasMoreLogs && !isFetchingLogs) fetchNextPage();
+  }, [hasMoreLogs, isFetchingLogs, fetchNextPage]);
 
   const handleLoadMoreNotes = useCallback(() => {
     console.log('Fetch more notes');
   }, []);
 
-  const logs = useMemo(() => activityLogsData?.logs || [], [activityLogsData?.logs]);
-  const totalLogs = activityLogsData?.total || 0;
-
-  const visibleLogCtn = isExpanded ? logs.length : Math.min(MIN_ITEM_COUNT, logs.length);
   const visibleNoteCtn = isExpanded ? mockNoteCount : MIN_ITEM_COUNT;
-
-  const hasMoreLogs = logs.length < totalLogs;
-  const hasMoreNotes = mockNoteCount < mockNotes.length;
-
-  const visibleLogs = useMemo(() => logs.slice(0, visibleLogCtn), [logs, visibleLogCtn]);
   const visibleNotes = useMemo(() => mockNotes.slice(0, visibleNoteCtn), [visibleNoteCtn]);
+
+  const hasMoreNotes = mockNoteCount < mockNotes.length;
 
   const tabs = [
     {
@@ -254,7 +251,13 @@ const SharedSection = () => {
               onLoadMore={handleLoadMoreLogs}
               isLoading={isFetchingLogs}
             >
-              {isLoadingLogs && <Text style={styles.contentNoteText}>{t('Loading...')}</Text>}
+              {isLoadingLogs && (
+                <View style={styles.loadingContainer}>
+                  {Array.from({ length: 3 }).map((_, index) => (
+                    <Skeleton key={index} width={'100%'} height={28} variant="rectangular" />
+                  ))}
+                </View>
+              )}
               {!isLoadingLogs &&
                 visibleLogs.map((log) => (
                   <ChipItem
@@ -314,7 +317,8 @@ const getStyles = createStyles<
     | 'chip'
     | 'chipContent'
     | 'loadMoreButton'
-    | 'addNoteButton',
+    | 'addNoteButton'
+    | 'loadingContainer',
     'tabText' | 'activeTabText' | 'contentNoteText' | 'chipLabel' | 'chipDesc' | 'loadingText'
   >
 >({
@@ -409,6 +413,9 @@ const getStyles = createStyles<
     paddingVertical: StaticTheme.spacing.md,
     color: ({ colors }) => colors.onSurfaceVariant,
     fontSize: ({ fonts }) => fonts.bodyMedium.fontSize,
+  },
+  loadingContainer: {
+    gap: StaticTheme.spacing.xs,
   },
 });
 

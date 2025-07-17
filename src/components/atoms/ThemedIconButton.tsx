@@ -58,7 +58,11 @@ const ThemedIconButton = ({
   return (
     <IconButton
       icon={() => (
-        <IconSymbol name={name} size={sizes.icon[size]} color={color || theme.colors.primary} />
+        <IconSymbol
+          name={name}
+          size={sizes.icon[size]}
+          color={props.disabled ? theme.colors.outlineVariant : color || theme.colors.primary}
+        />
       )}
       size={sizes.button[size]}
       style={[styles.button, props.mode === 'outlined' ? { borderColor: color } : style]}

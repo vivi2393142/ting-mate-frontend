@@ -25,8 +25,8 @@ const getStyles = createStyles<StyleRecord<'container' | 'content'>>({
     flex: 1,
   },
   content: {
-    flex: 1,
     gap: StaticTheme.spacing.md * 1.5,
+    paddingBottom: StaticTheme.spacing.md,
   },
 });
 

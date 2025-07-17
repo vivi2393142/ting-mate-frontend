@@ -1,4 +1,4 @@
-import { useQuery, type UseQueryOptions } from '@tanstack/react-query';
+import { useInfiniteQuery, useQuery, type UseQueryOptions } from '@tanstack/react-query';
 import { z } from 'zod';
 
 import { axiosClientWithAuth } from '@/api/axiosClient';
@@ -246,3 +246,29 @@ export const useGetActivityLogs = (
     },
     ...options,
   });
+
+export const useInfiniteActivityLogs = (
+  filter: ActivityLogFilter = {},
+  options?: Omit<
+    Parameters<typeof useInfiniteQuery<ActivityLogListResponse, Error>>[0],
+    'queryKey' | 'queryFn' | 'getNextPageParam' | 'initialPageParam'
+  >,
+) => {
+  return useInfiniteQuery<ActivityLogListResponse, Error>({
+    queryKey: ['activityLogs', filter.actions],
+    queryFn: async (context) => {
+      const pageParam = typeof context.pageParam === 'number' ? context.pageParam : 0;
+      return getActivityLogs({
+        ...filter,
+        offset: pageParam,
+        limit: filter.limit,
+      });
+    },
+    initialPageParam: 0,
+    getNextPageParam: (lastPage) => {
+      if (lastPage.hasMore) return lastPage.offset + lastPage.limit;
+      return undefined;
+    },
+    ...options,
+  });
+};
