@@ -1,3 +1,4 @@
+import dayjs from 'dayjs';
 import { router } from 'expo-router';
 import { Fragment, useCallback, useMemo, useState, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -5,9 +6,12 @@ import { useTranslation } from 'react-i18next';
 import { ScrollView, Text, View } from 'react-native';
 import { TouchableRipple } from 'react-native-paper';
 
+import { useGetActivityLogs } from '@/api/activityLog';
 import ROUTES from '@/constants/routes';
 import useAppTheme from '@/hooks/useAppTheme';
+import { useLogTranslation } from '@/hooks/useLogTranslation';
 import { StaticTheme } from '@/theme';
+import { Action, type ActivityLogFilter, type ActivityLogResponse } from '@/types/connect';
 import colorWithAlpha from '@/utils/colorWithAlpha';
 import { createStyles, type StyleRecord } from '@/utils/createStyles';
 
@@ -15,17 +19,11 @@ import ThemedIconButton from '@/components/atoms/ThemedIconButton';
 import SectionContainer from '@/components/screens/Connect/SectionContainer';
 
 const MIN_ITEM_COUNT = 3;
+const LOGS_PER_PAGE = 10;
 
 enum TabType {
   LOG = 'LOG',
   NOTE = 'NOTE',
-}
-
-interface LogEntry {
-  id: number;
-  time: string;
-  text: string;
-  type: TabType.LOG;
 }
 
 interface NoteEntry {
@@ -39,6 +37,7 @@ interface ContentContainerProps {
   children: ReactNode;
   hasMoreItems?: boolean;
   onLoadMore?: () => void;
+  isLoading?: boolean;
 }
 
 const ContentContainer = ({
@@ -46,6 +45,7 @@ const ContentContainer = ({
   children,
   hasMoreItems,
   onLoadMore,
+  isLoading,
 }: ContentContainerProps) => {
   const theme = useAppTheme();
   const styles = getStyles(theme);
@@ -65,6 +65,7 @@ const ContentContainer = ({
               size="medium"
               onPress={onLoadMore}
               style={styles.loadMoreButton}
+              disabled={isLoading}
             />
           )}
         </View>
@@ -101,25 +102,20 @@ const ChipItem = ({ label, description, onPress }: ChipItemProps) => {
   );
 };
 
-const logCount = 12;
-const noteCount = 5;
-
-// TODO: change to real data
-const mockLogEntries: LogEntry[] = [
-  { id: 1, time: '8:10 AM', text: 'Took medication', type: TabType.LOG },
-  { id: 2, time: '12:15 PM', text: 'Skipped lunch (not hungry)', type: TabType.LOG },
-  { id: 3, time: '2:30 PM', text: 'Mood: Calm', type: TabType.LOG },
-  { id: 4, time: '4:45 PM', text: 'Went for a walk', type: TabType.LOG },
-  { id: 5, time: '6:20 PM', text: 'Had dinner', type: TabType.LOG },
-  { id: 6, time: '8:00 PM', text: 'Watched TV', type: TabType.LOG },
-  { id: 7, time: '9:30 PM', text: 'Prepared for bed', type: TabType.LOG },
-  { id: 8, time: '10:15 PM', text: 'Read a book', type: TabType.LOG },
-  { id: 9, time: '11:00 PM', text: 'Lights out', type: TabType.LOG },
-  { id: 10, time: '11:30 PM', text: 'Fell asleep', type: TabType.LOG },
-  { id: 11, time: '12:00 AM', text: 'Deep sleep', type: TabType.LOG },
-  { id: 12, time: '1:30 AM', text: 'Brief wake up', type: TabType.LOG },
+const logActionsFilter: ActivityLogFilter['actions'] = [
+  Action.CREATE_TASK,
+  Action.UPDATE_TASK,
+  Action.UPDATE_TASK_STATUS,
+  Action.DELETE_TASK,
+  Action.CREATE_SHARED_NOTE,
+  Action.UPDATE_SHARED_NOTE,
+  Action.DELETE_SHARED_NOTE,
+  Action.ADD_USER_LINK,
+  Action.REMOVE_USER_LINK,
 ];
 
+// TODO: change to real data
+const mockNoteCount = 5;
 const mockNotes: NoteEntry[] = [
   { id: 1, name: 'Note 1', text: 'Keep tea on lower shelf for easy access and easy access' },
   { id: 2, name: 'Note 2', text: 'Doctor visit this Saturday at 10 AM' },
@@ -133,9 +129,29 @@ const SharedSection = () => {
   const styles = getStyles(theme);
 
   const { t } = useTranslation('connect');
+  const formatLogText = useLogTranslation();
 
   const [isExpanded, setIsExpanded] = useState(false);
   const [activeTab, setActiveTab] = useState<TabType>(TabType.LOG);
+  const [logPage, setLogPage] = useState(0);
+
+  const filter: ActivityLogFilter = useMemo(
+    () => ({
+      actions: logActionsFilter,
+      limit: LOGS_PER_PAGE,
+      offset: logPage * LOGS_PER_PAGE,
+    }),
+    [logPage],
+  );
+
+  const {
+    data: activityLogsData,
+    isLoading: isLoadingLogs,
+    isFetching: isFetchingLogs,
+    isPlaceholderData: isPreviousLogsData,
+  } = useGetActivityLogs(filter, {
+    placeholderData: (previousData) => previousData,
+  });
 
   const handleToggleExpanded = useCallback(() => {
     setIsExpanded((prev) => !prev);
@@ -148,15 +164,22 @@ const SharedSection = () => {
     });
   }, []);
 
-  const handleLogPress = useCallback((log: LogEntry) => {
-    router.push({
-      pathname: ROUTES.LOG_DETAIL,
-      params: {
-        id: log.id.toString(),
-        from: ROUTES.CONNECT,
-      },
-    });
-  }, []);
+  const handleLogPress = useCallback(
+    (log: ActivityLogResponse) => {
+      router.push({
+        pathname: ROUTES.LOG_DETAIL,
+        params: {
+          from: ROUTES.CONNECT,
+          id: log.id,
+          user: `${log.user.name || '---'} (${log.user.email || '---'})`,
+          date: dayjs(log.timestamp).format('MMM D, YYYY'),
+          time: dayjs(log.timestamp).format('h:mm A'),
+          content: formatLogText(log, 'description'),
+        },
+      });
+    },
+    [formatLogText],
+  );
 
   const handleNotePress = useCallback((note: NoteEntry) => {
     router.push({
@@ -169,20 +192,25 @@ const SharedSection = () => {
   }, []);
 
   const handleLoadMoreLogs = useCallback(() => {
-    console.log('Fetch more logs');
-  }, []);
+    if (!isPreviousLogsData && activityLogsData?.hasMore) {
+      setLogPage((prev) => prev + 1);
+    }
+  }, [isPreviousLogsData, activityLogsData?.hasMore]);
 
   const handleLoadMoreNotes = useCallback(() => {
     console.log('Fetch more notes');
   }, []);
 
-  const visibleLogCtn = isExpanded ? logCount : MIN_ITEM_COUNT;
-  const visibleNoteCtn = isExpanded ? noteCount : MIN_ITEM_COUNT;
+  const logs = useMemo(() => activityLogsData?.logs || [], [activityLogsData?.logs]);
+  const totalLogs = activityLogsData?.total || 0;
 
-  const hasMoreLogs = logCount < mockLogEntries.length;
-  const hasMoreNotes = noteCount < mockNotes.length;
+  const visibleLogCtn = isExpanded ? logs.length : Math.min(MIN_ITEM_COUNT, logs.length);
+  const visibleNoteCtn = isExpanded ? mockNoteCount : MIN_ITEM_COUNT;
 
-  const visibleLogs = useMemo(() => mockLogEntries.slice(0, visibleLogCtn), [visibleLogCtn]);
+  const hasMoreLogs = logs.length < totalLogs;
+  const hasMoreNotes = mockNoteCount < mockNotes.length;
+
+  const visibleLogs = useMemo(() => logs.slice(0, visibleLogCtn), [logs, visibleLogCtn]);
   const visibleNotes = useMemo(() => mockNotes.slice(0, visibleNoteCtn), [visibleNoteCtn]);
 
   const tabs = [
@@ -202,64 +230,72 @@ const SharedSection = () => {
       isExpanded={isExpanded}
       onToggle={handleToggleExpanded}
     >
-      <View style={styles.tabContainer}>
-        {tabs.map((tab) => (
-          <TouchableRipple
-            key={tab.type}
-            onPress={() => setActiveTab(tab.type)}
-            style={[styles.tabButton, activeTab === tab.type && styles.activeTabButton]}
-            rippleColor={colorWithAlpha(theme.colors.primary, 0.1)}
-          >
-            <Text style={[styles.tabText, activeTab === tab.type && styles.activeTabText]}>
-              {tab.label}
-            </Text>
-          </TouchableRipple>
-        ))}
-      </View>
-      {/* Content Area */}
-      <View style={[styles.contentArea, isExpanded && styles.contentAreaExpanded]}>
-        {activeTab === TabType.LOG && (
-          <ContentContainer
-            isExpanded={isExpanded}
-            hasMoreItems={hasMoreLogs}
-            onLoadMore={handleLoadMoreLogs}
-          >
-            {visibleLogs.map((log) => (
-              <ChipItem
-                key={log.id}
-                label={log.time}
-                description={log.text}
-                onPress={() => handleLogPress(log)}
-              />
-            ))}
-          </ContentContainer>
-        )}
-        {activeTab === TabType.NOTE && (
-          <Fragment>
+      <View style={styles.root}>
+        <View style={styles.tabContainer}>
+          {tabs.map((tab) => (
+            <TouchableRipple
+              key={tab.type}
+              onPress={() => setActiveTab(tab.type)}
+              style={[styles.tabButton, activeTab === tab.type && styles.activeTabButton]}
+              rippleColor={colorWithAlpha(theme.colors.primary, 0.1)}
+            >
+              <Text style={[styles.tabText, activeTab === tab.type && styles.activeTabText]}>
+                {tab.label}
+              </Text>
+            </TouchableRipple>
+          ))}
+        </View>
+        {/* Content Area */}
+        <View style={[styles.contentArea, isExpanded && styles.contentAreaExpanded]}>
+          {activeTab === TabType.LOG && (
             <ContentContainer
               isExpanded={isExpanded}
-              hasMoreItems={hasMoreNotes}
-              onLoadMore={handleLoadMoreNotes}
+              hasMoreItems={hasMoreLogs}
+              onLoadMore={handleLoadMoreLogs}
+              isLoading={isFetchingLogs}
             >
-              {visibleNotes.map((note) => (
-                <ChipItem
-                  key={note.id}
-                  label={note.name}
-                  description={note.text}
-                  onPress={() => handleNotePress(note)}
-                />
-              ))}
+              {isLoadingLogs && <Text style={styles.contentNoteText}>{t('Loading...')}</Text>}
+              {!isLoadingLogs &&
+                visibleLogs.map((log) => (
+                  <ChipItem
+                    key={log.id}
+                    label={dayjs(log.timestamp).format('h:mm A')}
+                    description={formatLogText(log, 'summary')}
+                    onPress={() => handleLogPress(log)}
+                  />
+                ))}
+              {!isLoadingLogs && !visibleLogs.length && (
+                <Text style={styles.contentNoteText}>{t('No Log Found')}</Text>
+              )}
             </ContentContainer>
-            {isExpanded && (
-              <ThemedIconButton
-                name="plus.circle.fill"
-                size="large"
-                onPress={handleAddNote}
-                style={styles.addNoteButton}
-              />
-            )}
-          </Fragment>
-        )}
+          )}
+          {activeTab === TabType.NOTE && (
+            <Fragment>
+              <ContentContainer
+                isExpanded={isExpanded}
+                hasMoreItems={hasMoreNotes}
+                onLoadMore={handleLoadMoreNotes}
+              >
+                {visibleNotes.map((note) => (
+                  <ChipItem
+                    key={note.id}
+                    label={note.name}
+                    description={note.text}
+                    onPress={() => handleNotePress(note)}
+                  />
+                ))}
+              </ContentContainer>
+              {isExpanded && (
+                <ThemedIconButton
+                  name="plus.circle.fill"
+                  size="large"
+                  onPress={handleAddNote}
+                  style={styles.addNoteButton}
+                />
+              )}
+            </Fragment>
+          )}
+        </View>
       </View>
     </SectionContainer>
   );
@@ -267,6 +303,7 @@ const SharedSection = () => {
 
 const getStyles = createStyles<
   StyleRecord<
+    | 'root'
     | 'tabContainer'
     | 'tabButton'
     | 'activeTabButton'
@@ -278,9 +315,12 @@ const getStyles = createStyles<
     | 'chipContent'
     | 'loadMoreButton'
     | 'addNoteButton',
-    'tabText' | 'activeTabText' | 'chipLabel' | 'chipDesc'
+    'tabText' | 'activeTabText' | 'contentNoteText' | 'chipLabel' | 'chipDesc' | 'loadingText'
   >
 >({
+  root: {
+    gap: 0,
+  },
   tabContainer: {
     flexDirection: 'row',
     borderWidth: 1,
@@ -317,6 +357,14 @@ const getStyles = createStyles<
   contentAreaExpanded: {
     height: 180,
   },
+  contentNoteText: {
+    fontSize: ({ fonts }) => fonts.bodyLarge.fontSize,
+    fontWeight: ({ fonts }) => fonts.bodyLarge.fontWeight,
+    lineHeight: ({ fonts }) => fonts.bodyLarge.lineHeight,
+    color: ({ colors }) => colors.onSurfaceVariant,
+    fontStyle: 'italic',
+    textAlign: 'center',
+  },
   scrollContainer: {
     flex: 1,
   },
@@ -335,16 +383,16 @@ const getStyles = createStyles<
     paddingVertical: StaticTheme.spacing.xs * 1.5,
   },
   chipLabel: {
-    fontSize: ({ fonts }) => fonts.bodySmall.fontSize,
-    fontWeight: ({ fonts }) => fonts.bodySmall.fontWeight,
-    lineHeight: ({ fonts }) => fonts.bodySmall.lineHeight,
+    fontSize: ({ fonts }) => fonts.bodyLarge.fontSize,
+    fontWeight: ({ fonts }) => fonts.bodyLarge.fontWeight,
+    lineHeight: ({ fonts }) => fonts.bodyLarge.lineHeight,
     color: ({ colors }) => colors.primary,
   },
   chipDesc: {
-    fontSize: ({ fonts }) => fonts.bodyMedium.fontSize,
-    fontWeight: ({ fonts }) => fonts.bodyMedium.fontWeight,
-    lineHeight: ({ fonts }) => fonts.bodyMedium.lineHeight,
-    color: ({ colors }) => colors.onSurface,
+    fontSize: ({ fonts }) => fonts.bodyLarge.fontSize,
+    fontWeight: ({ fonts }) => fonts.bodyLarge.fontWeight,
+    lineHeight: ({ fonts }) => fonts.bodyLarge.lineHeight,
+    color: ({ colors }) => colors.onSurfaceVariant,
     flex: 1,
   },
   loadMoreButton: {
@@ -355,6 +403,12 @@ const getStyles = createStyles<
     position: 'absolute',
     bottom: StaticTheme.spacing.sm,
     right: StaticTheme.spacing.sm,
+  },
+  loadingText: {
+    textAlign: 'center' as const,
+    paddingVertical: StaticTheme.spacing.md,
+    color: ({ colors }) => colors.onSurfaceVariant,
+    fontSize: ({ fonts }) => fonts.bodyMedium.fontSize,
   },
 });
 

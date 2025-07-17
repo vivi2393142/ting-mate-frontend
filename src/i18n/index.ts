@@ -2,6 +2,7 @@ import i18n from 'i18next';
 import { initReactI18next } from 'react-i18next';
 
 import enUSAccountLinking from '@/i18n/locales/en-US/accountLinking.json';
+import enUSActivityLog from '@/i18n/locales/en-US/activityLog.json';
 import enUSCommon from '@/i18n/locales/en-US/common.json';
 import enUSConnect from '@/i18n/locales/en-US/connect.json';
 import enUSHome from '@/i18n/locales/en-US/home.json';
@@ -12,6 +13,7 @@ import enUSSettings from '@/i18n/locales/en-US/settings.json';
 import enUSTaskForm from '@/i18n/locales/en-US/taskForm.json';
 
 import zhHantTWAccountLinking from '@/i18n/locales/zh-Hant-TW/accountLinking.json';
+import zhHantTWActivityLog from '@/i18n/locales/zh-Hant-TW/activityLog.json';
 import zhHantTWCommon from '@/i18n/locales/zh-Hant-TW/common.json';
 import zhHantTWConnect from '@/i18n/locales/zh-Hant-TW/connect.json';
 import zhHantTWHome from '@/i18n/locales/zh-Hant-TW/home.json';
@@ -32,6 +34,7 @@ export const resources = {
     login: enUSLogin,
     roleSelection: enUSRoleSelection,
     accountLinking: enUSAccountLinking,
+    activityLog: enUSActivityLog,
     routes: enUSRoutes,
   },
   'zh-Hant-TW': {
@@ -43,6 +46,7 @@ export const resources = {
     login: zhHantTWLogin,
     roleSelection: zhHantTWRoleSelection,
     accountLinking: zhHantTWAccountLinking,
+    activityLog: zhHantTWActivityLog,
     routes: zhHantTWRoutes,
   },
 } as const;
@@ -60,6 +64,7 @@ i18n.use(initReactI18next).init({
     'login',
     'roleSelection',
     'accountLinking',
+    'activityLog',
     'routes',
   ],
   defaultNS,

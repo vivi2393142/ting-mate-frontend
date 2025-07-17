@@ -18,6 +18,8 @@ const API_PATH = {
   USER_CAN_GET_LOCATION: '/user/can-get-location',
   SAFE_ZONE: '/safe-zone',
   PLACE_SEARCH: '/places/search',
+  // Activity Log
+  ACTIVITY_LOGS: '/activity-logs',
 };
 
 export default API_PATH;

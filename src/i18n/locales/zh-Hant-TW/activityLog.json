@@ -1,0 +1,38 @@
+{
+  "actions": {
+    "CREATE_TASK": "created a task",
+    "UPDATE_TASK": "updated a task",
+    "UPDATE_TASK_STATUS": "changed task status",
+    "DELETE_TASK": "deleted a task",
+    "CREATE_SHARED_NOTE": "created a shared note",
+    "UPDATE_SHARED_NOTE": "updated a shared note",
+    "DELETE_SHARED_NOTE": "deleted a shared note",
+    "ADD_USER_LINK": "added a user link",
+    "REMOVE_USER_LINK": "removed a user link",
+    "UPDATE_USER_SETTINGS": "updated user settings",
+    "TRANSITION_USER_ROLE": "changed user role",
+    "UPSERT_SAFE_ZONE": "updated safe zone",
+    "DELETE_SAFE_ZONE": "deleted safe zone",
+    "DEFAULT": "performed an action"
+  },
+  "details": {
+    "CREATE_TASK": "Created task: {{taskTitle}}",
+    "UPDATE_TASK": "Updated task: {{taskTitle}}",
+    "UPDATE_TASK_STATUS": "Marked task \"{{taskTitle}}\" as {{status}}",
+    "DELETE_TASK": "Deleted task: {{taskTitle}}",
+    "CREATE_SHARED_NOTE": "Created shared note: {{noteTitle}}",
+    "UPDATE_SHARED_NOTE": "Updated shared note: {{noteTitle}}",
+    "DELETE_SHARED_NOTE": "Deleted shared note: {{noteTitle}}",
+    "ADD_USER_LINK": "Added link with {{linkedUserName}}",
+    "REMOVE_USER_LINK": "Removed link with {{linkedUserName}}",
+    "UPDATE_USER_SETTINGS": "{{description}}",
+    "TRANSITION_USER_ROLE": "Role changed from {{oldRole}} to {{newRole}}",
+    "UPSERT_SAFE_ZONE": "Set safe zone at {{locationName}}",
+    "DELETE_SAFE_ZONE": "Deleted safe zone at {{locationName}}",
+    "DEFAULT": "{{description}}"
+  },
+  "summary": {
+    "singleUser": "{{time}} {{userName}} {{action}}",
+    "multipleUsers": "{{time}} {{userName}} and {{targetUserName}} {{action}}"
+  }
+}

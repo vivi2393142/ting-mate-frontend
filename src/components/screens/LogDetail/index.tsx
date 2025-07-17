@@ -14,6 +14,11 @@ import { createStyles, type StyleRecord } from '@/utils/createStyles';
 import FormInput from '@/components/atoms/FormInput';
 import ScreenContainer from '@/components/atoms/ScreenContainer';
 
+const getText = (text: string | string[]) => {
+  if (Array.isArray(text)) return text.join('');
+  return text;
+};
+
 const LogDetailScreen = () => {
   const { t } = useTranslation('connect');
   const getStackScreenOptions = useStackScreenOptionsHelper();
@@ -22,16 +27,7 @@ const LogDetailScreen = () => {
   const styles = getStyles(theme);
 
   const params = useLocalSearchParams();
-  const { id } = params;
-
-  // TODO: Fetch actual log data by ID
-  const logData = {
-    id: id as string,
-    time: '8:10 AM',
-    date: '2024-01-15', // TODO: Get from actual data
-    text: 'Took medicationTook medicationTook medicationTook medicationTook medicationTook medication',
-    user: 'John Doe',
-  };
+  const { user, date, time, content } = params;
 
   return (
     <Fragment>
@@ -40,21 +36,21 @@ const LogDetailScreen = () => {
         <FormInput
           label={t('User')}
           icon="text.justify.leading"
-          value={logData.user}
+          value={getText(user)}
           valueColor={theme.colors.outline}
           readOnly
         />
         <FormInput
           label={t('Date')}
           icon="calendar"
-          value={logData.date}
+          value={getText(date)}
           valueColor={theme.colors.outline}
           readOnly
         />
         <FormInput
           label={t('Time')}
           icon="clock"
-          value={logData.time}
+          value={getText(time)}
           valueColor={theme.colors.outline}
           readOnly
         />
@@ -64,7 +60,7 @@ const LogDetailScreen = () => {
             dense
             multiline
             readOnly
-            value={logData.text}
+            value={getText(content)}
             mode="outlined"
             outlineColor="transparent"
             activeOutlineColor="transparent"
