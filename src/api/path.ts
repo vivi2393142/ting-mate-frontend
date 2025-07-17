@@ -22,6 +22,9 @@ const API_PATH = {
   ACTIVITY_LOGS: '/activity-logs',
   // Shared Notes
   SHARED_NOTES: '/shared-notes',
+  // Assistant
+  ASSISTANT_VOICE_COMMAND: '/assistant/voice-command',
+  ASSISTANT_EXECUTE_PENDING_TASK: '/assistant/execute-pending-task',
 };
 
 export default API_PATH;

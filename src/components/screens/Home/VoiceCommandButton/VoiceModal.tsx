@@ -4,6 +4,7 @@ import { Animated, FlatList, Modal, Text, View } from 'react-native';
 
 import useAppTheme from '@/hooks/useAppTheme';
 import { StaticTheme } from '@/theme';
+import { TalkRole } from '@/types/assistant';
 import colorWithAlpha from '@/utils/colorWithAlpha';
 import { createStyles, StyleRecord } from '@/utils/createStyles';
 
@@ -15,20 +16,8 @@ import VoiceButton, {
   type VoiceButtonProps,
 } from '@/components/screens/Home/VoiceCommandButton/VoiceButton';
 
-const suggestions = [
-  'Remind me to take my pills at 2 every day',
-  'Change my pill reminder to 4 p.m.',
-  "Can you delete the 'take medicine' task?",
-];
-
 const suggestionHeight = 200;
 const animationDuration = 350;
-
-export enum ConversationRole {
-  USER = 'USER',
-  SYSTEM = 'SYSTEM',
-  LOADING = 'LOADING',
-}
 
 const getVolumeShapeScale = (volume: number) =>
   1 + Math.max(0, Math.min(1, (volume + 60) / 60)) * 2;
@@ -38,7 +27,7 @@ interface VoiceModalProps {
   isRecording: boolean;
   isProcessing: boolean;
   isConfirming?: boolean;
-  conversation: { role: ConversationRole; text: string }[];
+  conversation: { role: TalkRole; text: string }[];
   recorderState: { metering?: number; durationMillis?: number };
   onClose: () => void;
   onVoiceButtonPress: () => void;
@@ -64,9 +53,18 @@ const VoiceModal = ({
 
   const mergedConversation = useMemo(() => {
     const result = [...conversation];
-    if (isProcessing) result.push({ role: ConversationRole.LOADING, text: '...' });
+    if (isProcessing) result.push({ role: TalkRole.LOADING, text: '...' });
     return result;
   }, [conversation, isProcessing]);
+
+  const suggestions = useMemo(
+    () => [
+      t('Remind me to take my pills at 2 every day'),
+      t('Change my pill reminder to 4 p.m.'),
+      t("Can you delete the 'take medicine' task?"),
+    ],
+    [t],
+  );
 
   const [isConfirmed, setIsConfirmed] = useState(false);
   const [isConfirmLoading, setIsConfirmLoading] = useState(false);
@@ -79,12 +77,11 @@ const VoiceModal = ({
       setTimeout(() => {
         setIsConfirmed(false);
         setIsConfirmLoading(false);
-        onClose();
-      }, 1200);
+      }, 2000);
     } catch {
       setIsConfirmLoading(false);
     }
-  }, [onConfirm, onClose]);
+  }, [onConfirm]);
 
   // Animated height for suggestion area
   const heightAnim = useRef(new Animated.Value(suggestionHeight)).current; // Adjust based on chip count and spacing
@@ -117,7 +114,7 @@ const VoiceModal = ({
           style={styles.conversationList}
           contentContainerStyle={styles.conversationContent}
           renderItem={({ item }) =>
-            item.role === ConversationRole.LOADING ? (
+            item.role === TalkRole.LOADING ? (
               <Text style={[styles.conversationItem, styles.conversationItemUser]}>
                 <EllipsisLoading size={6} color={theme.colors.onSurface} />
               </Text>
@@ -125,7 +122,7 @@ const VoiceModal = ({
               <Text
                 style={[
                   styles.conversationItem,
-                  item.role === ConversationRole.USER && styles.conversationItemUser,
+                  item.role === TalkRole.USER && styles.conversationItemUser,
                 ]}
               >
                 {item.text}
@@ -134,31 +131,27 @@ const VoiceModal = ({
           }
         />
         {/* Confirmation */}
-        {isConfirming && (
+        {isConfirming && !isConfirmed && (
           <View style={styles.confirmationContainer}>
-            {isConfirmed ? (
-              <Text style={styles.confirmationText}>{t('Done')}</Text>
-            ) : (
-              <View style={styles.confirmationButtonRow}>
-                <ThemedButton
-                  mode="contained"
-                  color="primary"
-                  style={styles.confirmButton}
-                  onPress={handleConfirm}
-                  loading={isConfirmLoading}
-                >
-                  {t('Yes')}
-                </ThemedButton>
-                <ThemedButton
-                  mode="outlined"
-                  color="error"
-                  style={styles.confirmButton}
-                  onPress={onClose}
-                >
-                  {t('No')}
-                </ThemedButton>
-              </View>
-            )}
+            <View style={styles.confirmationButtonRow}>
+              <ThemedButton
+                mode="contained"
+                color="primary"
+                style={styles.confirmButton}
+                onPress={handleConfirm}
+                loading={isConfirmLoading}
+              >
+                {t('Yes')}
+              </ThemedButton>
+              <ThemedButton
+                mode="outlined"
+                color="error"
+                style={styles.confirmButton}
+                onPress={onClose}
+              >
+                {t('No')}
+              </ThemedButton>
+            </View>
           </View>
         )}
         {/* VoiceButton on modal */}

@@ -4,19 +4,18 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { type ViewStyle } from 'react-native';
 
+import { useAssistantExecutePendingTask, useAssistantVoiceCommand } from '@/api/assistant';
 import useErrorHandler from '@/components/screens/Home/VoiceCommandButton/useErrorHandler';
 import useSoundManager from '@/components/screens/Home/VoiceCommandButton/useSoundManager';
+import { AssistantStatus, type AssistantVoiceCommandOutput, TalkRole } from '@/types/assistant';
 
 import VoiceButton from '@/components/screens/Home/VoiceCommandButton/VoiceButton';
-import VoiceModal, {
-  ConversationRole,
-} from '@/components/screens/Home/VoiceCommandButton/VoiceModal';
+import VoiceModal from '@/components/screens/Home/VoiceCommandButton/VoiceModal';
 
-// Maximum recording duration in milliseconds
-export const MAX_RECORDING_DURATION_MS = 60000;
-
-export const getVolumeShapeScale = (volume: number) =>
-  1 + Math.max(0, Math.min(1, (volume + 60) / 60)) * 2;
+const MAX_RECORDING_DURATION_MS = 60000;
+const MODAL_CLOSE_DURATION_MS = 200;
+const AUTO_CLOSE_DELAY_MS = 2000;
+const PERMISSION_ERROR_DELAY_MS = 1200;
 
 interface VoiceCommandButtonProps {
   style?: ViewStyle;
@@ -24,9 +23,6 @@ interface VoiceCommandButtonProps {
 
 const VoiceCommandButton = ({ style, ...props }: VoiceCommandButtonProps) => {
   const { t } = useTranslation('common');
-
-  // TODO: change to real user ID
-  // const userId = useUserStore((s) => s.user?.email || 'test@example.com');
 
   const audioRecorder = useAudioRecorder({
     ...RecordingPresets.HIGH_QUALITY,
@@ -36,135 +32,210 @@ const VoiceCommandButton = ({ style, ...props }: VoiceCommandButtonProps) => {
 
   const { playStartRecording, playStopRecording, playMessage } = useSoundManager();
   const { handleRecordingError, handlePermissionError } = useErrorHandler();
+  const voiceCommandMutation = useAssistantVoiceCommand();
+  const executePendingTaskMutation = useAssistantExecutePendingTask();
 
   const conversationIdRef = useRef<string | undefined>(undefined);
   const [isRecording, setIsRecording] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
   const [isVoiceModalOpen, setVoiceModalOpen] = useState(false);
-  const [conversation, setConversation] = useState<{ role: ConversationRole; text: string }[]>([]);
+  const [conversation, setConversation] = useState<{ role: TalkRole; text: string }[]>([]);
+  const [isConfirming, setIsConfirming] = useState(false);
 
-  // TODO: change to real API
-  // const mockVoiceCommand = useMockAPI((state) => state.mockVoiceCommand);
-  const [isConfirming] = useState(false);
-
-  // Helper function to add message to conversation with sound and speech
-  const addMessageToConversation = useCallback(
-    (role: ConversationRole, text: string, shouldPlaySound = true, shouldSpeak = true) => {
-      if (shouldPlaySound) {
-        playMessage();
-      }
+  // Conversation management
+  const addToConversation = useCallback(
+    (role: TalkRole, text: string, shouldPlaySound = true, shouldSpeak = true) => {
+      if (shouldPlaySound) playMessage();
       setConversation((prev) => [...prev, { role, text }]);
       if (shouldSpeak) Speech.speak(text, { language: 'en-US' });
     },
     [playMessage],
   );
 
-  const startRecording = useCallback(async () => {
+  const resetConversation = useCallback(() => {
+    setConversation([]);
+    conversationIdRef.current = undefined;
+  }, []);
+
+  const resetAllStates = useCallback(() => {
+    resetConversation();
+    setVoiceModalOpen(false);
+    setIsRecording(false);
+    setIsProcessing(false);
+    setIsConfirming(false);
+  }, [resetConversation]);
+
+  // Audio file processing
+  const retrieveAudioFile = useCallback(async () => {
+    try {
+      await audioRecorder.stop();
+      setIsRecording(false);
+      playStopRecording();
+      setIsProcessing(true);
+      const soundUri = audioRecorder.uri;
+      if (!soundUri) throw new Error('No audio file found.');
+      return soundUri;
+    } catch {
+      const errorMessage = t("Hmm… couldn't hear you. Try again?");
+      addToConversation(TalkRole.SYSTEM, errorMessage, true, true);
+      setIsProcessing(false);
+      setTimeout(resetAllStates, PERMISSION_ERROR_DELAY_MS);
+    }
+  }, [addToConversation, audioRecorder, playStopRecording, resetAllStates, t]);
+
+  // Recording permission handling
+  const requestRecordingPermission = useCallback(async (): Promise<boolean> => {
     try {
       const status = await AudioModule.requestRecordingPermissionsAsync();
       if (!status.granted) {
         handlePermissionError();
-        return;
+        return false;
       }
+      return true;
+    } catch (err) {
+      handleRecordingError('Failed to request recording permissions', () => {
+        if (__DEV__) console.error('Failed to request recording permissions:', err);
+      });
+      return false;
+    }
+  }, [handlePermissionError, handleRecordingError]);
 
-      // Prepare then start recording
+  // Recording operations
+  const startRecording = useCallback(async () => {
+    const hasPermission = await requestRecordingPermission();
+    if (!hasPermission) return;
+
+    try {
       playStartRecording();
       await audioRecorder.prepareToRecordAsync({ isMeteringEnabled: true });
       audioRecorder.record();
       setIsRecording(true);
     } catch (err) {
       handleRecordingError('Failed to start recording', () => {
-        console.error('Failed to start recording:', err);
+        if (__DEV__) console.error('Failed to start recording:', err);
       });
     }
-  }, [audioRecorder, playStartRecording, handlePermissionError, handleRecordingError]);
+  }, [audioRecorder, playStartRecording, requestRecordingPermission, handleRecordingError]);
 
-  const openVoiceModal = useCallback(() => {
-    setConversation([]);
-    setVoiceModalOpen(true);
-    setTimeout(() => startRecording(), 200); // Wait for modal animation to finish
-  }, [startRecording]);
+  // Voice command response handling
+  const handleVoiceCommandSuccess = useCallback(
+    ({ conversationId, status, furtherQuestion, userInput }: AssistantVoiceCommandOutput) => {
+      conversationIdRef.current = conversationId;
+      addToConversation(TalkRole.USER, userInput, true, false);
 
-  const handleCloseVoiceModal = useCallback(() => {
-    setConversation([]);
-    setVoiceModalOpen(false);
-    setIsRecording(false);
-    setIsProcessing(false);
-    conversationIdRef.current = undefined;
-  }, []);
-
-  const stopRecording = useCallback(
-    async (isAutoStop: boolean) => {
-      try {
-        await audioRecorder.stop();
-        setIsRecording(false);
-        playStopRecording();
-        setIsProcessing(true); // Start loading state
-        const soundUri = audioRecorder.uri;
-
-        // Show error message if no audio file found
-        if (!soundUri) {
-          const newMessage = t('No audio file found.');
-          addMessageToConversation(ConversationRole.SYSTEM, newMessage, true, true);
-          setIsProcessing(false);
-          setTimeout(handleCloseVoiceModal, 1200);
-          return;
+      switch (status) {
+        case AssistantStatus.CONFIRMED: {
+          if (furtherQuestion) addToConversation(TalkRole.SYSTEM, furtherQuestion, false, true);
+          setIsConfirming(true);
+          break;
         }
-
-        // Call voice command API
-        console.log('isAutoStop', isAutoStop);
-        // TODO: change to real API
-        // const response = await mockVoiceCommand({
-        //   conversationId: conversationIdRef.current,
-        //   sound: soundUri,
-        //   userId,
-        // });
-        // conversationIdRef.current = response.conversationId;
-
-        // // Process response and update states
-        // const userMessage = `${response.transcript || t('[Voice message]')} ${isAutoStop ? `\n${t('Auto-stopped due to time limit')}` : ''}`;
-        // addMessageToConversation(ConversationRole.USER, userMessage, true, false);
-        // addMessageToConversation(ConversationRole.SYSTEM, response.message, false, true);
-        // setIsProcessing(false);
-
-        // // Finish conversation when status is CONFIRMED or UNKNOWN
-        // if (
-        //   response.status === VoiceCommandStatus.CONFIRMED ||
-        //   response.status === VoiceCommandStatus.UNKNOWN
-        // ) {
-        //   setTimeout(handleCloseVoiceModal, 1500);
-        // }
-      } catch {
-        // Show error message if failed to stop recording
-        const newMessage = t('Failed to stop recording.');
-        addMessageToConversation(ConversationRole.SYSTEM, newMessage, true, true);
-        setIsProcessing(false);
-        setTimeout(handleCloseVoiceModal, 1200);
+        case AssistantStatus.INCOMPLETE: {
+          if (furtherQuestion) addToConversation(TalkRole.SYSTEM, furtherQuestion, false, true);
+          break;
+        }
+        case AssistantStatus.FAILED: {
+          const errorMessage = t('Sorry, didn’t catch that. Try create, update, or delete a task.');
+          addToConversation(TalkRole.SYSTEM, errorMessage, false, true);
+          setTimeout(resetAllStates, AUTO_CLOSE_DELAY_MS);
+          break;
+        }
       }
     },
-    [audioRecorder, handleCloseVoiceModal, t, playStopRecording, addMessageToConversation],
+    [addToConversation, resetAllStates, t],
   );
 
+  const handleVoiceCommandError = useCallback(
+    (error: Error) => {
+      if (__DEV__) console.error('Voice command error:', error);
+      const errorMessage = t('Oops, something went wrong! Please try again.');
+      addToConversation(TalkRole.SYSTEM, errorMessage, true, true);
+    },
+    [addToConversation, t],
+  );
+
+  const stopRecording = useCallback(async () => {
+    const audioUri = await retrieveAudioFile();
+    if (!audioUri) {
+      const errorMessage = t("Hmm… couldn't hear you. Try again?");
+      addToConversation(TalkRole.SYSTEM, errorMessage, true, true);
+      setIsProcessing(false);
+      setTimeout(resetAllStates, PERMISSION_ERROR_DELAY_MS);
+      return;
+    }
+
+    voiceCommandMutation.mutate(
+      {
+        conversationId: conversationIdRef.current,
+        audioUri,
+      },
+      {
+        onSuccess: handleVoiceCommandSuccess,
+        onError: handleVoiceCommandError,
+        onSettled: () => setIsProcessing(false),
+      },
+    );
+  }, [
+    retrieveAudioFile,
+    voiceCommandMutation,
+    handleVoiceCommandSuccess,
+    handleVoiceCommandError,
+    t,
+    addToConversation,
+    resetAllStates,
+  ]);
+
+  // Task execution handling
+  const handleConfirm = useCallback(() => {
+    if (!conversationIdRef.current) return;
+
+    executePendingTaskMutation.mutate(
+      {
+        conversationId: conversationIdRef.current,
+      },
+      {
+        onSuccess: () => {
+          const successMessage = t("Done! I've updated that for you.");
+          addToConversation(TalkRole.SYSTEM, successMessage, false, true);
+          setTimeout(resetAllStates, AUTO_CLOSE_DELAY_MS);
+        },
+        onError: (error) => {
+          if (__DEV__) console.log('Execute task error:', error);
+          const errorMessage = t('Oops, something went wrong! Please try again.');
+          addToConversation(TalkRole.SYSTEM, errorMessage, false, true);
+        },
+      },
+    );
+  }, [addToConversation, executePendingTaskMutation, resetAllStates, t]);
+
+  // Modal management
+  const openVoiceModal = useCallback(() => {
+    resetConversation();
+    setVoiceModalOpen(true);
+    setTimeout(() => startRecording(), MODAL_CLOSE_DURATION_MS);
+  }, [startRecording, resetConversation]);
+
+  const closeVoiceModal = useCallback(() => {
+    resetAllStates();
+  }, [resetAllStates]);
+
+  // Button handlers
   const handleVoiceButtonPress = useCallback(() => {
     openVoiceModal();
   }, [openVoiceModal]);
 
   const handleModalVoiceButtonPress = useCallback(async () => {
     if (isRecording) {
-      await stopRecording(false);
+      await stopRecording();
     } else {
       await startRecording();
     }
   }, [isRecording, startRecording, stopRecording]);
 
-  const handleConfirm = useCallback(() => {
-    // TODO: Call API to confirm task
-  }, []);
-
+  // Auto-stop recording effect
   useEffect(() => {
     if (isRecording) {
       const isAutoStop = (recorderState.durationMillis || 0) >= MAX_RECORDING_DURATION_MS;
-      if (isAutoStop) stopRecording(true);
+      if (isAutoStop) stopRecording();
     }
   }, [isRecording, stopRecording, recorderState.durationMillis]);
 
@@ -172,7 +243,7 @@ const VoiceCommandButton = ({ style, ...props }: VoiceCommandButtonProps) => {
     <VoiceButton
       isRecording={false}
       onPress={handleVoiceButtonPress}
-      disabled={isConfirming}
+      disabled={isConfirming || isProcessing}
       style={style}
       {...props}
     />
@@ -183,7 +254,7 @@ const VoiceCommandButton = ({ style, ...props }: VoiceCommandButtonProps) => {
       isProcessing={isProcessing}
       conversation={conversation}
       recorderState={recorderState}
-      onClose={handleCloseVoiceModal}
+      onClose={closeVoiceModal}
       onVoiceButtonPress={handleModalVoiceButtonPress}
       voiceButtonProps={props}
       isConfirming={isConfirming}
