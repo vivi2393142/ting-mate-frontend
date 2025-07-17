@@ -1,3 +1,4 @@
+import dayjs from 'dayjs';
 import { router } from 'expo-router';
 import { useCallback, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -11,7 +12,7 @@ import {
   useGetLinkedLocation,
   useGetLinkedSafeZone,
 } from '@/api/userLocations';
-import { LOCATION_SYNC_REFRESH_INTERVAL } from '@/constants';
+import { LAST_UPDATE_DATETIME_FORMAT, LOCATION_SYNC_REFRESH_INTERVAL } from '@/constants';
 import ROUTES from '@/constants/routes';
 import useAppTheme from '@/hooks/useAppTheme';
 import { useLocationPermission } from '@/hooks/useLocationPermission';
@@ -567,7 +568,10 @@ const LocationSection = () => {
         {/* Last Update Time and Refresh Button */}
         <View style={styles.updateWrapper}>
           <Text style={styles.updateText}>
-            {t('Last updated:')} {location.lastUpdate}
+            {t('Last updated:')}{' '}
+            {location.lastUpdate
+              ? dayjs(location.lastUpdate).format(LAST_UPDATE_DATETIME_FORMAT)
+              : '--'}
           </Text>
           <ThemedIconButton
             name={isLoadingLocation ? 'arrow.clockwise.circle' : 'arrow.clockwise'}
@@ -638,7 +642,7 @@ const getStyles = createStyles<
   >
 >({
   container: {
-    gap: StaticTheme.spacing.sm,
+    gap: StaticTheme.spacing.xs * 1.5,
   },
   mapContainer: {
     height: 150,

@@ -1,4 +1,4 @@
-import { useInfiniteQuery, useQuery, type UseQueryOptions } from '@tanstack/react-query';
+import { useQuery, type UseQueryOptions } from '@tanstack/react-query';
 import { z } from 'zod';
 
 import { axiosClientWithAuth } from '@/api/axiosClient';
@@ -122,6 +122,10 @@ type APILogUserInfo = z.infer<typeof APILogUserInfoSchema>;
 type APIActivityLog = z.infer<typeof APIActivityLogSchema>;
 type APIActivityLogListResponse = z.infer<typeof APIActivityLogListResponseSchema>;
 
+interface FullActivityLogFilter extends ActivityLogFilter {
+  actions: Action[];
+}
+
 /* =============================================================================
  * Data Transform Functions
  * ============================================================================= */
@@ -183,7 +187,7 @@ const transformActivityLogListFromAPI = (
 });
 
 /* =============================================================================
- * Utility Functions
+ * Utility Functions and Constants
  * ============================================================================= */
 
 // Safely validate and transform activity log list response
@@ -197,6 +201,18 @@ const safeTransformActivityLogList = (rawData: unknown): ActivityLogListResponse
   }
 };
 
+const logActionsFilter: FullActivityLogFilter['actions'] = [
+  Action.CREATE_TASK,
+  Action.UPDATE_TASK,
+  Action.UPDATE_TASK_STATUS,
+  Action.DELETE_TASK,
+  Action.CREATE_SHARED_NOTE,
+  Action.UPDATE_SHARED_NOTE,
+  Action.DELETE_SHARED_NOTE,
+  Action.ADD_USER_LINK,
+  Action.REMOVE_USER_LINK,
+];
+
 /* =============================================================================
  * API Functions
  * ============================================================================= */
@@ -206,17 +222,10 @@ const getActivityLogs = async (
 ): Promise<ActivityLogListResponse> => {
   const params = new URLSearchParams();
 
-  if (filter.actions && filter.actions.length > 0) {
-    filter.actions.forEach((action) => params.append('actions', action));
-  }
+  logActionsFilter.forEach((action) => params.append('actions', action));
 
-  if (filter.limit) {
-    params.append('limit', filter.limit.toString());
-  }
-
-  if (filter.offset) {
-    params.append('offset', filter.offset.toString());
-  }
+  if (filter.limit) params.append('limit', filter.limit.toString());
+  if (filter.offset) params.append('offset', filter.offset.toString());
 
   const response = await axiosClientWithAuth.get(`${API_PATH.ACTIVITY_LOGS}?${params.toString()}`);
   const transformedData = safeTransformActivityLogList(response.data);
@@ -246,29 +255,3 @@ export const useGetActivityLogs = (
     },
     ...options,
   });
-
-export const useInfiniteActivityLogs = (
-  filter: ActivityLogFilter = {},
-  options?: Omit<
-    Parameters<typeof useInfiniteQuery<ActivityLogListResponse, Error>>[0],
-    'queryKey' | 'queryFn' | 'getNextPageParam' | 'initialPageParam'
-  >,
-) => {
-  return useInfiniteQuery<ActivityLogListResponse, Error>({
-    queryKey: ['activityLogs', filter.actions],
-    queryFn: async (context) => {
-      const pageParam = typeof context.pageParam === 'number' ? context.pageParam : 0;
-      return getActivityLogs({
-        ...filter,
-        offset: pageParam,
-        limit: filter.limit,
-      });
-    },
-    initialPageParam: 0,
-    getNextPageParam: (lastPage) => {
-      if (lastPage.hasMore) return lastPage.offset + lastPage.limit;
-      return undefined;
-    },
-    ...options,
-  });
-};

@@ -73,7 +73,6 @@ export interface ActivityLog {
 }
 
 export interface ActivityLogFilter {
-  actions?: Action[];
   limit?: number;
   offset?: number;
 }

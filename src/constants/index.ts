@@ -59,6 +59,11 @@ export const DATE_FORMAT = 'YYYY-MM-DD';
 /** DateTime format for display */
 export const DATETIME_FORMAT = 'YYYY-MM-DD HH:mm';
 
+/** Use these for all last update, log, note, and location timestamps */
+export const LAST_UPDATE_DATETIME_FORMAT = 'YYYY-MM-DD HH:mm:ss';
+export const LOG_DATE_FORMAT = 'MMM D, YYYY';
+export const LOG_TIME_FORMAT = 'h:mm A';
+
 // ============================================================================
 // Validation Constants
 // ============================================================================
