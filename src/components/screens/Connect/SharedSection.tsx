@@ -7,11 +7,17 @@ import { ScrollView, Text, View } from 'react-native';
 import { TouchableRipple } from 'react-native-paper';
 
 import { useInfiniteActivityLogs } from '@/api/activityLog';
+import { useGetSharedNotes } from '@/api/sharedNote';
 import ROUTES from '@/constants/routes';
 import useAppTheme from '@/hooks/useAppTheme';
 import { useLogTranslation } from '@/hooks/useLogTranslation';
 import { StaticTheme } from '@/theme';
-import { Action, type ActivityLogFilter, type ActivityLogResponse } from '@/types/connect';
+import {
+  Action,
+  type ActivityLogFilter,
+  type ActivityLogResponse,
+  type SharedNote,
+} from '@/types/connect';
 import colorWithAlpha from '@/utils/colorWithAlpha';
 import { createStyles, type StyleRecord } from '@/utils/createStyles';
 
@@ -27,11 +33,17 @@ enum TabType {
   NOTE = 'NOTE',
 }
 
-interface NoteEntry {
-  id: number;
-  name: string;
-  text: string;
-}
+const logActionsFilter: ActivityLogFilter['actions'] = [
+  Action.CREATE_TASK,
+  Action.UPDATE_TASK,
+  Action.UPDATE_TASK_STATUS,
+  Action.DELETE_TASK,
+  Action.CREATE_SHARED_NOTE,
+  Action.UPDATE_SHARED_NOTE,
+  Action.DELETE_SHARED_NOTE,
+  Action.ADD_USER_LINK,
+  Action.REMOVE_USER_LINK,
+];
 
 interface ContentContainerProps {
   isExpanded: boolean;
@@ -103,28 +115,6 @@ const ChipItem = ({ label, description, onPress }: ChipItemProps) => {
   );
 };
 
-const logActionsFilter: ActivityLogFilter['actions'] = [
-  Action.CREATE_TASK,
-  Action.UPDATE_TASK,
-  Action.UPDATE_TASK_STATUS,
-  Action.DELETE_TASK,
-  Action.CREATE_SHARED_NOTE,
-  Action.UPDATE_SHARED_NOTE,
-  Action.DELETE_SHARED_NOTE,
-  Action.ADD_USER_LINK,
-  Action.REMOVE_USER_LINK,
-];
-
-// TODO: change to real data
-const mockNoteCount = 5;
-const mockNotes: NoteEntry[] = [
-  { id: 1, name: 'Note 1', text: 'Keep tea on lower shelf for easy access and easy access' },
-  { id: 2, name: 'Note 2', text: 'Doctor visit this Saturday at 10 AM' },
-  { id: 3, name: 'Note 3', text: 'Remember to refill prescription' },
-  { id: 4, name: 'Note 4', text: 'Call pharmacy about delivery' },
-  { id: 5, name: 'Note 5', text: 'Schedule follow-up appointment' },
-];
-
 const SharedSection = () => {
   const theme = useAppTheme();
   const styles = getStyles(theme);
@@ -135,39 +125,31 @@ const SharedSection = () => {
   const [isExpanded, setIsExpanded] = useState(false);
   const [activeTab, setActiveTab] = useState<TabType>(TabType.LOG);
 
-  const filter: ActivityLogFilter = useMemo(
-    () => ({
-      actions: logActionsFilter,
-      limit: LOGS_PER_PAGE,
-    }),
-    [],
-  );
   const {
     data: activityLogsPages,
     isLoading: isLoadingLogs,
     isFetching: isFetchingLogs,
     fetchNextPage,
     hasNextPage,
-  } = useInfiniteActivityLogs(filter);
-
+  } = useInfiniteActivityLogs({
+    actions: logActionsFilter,
+    limit: LOGS_PER_PAGE,
+  });
   const logs = useMemo(
     () => activityLogsPages?.pages.flatMap((page) => page.logs) || [],
     [activityLogsPages],
   );
-
-  const visibleLogCtn = isExpanded ? logs.length : Math.min(MIN_ITEM_COUNT, logs.length);
-  const visibleLogs = useMemo(() => logs.slice(0, visibleLogCtn), [logs, visibleLogCtn]);
   const hasMoreLogs = hasNextPage;
+
+  const {
+    data: sharedNotesData,
+    isLoading: isLoadingNotes,
+    isFetching: isFetchingNotes,
+  } = useGetSharedNotes();
+  const notes = useMemo(() => sharedNotesData?.notes ?? [], [sharedNotesData]);
 
   const handleToggleExpanded = useCallback(() => {
     setIsExpanded((prev) => !prev);
-  }, []);
-
-  const handleAddNote = useCallback(() => {
-    router.push({
-      pathname: ROUTES.NOTE_EDIT,
-      params: { from: ROUTES.CONNECT },
-    });
   }, []);
 
   const handleLogPress = useCallback(
@@ -187,28 +169,26 @@ const SharedSection = () => {
     [formatLogText],
   );
 
-  const handleNotePress = useCallback((note: NoteEntry) => {
+  const handleLoadMoreLogs = useCallback(() => {
+    if (hasMoreLogs && !isFetchingLogs) fetchNextPage();
+  }, [hasMoreLogs, isFetchingLogs, fetchNextPage]);
+
+  const handleNotePress = useCallback((note: SharedNote) => {
     router.push({
       pathname: ROUTES.NOTE_EDIT,
       params: {
-        id: note.id.toString(),
+        id: note.id,
         from: ROUTES.CONNECT,
       },
     });
   }, []);
 
-  const handleLoadMoreLogs = useCallback(() => {
-    if (hasMoreLogs && !isFetchingLogs) fetchNextPage();
-  }, [hasMoreLogs, isFetchingLogs, fetchNextPage]);
-
-  const handleLoadMoreNotes = useCallback(() => {
-    console.log('Fetch more notes');
+  const handleAddNote = useCallback(() => {
+    router.push({
+      pathname: ROUTES.NOTE_EDIT,
+      params: { from: ROUTES.CONNECT },
+    });
   }, []);
-
-  const visibleNoteCtn = isExpanded ? mockNoteCount : MIN_ITEM_COUNT;
-  const visibleNotes = useMemo(() => mockNotes.slice(0, visibleNoteCtn), [visibleNoteCtn]);
-
-  const hasMoreNotes = mockNoteCount < mockNotes.length;
 
   const tabs = [
     {
@@ -259,36 +239,54 @@ const SharedSection = () => {
                 </View>
               )}
               {!isLoadingLogs &&
-                visibleLogs.map((log) => (
-                  <ChipItem
-                    key={log.id}
-                    label={dayjs(log.timestamp).format('h:mm A')}
-                    description={formatLogText(log, 'summary')}
-                    onPress={() => handleLogPress(log)}
-                  />
-                ))}
-              {!isLoadingLogs && !visibleLogs.length && (
+                logs.map((log, idx) =>
+                  isExpanded || idx < MIN_ITEM_COUNT ? (
+                    <ChipItem
+                      key={log.id}
+                      label={dayjs(log.timestamp).format('h:mm A')}
+                      description={formatLogText(log, 'summary')}
+                      onPress={() => handleLogPress(log)}
+                    />
+                  ) : null,
+                )}
+              {!isLoadingLogs && !logs.length && (
                 <Text style={styles.contentNoteText}>{t('No Log Found')}</Text>
               )}
             </ContentContainer>
           )}
           {activeTab === TabType.NOTE && (
             <Fragment>
-              <ContentContainer
-                isExpanded={isExpanded}
-                hasMoreItems={hasMoreNotes}
-                onLoadMore={handleLoadMoreNotes}
-              >
-                {visibleNotes.map((note) => (
-                  <ChipItem
-                    key={note.id}
-                    label={note.name}
-                    description={note.text}
-                    onPress={() => handleNotePress(note)}
-                  />
-                ))}
+              <ContentContainer isExpanded={isExpanded} isLoading={isFetchingNotes}>
+                {isLoadingNotes && (
+                  <View style={styles.loadingContainer}>
+                    {Array.from({ length: 3 }).map((_, index) => (
+                      <Skeleton key={index} width={'100%'} height={28} variant="rectangular" />
+                    ))}
+                  </View>
+                )}
+                {!isLoadingNotes &&
+                  notes.map((note, idx) =>
+                    isExpanded || idx < MIN_ITEM_COUNT ? (
+                      <ChipItem
+                        key={note.id}
+                        label={note.title}
+                        description={note.content || ''}
+                        onPress={() => handleNotePress(note)}
+                      />
+                    ) : null,
+                  )}
+                {!isLoadingNotes && !notes.length && (
+                  <View style={styles.contentNoteTextContainer}>
+                    <Text style={styles.contentNoteText}>{t('No Note Found')}</Text>
+                    <ThemedIconButton
+                      name="plus.circle.fill"
+                      size="large"
+                      onPress={handleAddNote}
+                    />
+                  </View>
+                )}
               </ContentContainer>
-              {isExpanded && (
+              {isExpanded && notes.length !== 0 && (
                 <ThemedIconButton
                   name="plus.circle.fill"
                   size="large"
@@ -318,7 +316,8 @@ const getStyles = createStyles<
     | 'chipContent'
     | 'loadMoreButton'
     | 'addNoteButton'
-    | 'loadingContainer',
+    | 'loadingContainer'
+    | 'contentNoteTextContainer',
     'tabText' | 'activeTabText' | 'contentNoteText' | 'chipLabel' | 'chipDesc' | 'loadingText'
   >
 >({
@@ -360,6 +359,12 @@ const getStyles = createStyles<
   },
   contentAreaExpanded: {
     height: 180,
+  },
+  contentNoteTextContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: StaticTheme.spacing.xs,
   },
   contentNoteText: {
     fontSize: ({ fonts }) => fonts.bodyLarge.fontSize,

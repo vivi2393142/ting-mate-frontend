@@ -211,10 +211,6 @@ export const useUpdateTask = () => {
         recurrence?: RecurrenceRule;
       };
     }): Promise<Task> => {
-      console.log({
-        taskId,
-        updates,
-      });
       const requestData = transformTaskFormDataToAPI(updates);
 
       const res = await axiosClientWithAuth.put(`/tasks/${taskId}`, requestData);

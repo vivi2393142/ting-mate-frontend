@@ -20,6 +20,8 @@ const API_PATH = {
   PLACE_SEARCH: '/places/search',
   // Activity Log
   ACTIVITY_LOGS: '/activity-logs',
+  // Shared Notes
+  SHARED_NOTES: '/shared-notes',
 };
 
 export default API_PATH;
