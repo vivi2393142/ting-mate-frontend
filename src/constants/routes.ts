@@ -13,6 +13,7 @@ const ROUTES = {
   LOG_DETAIL: '/log-detail',
   NOTE_EDIT: '/note-edit',
   EDIT_SAFE_ZONE: '/edit-safe-zone',
+  NOTIFICATIONS: '/notifications',
 } as const;
 
 export type Route = (typeof ROUTES)[keyof typeof ROUTES];

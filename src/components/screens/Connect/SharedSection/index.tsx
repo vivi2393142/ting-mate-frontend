@@ -33,12 +33,12 @@ const SharedSection = () => {
 
   const tabs = [
     {
-      label: t('Shared Log'),
-      type: TabType.LOG,
-    },
-    {
       label: t('Shared Note'),
       type: TabType.NOTE,
+    },
+    {
+      label: t('Shared Log'),
+      type: TabType.LOG,
     },
   ];
 
@@ -63,8 +63,8 @@ const SharedSection = () => {
             </TouchableRipple>
           ))}
         </View>
-        {activeTab === TabType.LOG && <SharedLogContent isExpanded={isExpanded} />}
         {activeTab === TabType.NOTE && <SharedNoteContent isExpanded={isExpanded} />}
+        {activeTab === TabType.LOG && <SharedLogContent isExpanded={isExpanded} />}
       </View>
     </SectionContainer>
   );

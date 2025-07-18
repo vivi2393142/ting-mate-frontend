@@ -11,6 +11,7 @@
   "/log-detail": "Log Detail",
   "/login": "Login",
   "/note-edit": "Edit Note",
+  "/notifications": "Notifications",
   "/role-selection": "Role Selection",
   "/settings": "Settings"
 }

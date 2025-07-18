@@ -22,6 +22,7 @@ import ScreenContainer from '@/components/atoms/ScreenContainer';
 import Skeleton from '@/components/atoms/Skeleton';
 import ThemedButton from '@/components/atoms/ThemedButton';
 import ExpandableSectionHeader from '@/components/screens/Home/ExpandableSectionHeader';
+import NotificationCenterButton from '@/components/screens/Home/NotificationCenterButton';
 import OtherTaskListItem from '@/components/screens/Home/OtherTaskListItem';
 import TaskListItem from '@/components/screens/Home/TaskListItem';
 
@@ -207,6 +208,9 @@ const HomeScreen = () => {
             </Text>
           </View>
         )}
+        {userDisplayMode === UserDisplayMode.FULL && (
+          <NotificationCenterButton style={styles.notificationButton} />
+        )}
       </View>
       {isLoading && (
         <View style={styles.loadingContainer}>
@@ -313,7 +317,8 @@ const getStyles = createStyles<
     | 'loadingContainer'
     | 'emptyContainer'
     | 'noLinkContainer'
-    | 'warningContainer',
+    | 'warningContainer'
+    | 'notificationButton',
     'headline' | 'linkedUserText' | 'hintText' | 'warmingIcon' | 'warningText'
   >,
   StyleParams
@@ -391,5 +396,8 @@ const getStyles = createStyles<
     fontWeight: ({ fonts }) => fonts.bodyMedium.fontWeight,
     lineHeight: ({ fonts }) => fonts.bodyMedium.lineHeight,
     color: ({ colors }) => colors.outline,
+  },
+  notificationButton: {
+    marginLeft: 'auto',
   },
 });

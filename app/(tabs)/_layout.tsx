@@ -1,8 +1,8 @@
 import { Tabs, usePathname } from 'expo-router';
-import { useTranslation } from 'react-i18next';
 import { StyleSheet } from 'react-native';
 
 import useAppTheme from '@/hooks/useAppTheme';
+import useRouteTranslation from '@/hooks/useRouteTranslation';
 import { StaticTheme } from '@/theme';
 
 import IconSymbol from '@/components/atoms/IconSymbol';
@@ -12,23 +12,23 @@ import ROUTES from '@/constants/routes';
 const tabScreensSettings = [
   {
     name: 'connect',
-    titleKey: 'Connect',
+    titleKey: ROUTES.CONNECT,
     iconName: 'person.2.fill',
   },
   {
     name: 'index',
-    titleKey: 'Home',
+    titleKey: ROUTES.HOME,
     iconName: 'house.fill',
   },
   {
     name: 'settings',
-    titleKey: 'Settings',
+    titleKey: ROUTES.SETTINGS,
     iconName: 'gearshape.fill',
   },
 ] as const;
 
 const TabLayout = () => {
-  const { t } = useTranslation('common');
+  const { tRoutes } = useRouteTranslation();
   const theme = useAppTheme();
 
   const pathName = usePathname();
@@ -51,28 +51,11 @@ const TabLayout = () => {
                 fontSize: theme.fonts.labelSmall.fontSize,
                 lineHeight: theme.fonts.labelSmall.lineHeight,
               },
-              title: showVoiceButton ? '' : t(titleKey),
-              tabBarAccessibilityLabel: showVoiceButton ? '' : t(titleKey),
+              title: showVoiceButton ? '' : tRoutes(titleKey),
+              tabBarAccessibilityLabel: showVoiceButton ? '' : tRoutes(titleKey),
               tabBarIcon: ({ color }) =>
                 showVoiceButton ? (
-                  <VoiceCommandButton
-                    style={styles.floatingButton}
-                    onStopRecording={() => {
-                      // TODO: send audio to backend
-                      // const formData = new FormData();
-                      // formData.append('audio', {
-                      //   uri,
-                      //   type: 'audio/m4a',
-                      //   name: 'recording.m4a',
-                      // });
-                      // const response = await fetch('YOUR_BACKEND_API', {
-                      //   method: 'POST',
-                      //   body: formData,
-                      // });
-                      // const { transcript, result } = await response.json();
-                      // console.log({ transcript, result });
-                    }}
-                  />
+                  <VoiceCommandButton style={styles.floatingButton} />
                 ) : (
                   <IconSymbol name={iconName} color={color} size={StaticTheme.iconSize.l} />
                 ),
