@@ -140,11 +140,15 @@ const HomeScreen = () => {
     setIsStackExpanded((prev) => !prev);
   }, []);
 
-  const handleCheckboxPress = (taskId: string, newStatus: boolean) => () => {
+  const handleCheckboxPress = (taskId: string, oldStatus: boolean) => () => {
     if (isStackExpanded) {
-      handleUpdateTaskStatus(taskId, newStatus);
+      handleUpdateTaskStatus(taskId, !oldStatus);
     } else {
-      handleStackPress();
+      if (oldStatus) {
+        handleStackPress();
+      } else {
+        handleUpdateTaskStatus(taskId, !oldStatus);
+      }
     }
   };
 
@@ -249,7 +253,7 @@ const HomeScreen = () => {
                   recurrenceText={recurrenceText}
                   shouldShowRecurrence={shouldShowRecurrence}
                   onPress={handleListItemPress(task.id)}
-                  onCheck={handleCheckboxPress(task.id, !task.completed)}
+                  onCheck={handleCheckboxPress(task.id, task.completed)}
                   onStackPress={handleStackPress}
                 />
                 {isLastCompleted && isStackExpanded && (
