@@ -1,7 +1,7 @@
 import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 
-import { List, Text } from 'react-native-paper';
+import { List } from 'react-native-paper';
 
 import useAppTheme from '@/hooks/useAppTheme';
 import { useUserTextSize } from '@/store/useUserStore';
@@ -11,6 +11,8 @@ import { UserTextSize } from '@/types/user';
 import colorWithAlpha from '@/utils/colorWithAlpha';
 import { createStyles, type StyleRecord } from '@/utils/createStyles';
 import { formatReminderTime } from '@/utils/taskUtils';
+
+import ThemedText from '@/components/atoms/ThemedText';
 
 interface OtherTaskListItemProps extends Task {
   recurrenceText?: string;
@@ -43,8 +45,12 @@ const OtherTaskListItem = ({
           ? `${recurrenceText} • ${t('Next Occurrence')}: ${nextOccurrence}`
           : recurrenceText
       }
-      left={() => <Text style={styles.listIcon}>{icon}</Text>}
-      right={() => <Text style={styles.otherTaskTime}>{formatReminderTime(reminderTime)}</Text>}
+      left={() => <ThemedText style={styles.listIcon}>{icon}</ThemedText>}
+      right={() => (
+        <ThemedText variant="bodyMedium" color="onSurfaceVariant" style={styles.otherTaskTime}>
+          {formatReminderTime(reminderTime)}
+        </ThemedText>
+      )}
       style={styles.otherTaskItem}
       titleStyle={styles.listItemTitle}
       descriptionStyle={styles.recurrenceDesc}
@@ -89,9 +95,6 @@ const getStyles = createStyles<
     borderRadius: StaticTheme.borderRadius.s,
   },
   otherTaskTime: {
-    fontSize: ({ fonts }) => fonts.bodyMedium.fontSize,
-    fontWeight: ({ fonts }) => fonts.bodyMedium.fontWeight,
-    color: ({ colors }) => colors.onSurfaceVariant,
     margin: 'auto',
   },
 });

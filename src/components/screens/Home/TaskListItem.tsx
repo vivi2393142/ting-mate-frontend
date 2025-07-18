@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
 
-import { List, Text } from 'react-native-paper';
+import { List } from 'react-native-paper';
 
 import useAppTheme from '@/hooks/useAppTheme';
 import { useUserTextSize } from '@/store/useUserStore';
@@ -12,6 +12,7 @@ import { createStyles, type StyleRecord } from '@/utils/createStyles';
 import { formatReminderTime } from '@/utils/taskUtils';
 
 import ThemedCheckbox from '@/components/atoms/ThemedCheckbox';
+import ThemedText from '@/components/atoms/ThemedText';
 import ThemedView from '@/components/atoms/ThemedView';
 
 interface TaskListItemProps extends Task {
@@ -49,12 +50,16 @@ const TaskListItem = ({
     <List.Item
       title={title}
       description={shouldShowRecurrence ? recurrenceText : undefined}
-      left={() => <Text style={styles.listIcon}>{icon}</Text>}
+      left={() => <ThemedText style={styles.listIcon}>{icon}</ThemedText>}
       right={() => (
         <ThemedView style={styles.timeAndCheckContainer}>
-          <Text style={[styles.timeText, isMissed && styles.timeTextMissed]} variant="titleSmall">
+          <ThemedText
+            style={styles.timeText}
+            variant="titleSmall"
+            color={isMissed ? 'error' : 'onSurface'}
+          >
             {formatReminderTime(reminderTime)}
-          </Text>
+          </ThemedText>
           <ThemedCheckbox status={completed ? 'checked' : 'unchecked'} onPress={onCheck} />
         </ThemedView>
       )}
@@ -90,12 +95,7 @@ const getStyles = createStyles<
     | 'listItemStackedLast'
     | 'listItemContainerDone'
     | 'timeAndCheckContainer',
-    | 'listItemTitle'
-    | 'listItemTitleMissed'
-    | 'timeText'
-    | 'timeTextMissed'
-    | 'listIcon'
-    | 'recurrenceDesc'
+    'listItemTitle' | 'listItemTitleMissed' | 'timeText' | 'listIcon' | 'recurrenceDesc'
   >,
   StyleParams
 >({
@@ -154,10 +154,6 @@ const getStyles = createStyles<
   },
   timeText: {
     margin: 'auto',
-  },
-  timeTextMissed: {
-    color: ({ colors }) => colors.error,
-    fontWeight: 'bold',
   },
   recurrenceDesc: {
     fontSize: ({ fonts }) => fonts.bodySmall.fontSize,

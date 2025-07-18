@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react';
 import type { GestureResponderEvent, ViewStyle } from 'react-native';
 import { View } from 'react-native';
-import { Text, TextInput, TouchableRipple, type TextInputProps } from 'react-native-paper';
+import { TextInput, TouchableRipple, type TextInputProps } from 'react-native-paper';
 
 import useAppTheme from '@/hooks/useAppTheme';
 import { useUserTextSize } from '@/store/useUserStore';
@@ -10,6 +10,7 @@ import { UserTextSize } from '@/types/user';
 import { createStyles, type StyleRecord } from '@/utils/createStyles';
 
 import IconSymbol, { type IconName } from '@/components/atoms/IconSymbol';
+import ThemedText from '@/components/atoms/ThemedText';
 import ThemedView from '@/components/atoms/ThemedView';
 
 interface MultiLineButtonProps {
@@ -49,7 +50,7 @@ const MultiLineButton = ({
     >
       <View style={styles.content}>
         <View style={styles.textContainer}>
-          <Text
+          <ThemedText
             style={[
               styles.text,
               valueAlign === 'right' && styles.textAlignRight,
@@ -58,7 +59,7 @@ const MultiLineButton = ({
             {...textProps}
           >
             {children || placeholder}
-          </Text>
+          </ThemedText>
         </View>
         {icon && (
           <IconSymbol
@@ -188,9 +189,11 @@ const FormInput = ({
             rest.valueAlign === 'right' && styles.labelContainerAlignRight,
           ]}
         >
-          <Text style={styles.label}>{label}</Text>
+          <ThemedText>{label}</ThemedText>
           {rest.valueAlign === 'right' && helperText && (
-            <Text style={styles.helperText}>{helperText}</Text>
+            <ThemedText variant="bodySmall" color="outline" style={styles.helperText}>
+              {helperText}
+            </ThemedText>
           )}
         </ThemedView>
         <Input dense={dense} {...rest} />
@@ -230,9 +233,6 @@ const getMultiLineButtonStyles = createStyles<
     alignItems: 'center',
     flexWrap: 'wrap',
     marginVertical: 'auto',
-    color: ({ colors }) => colors.onSurface,
-    fontSize: ({ fonts }) => fonts.bodyLarge.fontSize,
-    fontWeight: ({ fonts }) => fonts.bodyLarge.fontWeight,
   },
   textAlignRight: {
     textAlign: 'right',
@@ -256,7 +256,7 @@ const getStyles = createStyles<
     | 'inputContainerNoDense'
     | 'labelContainer'
     | 'labelContainerAlignRight',
-    'label' | 'input' | 'inputAlignRight' | 'contentStyle' | 'helperText'
+    'input' | 'inputAlignRight' | 'contentStyle' | 'helperText'
   >,
   StyleParams
 >({
@@ -298,13 +298,7 @@ const getStyles = createStyles<
   labelContainerAlignRight: {
     flex: 1,
   },
-  label: {
-    fontSize: ({ fonts }) => fonts.bodyLarge.fontSize,
-    color: ({ colors }) => colors.onSurface,
-  },
   helperText: {
-    fontSize: ({ fonts }) => fonts.bodySmall.fontSize,
-    color: ({ colors }) => colors.outline,
     flexGrow: 0,
   },
   input: {

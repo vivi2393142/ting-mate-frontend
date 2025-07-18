@@ -3,7 +3,7 @@ import { router } from 'expo-router';
 import { useCallback, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
-import { Alert, Text, View } from 'react-native';
+import { Alert, View } from 'react-native';
 import MapView, { Circle, Marker, PROVIDER_GOOGLE } from 'react-native-maps';
 
 import { useUpdateUserSettings } from '@/api/user';
@@ -33,6 +33,7 @@ import IconSymbol from '@/components/atoms/IconSymbol';
 import Skeleton from '@/components/atoms/Skeleton';
 import ThemedButton from '@/components/atoms/ThemedButton';
 import ThemedIconButton from '@/components/atoms/ThemedIconButton';
+import ThemedText from '@/components/atoms/ThemedText';
 import NoteMessage from '@/components/screens/Connect/NoteMessage';
 import SectionContainer from '@/components/screens/Connect/SectionContainer';
 
@@ -530,7 +531,11 @@ const LocationSection = () => {
                   size={StaticTheme.iconSize.l}
                   color={theme.colors.primary}
                 />
-                {markerName && <Text style={styles.markerName}>{markerName}</Text>}
+                {markerName && (
+                  <ThemedText variant="bodyMedium" color="primary">
+                    {markerName}
+                  </ThemedText>
+                )}
               </View>
             </Marker>
             {/* Safe Zone Circle */}
@@ -561,18 +566,20 @@ const LocationSection = () => {
                   color={theme.colors.onPrimary}
                 />
               )}
-              <Text style={styles.warningText}>{warningText}</Text>
+              <ThemedText variant="bodyMedium" color="onPrimary">
+                {warningText}
+              </ThemedText>
             </View>
           )}
         </View>
         {/* Last Update Time and Refresh Button */}
         <View style={styles.updateWrapper}>
-          <Text style={styles.updateText}>
+          <ThemedText variant="bodyMedium" color="onSurfaceVariant">
             {t('Last updated:')}{' '}
             {location.lastUpdate
               ? dayjs(location.lastUpdate).format(LAST_UPDATE_DATETIME_FORMAT)
               : '--'}
-          </Text>
+          </ThemedText>
           <ThemedIconButton
             name={isLoadingLocation ? 'arrow.clockwise.circle' : 'arrow.clockwise'}
             onPress={handleRefresh}
@@ -638,7 +645,7 @@ const getStyles = createStyles<
     | 'expandedOptions'
     | 'optionsRow'
     | 'optionButton',
-    'markerName' | 'warningText' | 'updateText'
+    'markerName'
   >
 >({
   container: {
@@ -668,10 +675,6 @@ const getStyles = createStyles<
     justifyContent: 'center',
   },
   markerName: {
-    fontSize: ({ fonts }) => fonts.bodyMedium.fontSize,
-    fontWeight: ({ fonts }) => fonts.bodyMedium.fontWeight,
-    lineHeight: ({ fonts }) => fonts.bodyMedium.lineHeight,
-    color: ({ colors }) => colors.primary,
     backgroundColor: ({ colors }) => colorWithAlpha(colors.onPrimary, 0.8),
     paddingHorizontal: StaticTheme.spacing.xs,
     borderRadius: StaticTheme.borderRadius.s,
@@ -692,12 +695,6 @@ const getStyles = createStyles<
   warningChipOut: {
     backgroundColor: ({ colors }) => colors.error,
   },
-  warningText: {
-    fontSize: ({ fonts }) => fonts.bodyMedium.fontSize,
-    fontWeight: ({ fonts }) => fonts.bodyMedium.fontWeight,
-    lineHeight: ({ fonts }) => fonts.bodyMedium.lineHeight,
-    color: ({ colors }) => colors.onPrimary,
-  },
   expandButton: {
     position: 'absolute',
     top: StaticTheme.spacing.sm,
@@ -717,12 +714,6 @@ const getStyles = createStyles<
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-  },
-  updateText: {
-    fontSize: ({ fonts }) => fonts.bodyMedium.fontSize,
-    fontWeight: ({ fonts }) => fonts.bodyMedium.fontWeight,
-    lineHeight: ({ fonts }) => fonts.bodyMedium.lineHeight,
-    color: ({ colors }) => colors.onSurfaceVariant,
   },
   expandedOptions: {
     gap: StaticTheme.spacing.sm,

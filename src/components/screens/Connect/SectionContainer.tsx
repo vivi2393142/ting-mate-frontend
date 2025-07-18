@@ -1,12 +1,13 @@
 import { type ReactNode } from 'react';
 
-import { Text, View } from 'react-native';
+import { View } from 'react-native';
 
 import useAppTheme from '@/hooks/useAppTheme';
 import { StaticTheme } from '@/theme';
 import { createStyles, type StyleRecord } from '@/utils/createStyles';
 
 import ThemedIconButton from '@/components/atoms/ThemedIconButton';
+import ThemedText from '@/components/atoms/ThemedText';
 import ThemedView from '@/components/atoms/ThemedView';
 
 type SectionContainerProps =
@@ -30,14 +31,15 @@ const SectionContainer = ({ title, children, ...props }: SectionContainerProps) 
   return (
     <ThemedView style={styles.sectionContainer}>
       <View style={styles.sectionHeader}>
-        <Text
+        <ThemedText
+          variant="titleLarge"
           style={[
             styles.sectionTitle,
             !props.hideToggle && props.isExpanded && styles.sectionTitleHighlight,
           ]}
         >
           {title}
-        </Text>
+        </ThemedText>
         {!props.hideToggle && (
           <ThemedIconButton
             name={props.isExpanded ? 'chevron.down' : 'chevron.right'}
@@ -63,10 +65,6 @@ const getStyles = createStyles<
     alignItems: 'center',
   },
   sectionTitle: {
-    fontSize: ({ fonts }) => fonts.titleLarge.fontSize,
-    fontWeight: ({ fonts }) => fonts.titleLarge.fontWeight,
-    lineHeight: ({ fonts }) => fonts.titleLarge.lineHeight,
-    color: ({ colors }) => colors.onSurface,
     marginBottom: StaticTheme.spacing.sm,
   },
   sectionTitleHighlight: {

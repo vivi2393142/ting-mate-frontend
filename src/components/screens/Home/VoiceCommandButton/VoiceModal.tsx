@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Animated, FlatList, Modal, Text, View } from 'react-native';
+import { Animated, FlatList, Modal, View } from 'react-native';
 
 import useAppTheme from '@/hooks/useAppTheme';
 import { StaticTheme } from '@/theme';
@@ -11,6 +11,7 @@ import { createStyles, StyleRecord } from '@/utils/createStyles';
 import EllipsisLoading from '@/components/atoms/EllipsisLoading';
 import ThemedButton from '@/components/atoms/ThemedButton';
 import ThemedIconButton from '@/components/atoms/ThemedIconButton';
+import ThemedText from '@/components/atoms/ThemedText';
 import ThemedView from '@/components/atoms/ThemedView';
 import VoiceButton, {
   type VoiceButtonProps,
@@ -100,11 +101,13 @@ const VoiceModal = ({
       <ThemedView isRoot style={styles.modalView}>
         {/* Suggestions with animated height */}
         <Animated.View style={[styles.suggestionWrapper, { height: heightAnim }]}>
-          <Text style={styles.suggestionTitle}>Try asking me...</Text>
+          <ThemedText variant="titleMedium" color="onPrimary" style={styles.suggestionTitle}>
+            {t('Try asking me...')}
+          </ThemedText>
           {suggestions.map((q, i) => (
-            <Text key={i} style={styles.suggestionChip}>
+            <ThemedText key={i} color="onSurfaceVariant" style={styles.suggestionChip}>
               {q}
-            </Text>
+            </ThemedText>
           ))}
         </Animated.View>
         {/* Conversation */}
@@ -115,18 +118,18 @@ const VoiceModal = ({
           contentContainerStyle={styles.conversationContent}
           renderItem={({ item }) =>
             item.role === TalkRole.LOADING ? (
-              <Text style={[styles.conversationItem, styles.conversationItemUser]}>
+              <ThemedText style={[styles.conversationItem, styles.conversationItemUser]}>
                 <EllipsisLoading size={6} color={theme.colors.onSurface} />
-              </Text>
+              </ThemedText>
             ) : (
-              <Text
+              <ThemedText
                 style={[
                   styles.conversationItem,
                   item.role === TalkRole.USER && styles.conversationItemUser,
                 ]}
               >
                 {item.text}
-              </Text>
+              </ThemedText>
             )
           }
         />
@@ -158,7 +161,9 @@ const VoiceModal = ({
         <View style={styles.modalVoiceButtonContainer}>
           {isRecording && (
             <View style={styles.listeningContainer}>
-              <Text style={styles.listeningText}>{t("I'm listening")}</Text>
+              <ThemedText variant="headlineSmall" color="onPrimary" style={styles.listeningText}>
+                {t("I'm listening")}
+              </ThemedText>
               <Animated.View
                 style={[
                   styles.listeningVolumeShape,
@@ -241,9 +246,6 @@ const getStyles = createStyles<
     paddingHorizontal: StaticTheme.spacing.sm * 1.5,
     paddingVertical: StaticTheme.spacing.sm,
     maxWidth: '80%',
-    fontSize: ({ fonts }) => fonts.bodyLarge.fontSize,
-    fontWeight: ({ fonts }) => fonts.bodyLarge.fontWeight,
-    lineHeight: ({ fonts }) => fonts.bodyLarge.lineHeight,
   },
   conversationItemUser: {
     alignSelf: 'flex-end',
@@ -263,10 +265,6 @@ const getStyles = createStyles<
     marginBottom: StaticTheme.spacing.md,
   },
   listeningText: {
-    color: ({ colors }) => colors.onPrimary,
-    fontSize: ({ fonts }) => fonts.headlineSmall.fontSize,
-    fontWeight: ({ fonts }) => fonts.headlineSmall.fontWeight,
-    lineHeight: ({ fonts }) => fonts.headlineSmall.lineHeight,
     marginRight: StaticTheme.spacing.md,
   },
   listeningVolumeShape: {
@@ -302,10 +300,6 @@ const getStyles = createStyles<
   suggestionTitle: {
     paddingTop: StaticTheme.spacing.md,
     marginBottom: StaticTheme.spacing.xs,
-    color: ({ colors }) => colors.onPrimary,
-    fontSize: ({ fonts }) => fonts.titleMedium.fontSize,
-    fontWeight: ({ fonts }) => fonts.titleMedium.fontWeight,
-    lineHeight: ({ fonts }) => fonts.titleMedium.lineHeight,
   },
   suggestionChip: {
     borderRadius: StaticTheme.borderRadius.s,
@@ -313,9 +307,5 @@ const getStyles = createStyles<
     paddingVertical: StaticTheme.spacing.sm,
     alignSelf: 'flex-start',
     backgroundColor: ({ colors }) => colors.tertiaryContainer,
-    color: ({ colors }) => colors.onSurfaceVariant,
-    fontSize: ({ fonts }) => fonts.bodyLarge.fontSize,
-    fontWeight: ({ fonts }) => fonts.bodyLarge.fontWeight,
-    lineHeight: ({ fonts }) => fonts.bodyLarge.lineHeight,
   },
 });

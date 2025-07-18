@@ -1,13 +1,13 @@
 import { type PropsWithChildren, useState } from 'react';
 
 import { TouchableOpacity } from 'react-native';
-import { Text } from 'react-native-paper';
 
 import useAppTheme from '@/hooks/useAppTheme';
 import { StaticTheme } from '@/theme';
 import { createStyles } from '@/utils/createStyles';
 
 import IconSymbol from '@/components/atoms/IconSymbol';
+import ThemedText from '@/components/atoms/ThemedText';
 import ThemedView from '@/components/atoms/ThemedView';
 
 const Collapsible = ({ children, title }: PropsWithChildren & { title: string }) => {
@@ -30,7 +30,7 @@ const Collapsible = ({ children, title }: PropsWithChildren & { title: string })
           style={styles.icon}
         />
 
-        <Text>{title}</Text>
+        <ThemedText>{title}</ThemedText>
       </TouchableOpacity>
       {isOpen && <ThemedView style={styles.content}>{children}</ThemedView>}
     </ThemedView>

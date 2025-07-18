@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import type { ViewStyle } from 'react-native';
 
 import { Picker } from '@react-native-picker/picker';
-import { Switch, Text } from 'react-native-paper';
+import { Switch } from 'react-native-paper';
 
 import { MAX_RECURRENCE_INTERVAL } from '@/constants';
 import useAppTheme from '@/hooks/useAppTheme';
@@ -14,6 +14,7 @@ import { DayOfWeek, type RecurrenceRule, RecurrenceUnit } from '@/types/task';
 import { UserTextSize } from '@/types/user';
 import { createStyles, type StyleRecord } from '@/utils/createStyles';
 
+import ThemedText from '@/components/atoms/ThemedText';
 import ThemedView from '@/components/atoms/ThemedView';
 import {
   DaysOfMonthSelector,
@@ -100,10 +101,10 @@ const RecurrenceSelector = ({
     <ThemedView style={[styles.root, style]}>
       {/* Enable Repeat Toggle */}
       <ThemedView style={[styles.section, styles.sectionRow]}>
-        <Text style={[styles.baseText, styles.sectionTitleText, styles.sectionTitleTextRepeating]}>
+        <ThemedText color="outline" style={styles.sectionTitleTextRepeating}>
           {t('Repeat Task')}
-        </Text>
-        <Text style={styles.baseText}>{isRecurring ? t('Repeating') : t('Once')}</Text>
+        </ThemedText>
+        <ThemedText>{isRecurring ? t('Repeating') : t('Once')}</ThemedText>
         <Switch
           value={isRecurring}
           onValueChange={handleRecurringToggle}
@@ -116,12 +117,12 @@ const RecurrenceSelector = ({
         <Fragment>
           {/* Every X Unit Row */}
           <ThemedView style={[styles.section, styles.sectionRow]}>
-            <Text style={[styles.baseText, styles.sectionTitleText]}>{t('Every')}</Text>
+            <ThemedText color="outline">{t('Every')}</ThemedText>
             <Picker
               selectedValue={recurrence.interval}
               onValueChange={handleIntervalChange}
               style={[styles.picker, styles.intervalPicker]}
-              itemStyle={styles.baseText}
+              itemStyle={styles.pickerItem}
             >
               {INTERVAL_OPTIONS.map((num) => (
                 <Picker.Item key={num} label={num.toString()} value={num} />
@@ -131,7 +132,7 @@ const RecurrenceSelector = ({
               selectedValue={recurrence.unit}
               onValueChange={handleUnitChange}
               style={styles.picker}
-              itemStyle={styles.baseText}
+              itemStyle={styles.pickerItem}
             >
               {Object.values(RecurrenceUnit).map((unit) => (
                 <Picker.Item
@@ -145,7 +146,7 @@ const RecurrenceSelector = ({
           {/* Days of Week Selector */}
           {recurrence.unit === RecurrenceUnit.WEEK && (
             <ThemedView style={styles.section}>
-              <Text style={[styles.baseText, styles.sectionTitleText]}>{t('On')}</Text>
+              <ThemedText color="outline">{t('On')}</ThemedText>
               <DaysOfWeekSelector
                 selected={recurrence.daysOfWeek ?? []}
                 onChange={handleDaysOfWeekChange}
@@ -155,7 +156,7 @@ const RecurrenceSelector = ({
           {/* Days of Month Selector */}
           {recurrence.unit === RecurrenceUnit.MONTH && (
             <ThemedView style={styles.section}>
-              <Text style={[styles.baseText, styles.sectionTitleText]}>{t('On')}</Text>
+              <ThemedText color="outline">{t('On')}</ThemedText>
               <DaysOfMonthSelector
                 selected={recurrence.daysOfMonth ?? []}
                 onChange={handleDaysOfMonthChange}
@@ -177,16 +178,12 @@ interface StyleParams {
 const getStyles = createStyles<
   StyleRecord<
     'root' | 'section' | 'sectionRow',
-    'sectionTitleText' | 'picker' | 'intervalPicker' | 'baseText' | 'sectionTitleTextRepeating'
+    'picker' | 'pickerItem' | 'intervalPicker' | 'sectionTitleTextRepeating'
   >,
   StyleParams
 >({
   root: {
     gap: StaticTheme.spacing.sm,
-  },
-  baseText: {
-    fontSize: ({ fonts }) => fonts.bodyLarge.fontSize,
-    fontWeight: ({ fonts }) => fonts.bodyLarge.fontWeight,
   },
   section: {
     gap: StaticTheme.spacing.sm,
@@ -194,9 +191,6 @@ const getStyles = createStyles<
   sectionRow: {
     flexDirection: 'row',
     alignItems: 'center',
-  },
-  sectionTitleText: {
-    color: ({ colors }) => colors.outline,
   },
   sectionTitleTextRepeating: {
     marginRight: 'auto',
@@ -206,6 +200,10 @@ const getStyles = createStyles<
     height: 130,
     justifyContent: 'center',
     overflow: 'hidden',
+  },
+  pickerItem: {
+    fontSize: ({ fonts }) => fonts.bodyLarge.fontSize,
+    fontWeight: ({ fonts }) => fonts.bodyLarge.fontWeight,
   },
   intervalPicker: {
     flex: 0,

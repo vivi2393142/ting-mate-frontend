@@ -4,7 +4,7 @@ import { Fragment, useCallback, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Image, StyleSheet } from 'react-native';
 
-import { Text, TextInput } from 'react-native-paper';
+import { TextInput } from 'react-native-paper';
 
 import { useLogin, useRegister } from '@/api/auth';
 import ROUTES from '@/constants/routes';
@@ -16,6 +16,7 @@ import { Role } from '@/types/user';
 import { createStyles, type StyleRecord } from '@/utils/createStyles';
 
 import ThemedButton from '@/components/atoms/ThemedButton';
+import ThemedText from '@/components/atoms/ThemedText';
 import ThemedView from '@/components/atoms/ThemedView';
 
 const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -123,7 +124,7 @@ const LoginScreen = () => {
         />
         {errorMessage ? (
           <ThemedView style={styles.errorContainer}>
-            <Text style={styles.errorMessage}>{errorMessage}</Text>
+            <ThemedText color="onErrorContainer">{errorMessage}</ThemedText>
           </ThemedView>
         ) : null}
         <TextInput
@@ -176,7 +177,7 @@ const imageStyle = StyleSheet.create({
 });
 
 const getStyles = createStyles<
-  StyleRecord<'root' | 'button' | 'loginButton' | 'errorContainer', 'errorMessage' | 'input'>
+  StyleRecord<'root' | 'button' | 'loginButton' | 'errorContainer', 'input'>
 >({
   root: {
     flex: 1,
@@ -200,9 +201,6 @@ const getStyles = createStyles<
     padding: StaticTheme.spacing.md,
     borderRadius: StaticTheme.borderRadius.s,
     width: '100%',
-  },
-  errorMessage: {
-    color: (theme) => theme.colors.onErrorContainer,
   },
 });
 

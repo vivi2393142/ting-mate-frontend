@@ -1,6 +1,7 @@
 import { View } from 'react-native';
-import { Text, TouchableRipple } from 'react-native-paper';
+import { TouchableRipple } from 'react-native-paper';
 
+import ThemedText from '@/components/atoms/ThemedText';
 import useAppTheme from '@/hooks/useAppTheme';
 import { StaticTheme } from '@/theme';
 import colorWithAlpha from '@/utils/colorWithAlpha';
@@ -23,10 +24,15 @@ const ChipItem = ({ label, description, onPress }: ChipItemProps) => {
       rippleColor={colorWithAlpha(theme.colors.primary, 0.1)}
     >
       <View style={styles.chipContent}>
-        <Text style={styles.chipLabel}>{label}</Text>
-        <Text style={styles.chipDesc} numberOfLines={1} ellipsizeMode="tail">
+        <ThemedText color="primary">{label}</ThemedText>
+        <ThemedText
+          color="onSurfaceVariant"
+          numberOfLines={1}
+          ellipsizeMode="tail"
+          style={styles.chipDesc}
+        >
           {description}
-        </Text>
+        </ThemedText>
       </View>
     </TouchableRipple>
   );
@@ -34,7 +40,7 @@ const ChipItem = ({ label, description, onPress }: ChipItemProps) => {
 
 export default ChipItem;
 
-const getStyles = createStyles<StyleRecord<'chip' | 'chipContent', 'chipLabel' | 'chipDesc'>>({
+const getStyles = createStyles<StyleRecord<'chip' | 'chipContent', 'chipDesc'>>({
   chip: {
     borderBottomWidth: 1,
     borderColor: ({ colors }) => colors.outlineVariant,
@@ -46,17 +52,7 @@ const getStyles = createStyles<StyleRecord<'chip' | 'chipContent', 'chipLabel' |
     paddingHorizontal: StaticTheme.spacing.sm,
     paddingVertical: StaticTheme.spacing.xs * 1.5,
   },
-  chipLabel: {
-    fontSize: ({ fonts }) => fonts.bodyLarge.fontSize,
-    fontWeight: ({ fonts }) => fonts.bodyLarge.fontWeight,
-    lineHeight: ({ fonts }) => fonts.bodyLarge.lineHeight,
-    color: ({ colors }) => colors.primary,
-  },
   chipDesc: {
-    fontSize: ({ fonts }) => fonts.bodyLarge.fontSize,
-    fontWeight: ({ fonts }) => fonts.bodyLarge.fontWeight,
-    lineHeight: ({ fonts }) => fonts.bodyLarge.lineHeight,
-    color: ({ colors }) => colors.onSurfaceVariant,
     flex: 1,
   },
 });

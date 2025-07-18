@@ -2,7 +2,7 @@ import { router } from 'expo-router';
 import { Fragment, useCallback, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
-import { Text, View } from 'react-native';
+import { View } from 'react-native';
 
 import { useGetSharedNotes } from '@/api/sharedNote';
 import ROUTES from '@/constants/routes';
@@ -14,6 +14,7 @@ import { keepPreviousData } from '@tanstack/react-query';
 
 import Skeleton from '@/components/atoms/Skeleton';
 import ThemedIconButton from '@/components/atoms/ThemedIconButton';
+import ThemedText from '@/components/atoms/ThemedText';
 import ChipItem from '@/components/screens/Connect/SharedSection/ChipItem';
 import SharedTabContent from '@/components/screens/Connect/SharedSection/SharedTabContent';
 
@@ -100,7 +101,9 @@ const SharedNoteContent = ({ isExpanded }: { isExpanded: boolean }) => {
           )}
         {!isLoadingNotes && !sharedNotesData?.notes?.length && (
           <View style={styles.contentNoteTextContainer}>
-            <Text style={styles.contentNoteText}>{t('No Note Found')}</Text>
+            <ThemedText color="onSurfaceVariant" style={styles.contentNoteText}>
+              {t('No Note Found')}
+            </ThemedText>
             <ThemedIconButton name="plus.circle.fill" size="large" onPress={handleAddNote} />
           </View>
         )}
@@ -119,10 +122,6 @@ const getStyles = createStyles<
     gap: StaticTheme.spacing.xs,
   },
   contentNoteText: {
-    fontSize: ({ fonts }) => fonts.bodyLarge.fontSize,
-    fontWeight: ({ fonts }) => fonts.bodyLarge.fontWeight,
-    lineHeight: ({ fonts }) => fonts.bodyLarge.lineHeight,
-    color: ({ colors }) => colors.onSurfaceVariant,
     fontStyle: 'italic',
     textAlign: 'center',
   },

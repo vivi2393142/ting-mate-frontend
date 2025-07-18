@@ -3,7 +3,7 @@ import { router } from 'expo-router';
 import { useCallback, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
-import { Text, View } from 'react-native';
+import { View } from 'react-native';
 
 import { useGetActivityLogs } from '@/api/activityLog';
 import { LOG_DATE_FORMAT, LOG_TIME_FORMAT } from '@/constants';
@@ -15,6 +15,7 @@ import type { ActivityLogListResponse, ActivityLogResponse } from '@/types/conne
 import { createStyles, type StyleRecord } from '@/utils/createStyles';
 
 import Skeleton from '@/components/atoms/Skeleton';
+import ThemedText from '@/components/atoms/ThemedText';
 import ChipItem from '@/components/screens/Connect/SharedSection/ChipItem';
 import SharedTabContent from '@/components/screens/Connect/SharedSection/SharedTabContent';
 
@@ -108,12 +109,14 @@ const SharedLogContent = ({ isExpanded }: { isExpanded: boolean }) => {
           ) : null,
         )}
       {!isLoadingLogs && !isFetchingLogs && !activityLogsData?.logs?.length && (
-        <Text style={styles.contentNoteText}>{t('No Log Found')}</Text>
+        <ThemedText color="onSurfaceVariant" style={styles.contentNoteText}>
+          {t('No Log Found')}
+        </ThemedText>
       )}
       {!isLoadingLogs && !isFetchingLogs && isReachedLogLimit && (
-        <Text style={[styles.contentNoteText, styles.limitNoteText]}>
+        <ThemedText color="outline" style={[styles.contentNoteText, styles.limitNoteText]}>
           {t('Only the latest {{count}} records are shown.', { count: MAX_LOG_COUNT })}
-        </Text>
+        </ThemedText>
       )}
     </SharedTabContent>
   );
@@ -123,15 +126,10 @@ const getStyles = createStyles<
   StyleRecord<'loadingContainer', 'contentNoteText' | 'limitNoteText'>
 >({
   contentNoteText: {
-    fontSize: ({ fonts }) => fonts.bodyLarge.fontSize,
-    fontWeight: ({ fonts }) => fonts.bodyLarge.fontWeight,
-    lineHeight: ({ fonts }) => fonts.bodyLarge.lineHeight,
-    color: ({ colors }) => colors.onSurfaceVariant,
     fontStyle: 'italic',
     textAlign: 'center',
   },
   limitNoteText: {
-    color: ({ colors }) => colors.outline,
     marginTop: StaticTheme.spacing.xs,
   },
   loadingContainer: {

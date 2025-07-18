@@ -10,7 +10,7 @@ import PhoneInput, {
 } from 'react-native-international-phone-number';
 import uuid from 'react-native-uuid';
 
-import { Alert, Button, Text, View } from 'react-native';
+import { Alert, Button, View } from 'react-native';
 import { Divider, TouchableRipple } from 'react-native-paper';
 
 import { useUpdateUserSettings } from '@/api/user';
@@ -29,6 +29,7 @@ import { getMergedPhone, getSeparatedPhone } from '@/utils/phoneNumberUtils';
 import FormInput from '@/components/atoms/FormInput';
 import ScreenContainer from '@/components/atoms/ScreenContainer';
 import ThemedButton from '@/components/atoms/ThemedButton';
+import ThemedText from '@/components/atoms/ThemedText';
 import ThemedView from '@/components/atoms/ThemedView';
 
 const defaultPhoneCountry = getCountryByCca2('GB') || null;
@@ -325,14 +326,12 @@ const ContactFormScreen = () => {
                         methods.includes(method.type) ? theme.colors.primary : theme.colors.outline
                       }
                     />
-                    <Text
-                      style={[
-                        styles.methodLabel,
-                        methods.includes(method.type) && styles.selectedMethodLabel,
-                      ]}
+                    <ThemedText
+                      color={methods.includes(method.type) ? 'primary' : 'onSurface'}
+                      style={styles.methodLabel}
                     >
                       {tContactMethod(method.type)}
-                    </Text>
+                    </ThemedText>
                     {methods.includes(method.type) && (
                       <IconSymbol
                         name="checkmark.circle.fill"
@@ -388,7 +387,6 @@ const getStyles = createStyles<
     | 'phoneInputDivider'
     | 'phoneInputModalCountryItem',
     | 'methodLabel'
-    | 'selectedMethodLabel'
     | 'phoneInputFlag'
     | 'phoneInputCaret'
     | 'phoneInputCallingCode'
@@ -420,12 +418,6 @@ const getStyles = createStyles<
   },
   methodLabel: {
     flex: 1,
-    fontSize: ({ fonts }) => fonts.bodyLarge.fontSize,
-    fontWeight: ({ fonts }) => fonts.bodyLarge.fontWeight,
-    lineHeight: ({ fonts }) => fonts.bodyLarge.lineHeight,
-  },
-  selectedMethodLabel: {
-    color: ({ colors }) => colors.primary,
   },
   actionButtonsContainer: {
     gap: StaticTheme.spacing.md,

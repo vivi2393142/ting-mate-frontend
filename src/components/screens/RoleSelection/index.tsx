@@ -3,7 +3,6 @@ import { Fragment, useCallback, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import { Alert } from 'react-native';
-import { Text } from 'react-native-paper';
 
 import { useGetTasks } from '@/api/tasks';
 import { useTransitionUserRole } from '@/api/user';
@@ -21,6 +20,7 @@ import { createStyles, type StyleRecord } from '@/utils/createStyles';
 import IconSymbol from '@/components/atoms/IconSymbol';
 import ScreenContainer from '@/components/atoms/ScreenContainer';
 import ThemedButton from '@/components/atoms/ThemedButton';
+import ThemedText from '@/components/atoms/ThemedText';
 import ThemedView from '@/components/atoms/ThemedView';
 
 const RoleSelectionScreen = () => {
@@ -158,8 +158,10 @@ const RoleSelectionScreen = () => {
         contentContainerStyle={styles.content}
       >
         <ThemedView style={styles.header}>
-          <Text style={styles.headerTitle}>{t('Choose Your Role')}</Text>
-          <Text style={styles.headerSubtitle}>{t('Select how you’ll use Ting Mate!')}</Text>
+          <ThemedText variant="titleLarge">{t('Choose Your Role')}</ThemedText>
+          <ThemedText variant="bodyMedium" color="outline">
+            {t('Select how you’ll use Ting Mate!')}
+          </ThemedText>
         </ThemedView>
         <ThemedView style={styles.roleContainer}>
           {roles.map((roleOption) => (
@@ -181,10 +183,15 @@ const RoleSelectionScreen = () => {
                   color={isAuthenticated ? theme.colors.primary : theme.colors.outline}
                 />
                 <ThemedView style={styles.roleTextContainer}>
-                  <Text style={[styles.roleTitle, !isAuthenticated && styles.disabledRoleTitle]}>
+                  <ThemedText
+                    variant={'titleLarge'}
+                    color={isAuthenticated ? 'primary' : 'outline'}
+                  >
                     {tRole(roleOption.role)}
-                  </Text>
-                  <Text style={styles.roleSubtitle}>{roleOption.subtitle}</Text>
+                  </ThemedText>
+                  <ThemedText variant="bodyMedium" color="outline">
+                    {roleOption.subtitle}
+                  </ThemedText>
                 </ThemedView>
               </ThemedView>
             </ThemedButton>
@@ -199,11 +206,13 @@ const RoleSelectionScreen = () => {
                   size={StaticTheme.iconSize.s}
                   color={theme.colors.error}
                 />
-                <Text style={styles.noteTitle}>{t('Sign in required')}</Text>
+                <ThemedText variant="titleMedium" color="onSurfaceVariant">
+                  {t('Sign in required')}
+                </ThemedText>
               </ThemedView>
-              <Text style={styles.noteText}>
+              <ThemedText variant="bodyMedium" color="outline">
                 {t('You need to sign in to save your role selection.')}
-              </Text>
+              </ThemedText>
             </ThemedView>
             <ThemedButton onPress={handleSignInPress}>{tCommon('Login / Sign Up')}</ThemedButton>
           </Fragment>
@@ -218,13 +227,15 @@ const RoleSelectionScreen = () => {
                     size={StaticTheme.iconSize.m}
                     color={theme.colors.onSurfaceVariant}
                   />
-                  <Text style={styles.noteTitle}>{t('Switching roles?')}</Text>
+                  <ThemedText variant="titleMedium" color="onSurfaceVariant">
+                    {t('Switching roles?')}
+                  </ThemedText>
                 </ThemedView>
-                <Text style={styles.noteText}>
+                <ThemedText variant="bodyMedium" color="outline">
                   {t(
                     'Changing to Companion will remove your current tasks and connect you to a Core User.',
                   )}
-                </Text>
+                </ThemedText>
               </ThemedView>
             )}
             <ThemedButton disabled={!selectedRole || isSaving} onPress={handleConfirm}>
@@ -249,14 +260,7 @@ const getStyles = createStyles<
     | 'roleContent'
     | 'roleTextContainer'
     | 'note'
-    | 'noteTitleWrapper',
-    | 'headerTitle'
-    | 'headerSubtitle'
-    | 'roleTitle'
-    | 'disabledRoleTitle'
-    | 'roleSubtitle'
-    | 'noteTitle'
-    | 'noteText'
+    | 'noteTitleWrapper'
   >
 >({
   container: {
@@ -269,17 +273,6 @@ const getStyles = createStyles<
   },
   header: {
     gap: StaticTheme.spacing.xs,
-  },
-  headerTitle: {
-    fontSize: ({ fonts }) => fonts.titleLarge.fontSize,
-    fontWeight: ({ fonts }) => fonts.titleLarge.fontWeight,
-    lineHeight: ({ fonts }) => fonts.titleLarge.lineHeight,
-  },
-  headerSubtitle: {
-    fontSize: ({ fonts }) => fonts.bodyMedium.fontSize,
-    fontWeight: ({ fonts }) => fonts.bodyMedium.fontWeight,
-    lineHeight: ({ fonts }) => fonts.bodyMedium.lineHeight,
-    color: ({ colors }) => colors.outline,
   },
   roleContainer: {
     gap: StaticTheme.spacing.sm * 1.5,
@@ -305,21 +298,6 @@ const getStyles = createStyles<
     gap: StaticTheme.spacing.xs * 1.5,
     backgroundColor: 'transparent',
   },
-  roleTitle: {
-    color: ({ colors }) => colors.primary,
-    fontSize: ({ fonts }) => fonts.titleLarge.fontSize,
-    fontWeight: ({ fonts }) => fonts.titleLarge.fontWeight,
-    lineHeight: ({ fonts }) => fonts.titleLarge.lineHeight,
-  },
-  disabledRoleTitle: {
-    color: ({ colors }) => colors.outline,
-  },
-  roleSubtitle: {
-    fontSize: ({ fonts }) => fonts.bodyMedium.fontSize,
-    fontWeight: ({ fonts }) => fonts.bodyMedium.fontWeight,
-    lineHeight: ({ fonts }) => fonts.bodyMedium.lineHeight,
-    color: ({ colors }) => colors.outline,
-  },
   note: {
     backgroundColor: ({ colors }) => colors.surfaceVariant,
     paddingVertical: StaticTheme.spacing.md * 1.25,
@@ -332,18 +310,6 @@ const getStyles = createStyles<
     flexDirection: 'row',
     alignItems: 'center',
     gap: StaticTheme.spacing.sm * 1.25,
-  },
-  noteTitle: {
-    fontSize: ({ fonts }) => fonts.titleMedium.fontSize,
-    fontWeight: ({ fonts }) => fonts.titleMedium.fontWeight,
-    lineHeight: ({ fonts }) => fonts.titleMedium.lineHeight,
-    color: ({ colors }) => colors.onSurfaceVariant,
-  },
-  noteText: {
-    fontSize: ({ fonts }) => fonts.bodyMedium.fontSize,
-    fontWeight: ({ fonts }) => fonts.bodyMedium.fontWeight,
-    lineHeight: ({ fonts }) => fonts.bodyMedium.lineHeight,
-    color: ({ colors }) => colors.outline,
   },
 });
 

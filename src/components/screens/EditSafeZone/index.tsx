@@ -3,7 +3,7 @@ import { Fragment, useCallback, useEffect, useMemo, useRef, useState } from 'rea
 import { useTranslation } from 'react-i18next';
 
 import Slider from '@react-native-community/slider';
-import { Button, Keyboard, Text, TouchableWithoutFeedback, View } from 'react-native';
+import { Button, Keyboard, TouchableWithoutFeedback, View } from 'react-native';
 import MapView, {
   Circle,
   type MapPressEvent,
@@ -30,6 +30,7 @@ import FormInput from '@/components/atoms/FormInput';
 import IconSymbol from '@/components/atoms/IconSymbol';
 import ScreenContainer from '@/components/atoms/ScreenContainer';
 import Skeleton from '@/components/atoms/Skeleton';
+import ThemedText from '@/components/atoms/ThemedText';
 import ThemedView from '@/components/atoms/ThemedView';
 import AddressSearch from '@/components/screens/EditSafeZone/AddressSearch';
 
@@ -234,8 +235,12 @@ const EditSafeZoneScreen = () => {
                 maximumTrackTintColor={theme.colors.outlineVariant}
               />
               <View style={styles.radiusRange}>
-                <Text style={styles.radiusRangeText}>{10 + t('m')}</Text>
-                <Text style={styles.radiusRangeText}>{2 + t('km')}</Text>
+                <ThemedText variant="bodySmall" color="onSurfaceVariant">
+                  {10 + t('m')}
+                </ThemedText>
+                <ThemedText variant="bodySmall" color="onSurfaceVariant">
+                  {2 + t('km')}
+                </ThemedText>
               </View>
             </View>
             <Divider style={styles.divider} />
@@ -316,7 +321,9 @@ const EditSafeZoneScreen = () => {
                     size={StaticTheme.iconSize.m}
                     color={theme.colors.primary}
                   />
-                  <Text style={styles.instructionText}>{item.text}</Text>
+                  <ThemedText variant="bodyMedium" color="outline">
+                    {item.text}
+                  </ThemedText>
                 </View>
               ))}
             </ThemedView>
@@ -340,8 +347,7 @@ const getStyles = createStyles<
     | 'instructions'
     | 'instructionRow'
     | 'divider'
-    | 'loadingContainer',
-    'radiusRangeText' | 'instructionText'
+    | 'loadingContainer'
   >
 >({
   container: {
@@ -376,12 +382,6 @@ const getStyles = createStyles<
     flexDirection: 'row',
     justifyContent: 'space-between',
   },
-  radiusRangeText: {
-    fontSize: ({ fonts }) => fonts.bodySmall.fontSize,
-    fontWeight: ({ fonts }) => fonts.bodySmall.fontWeight,
-    lineHeight: ({ fonts }) => fonts.bodySmall.lineHeight,
-    color: ({ colors }) => colors.onSurfaceVariant,
-  },
   instructions: {
     backgroundColor: ({ colors }) => colors.surfaceVariant,
     paddingVertical: StaticTheme.spacing.md * 1.25,
@@ -393,12 +393,6 @@ const getStyles = createStyles<
     flexDirection: 'row',
     alignItems: 'center',
     gap: StaticTheme.spacing.sm * 1.25,
-  },
-  instructionText: {
-    fontSize: ({ fonts }) => fonts.bodyMedium.fontSize,
-    fontWeight: ({ fonts }) => fonts.bodyMedium.fontWeight,
-    lineHeight: ({ fonts }) => fonts.bodyMedium.lineHeight,
-    color: ({ colors }) => colors.outline,
   },
   divider: {
     marginTop: StaticTheme.spacing.sm * 1.5,

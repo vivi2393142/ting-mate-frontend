@@ -1,26 +1,23 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
-import { Text, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 
 import { LOCATION_SYNC_REFRESH_INTERVAL } from '@/constants';
-import useAppTheme from '@/hooks/useAppTheme';
 import { useLocationPermission } from '@/hooks/useLocationPermission';
 import { useSyncCurrentLocation } from '@/hooks/useSyncCurrentLocation';
 import useAuthStore from '@/store/useAuthStore';
 import useUserStore from '@/store/useUserStore';
 import { StaticTheme } from '@/theme';
 import { Role } from '@/types/user';
-import { createStyles, StyleRecord } from '@/utils/createStyles';
 
 import CommonModal from '@/components/atoms/CommonModal';
 import ThemedButton from '@/components/atoms/ThemedButton';
+import ThemedText from '@/components/atoms/ThemedText';
 
 // TODO: Sync location in background
 const LocationSyncHandler = () => {
   const { t } = useTranslation('common');
-  const theme = useAppTheme();
-  const styles = getStyles(theme);
 
   const token = useAuthStore((s) => s.token);
   const user = useUserStore((s) => s.user);
@@ -62,11 +59,11 @@ const LocationSyncHandler = () => {
         onDismiss={handleDenyPermission}
         topIcon="lock.open"
       >
-        <Text style={styles.text}>
+        <ThemedText>
           {t(
             'Location sharing is on. Please allow the app to access your location in your phone settings.',
           )}
-        </Text>
+        </ThemedText>
         <View style={styles.buttonContainer}>
           <ThemedButton onPress={requestPermission}>{t('Go to Settings')}</ThemedButton>
           <ThemedButton mode="outlined" onPress={handleDenyPermission}>
@@ -83,15 +80,9 @@ const LocationSyncHandler = () => {
 
 export default LocationSyncHandler;
 
-const getStyles = createStyles<StyleRecord<'buttonContainer', 'text'>>({
+const styles = StyleSheet.create({
   buttonContainer: {
     gap: StaticTheme.spacing.sm * 1.5,
     marginTop: StaticTheme.spacing.md * 1.5,
-  },
-  text: {
-    fontSize: ({ fonts }) => fonts.bodyLarge.fontSize,
-    fontWeight: ({ fonts }) => fonts.bodyLarge.fontWeight,
-    lineHeight: ({ fonts }) => fonts.bodyLarge.lineHeight,
-    color: ({ colors }) => colors.onSurface,
   },
 });

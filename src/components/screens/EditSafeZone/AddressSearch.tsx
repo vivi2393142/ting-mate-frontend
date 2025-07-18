@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
-import { Keyboard, ScrollView, Text, View } from 'react-native';
+import { Keyboard, ScrollView, View } from 'react-native';
 import { Divider, TextInput, TouchableRipple } from 'react-native-paper';
 
 import { usePlaceSearch } from '@/api/places';
@@ -13,6 +13,7 @@ import { createStyles, type StyleRecord } from '@/utils/createStyles';
 
 import FormInput from '@/components/atoms/FormInput';
 import Skeleton from '@/components/atoms/Skeleton';
+import ThemedText from '@/components/atoms/ThemedText';
 
 interface AddressOptionProps {
   option: AddressData;
@@ -30,12 +31,22 @@ const AddressOption = ({ option, onPress }: AddressOptionProps) => {
       rippleColor={colorWithAlpha(theme.colors.primary, 0.1)}
     >
       <View style={styles.optionContent}>
-        <Text style={styles.optionName} numberOfLines={1} ellipsizeMode="tail">
+        <ThemedText
+          variant="bodyMedium"
+          style={styles.optionName}
+          numberOfLines={1}
+          ellipsizeMode="tail"
+        >
           {option.name}
-        </Text>
-        <Text style={styles.optionAddress} numberOfLines={1} ellipsizeMode="tail">
+        </ThemedText>
+        <ThemedText
+          variant="bodySmall"
+          color="onSurfaceVariant"
+          numberOfLines={1}
+          ellipsizeMode="tail"
+        >
           {option.address}
-        </Text>
+        </ThemedText>
       </View>
     </TouchableRipple>
   );
@@ -223,7 +234,9 @@ const AddressSearch = ({ selectedAddress, onAddressSelect }: AddressSearchProps)
             </ScrollView>
           </View>
         ) : (
-          <Text style={styles.noResults}>{t('No results found')}</Text>
+          <ThemedText variant="bodyMedium" color="onSurfaceVariant" style={styles.noResults}>
+            {t('No results found')}
+          </ThemedText>
         ))}
       {showOptions && <Divider style={styles.divider} />}
     </View>
@@ -233,7 +246,7 @@ const AddressSearch = ({ selectedAddress, onAddressSelect }: AddressSearchProps)
 const getStyles = createStyles<
   StyleRecord<
     'icon' | 'resultsContainer' | 'optionsContainer' | 'optionItem' | 'optionContent' | 'divider',
-    'contentInput' | 'optionName' | 'optionAddress' | 'noResults'
+    'contentInput' | 'optionName' | 'noResults'
   >
 >({
   contentInput: {
@@ -250,10 +263,6 @@ const getStyles = createStyles<
   noResults: {
     marginTop: StaticTheme.spacing.md,
     paddingLeft: StaticTheme.spacing.md,
-    fontSize: ({ fonts }) => fonts.bodyMedium.fontSize,
-    fontWeight: ({ fonts }) => fonts.bodyMedium.fontWeight,
-    lineHeight: ({ fonts }) => fonts.bodyMedium.lineHeight,
-    color: ({ colors }) => colors.onSurfaceVariant,
   },
   optionsContainer: {
     borderWidth: 1,
@@ -271,17 +280,7 @@ const getStyles = createStyles<
     paddingVertical: StaticTheme.spacing.sm,
   },
   optionName: {
-    fontSize: ({ fonts }) => fonts.bodyMedium.fontSize,
-    fontWeight: ({ fonts }) => fonts.bodyMedium.fontWeight,
-    lineHeight: ({ fonts }) => fonts.bodyMedium.lineHeight,
-    color: ({ colors }) => colors.onSurface,
     marginBottom: StaticTheme.spacing.xs,
-  },
-  optionAddress: {
-    fontSize: ({ fonts }) => fonts.bodySmall.fontSize,
-    fontWeight: ({ fonts }) => fonts.bodySmall.fontWeight,
-    lineHeight: ({ fonts }) => fonts.bodySmall.lineHeight,
-    color: ({ colors }) => colors.onSurfaceVariant,
   },
   divider: {
     marginTop: StaticTheme.spacing.md,

@@ -3,7 +3,7 @@ import { Fragment, useCallback, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import { Alert, View } from 'react-native';
-import { Divider, List, Text } from 'react-native-paper';
+import { Divider, List } from 'react-native-paper';
 
 import { useGetTasks, useUpdateTaskStatus } from '@/api/tasks';
 import ROUTES from '@/constants/routes';
@@ -21,6 +21,7 @@ import IconSymbol from '@/components/atoms/IconSymbol';
 import ScreenContainer from '@/components/atoms/ScreenContainer';
 import Skeleton from '@/components/atoms/Skeleton';
 import ThemedButton from '@/components/atoms/ThemedButton';
+import ThemedText from '@/components/atoms/ThemedText';
 import ExpandableSectionHeader from '@/components/screens/Home/ExpandableSectionHeader';
 import NotificationCenterButton from '@/components/screens/Home/NotificationCenterButton';
 import OtherTaskListItem from '@/components/screens/Home/OtherTaskListItem';
@@ -169,9 +170,9 @@ const HomeScreen = () => {
   if (shouldShowCaregiverWarning) {
     return (
       <ScreenContainer style={styles.root} scrollable>
-        <Text variant="headlineSmall" style={styles.headline}>
+        <ThemedText variant="titleLarge" style={styles.headline}>
           {t('Todays Tasks')}
-        </Text>
+        </ThemedText>
         <View>
           <View style={styles.warningContainer}>
             <IconSymbol
@@ -180,11 +181,11 @@ const HomeScreen = () => {
               color={theme.colors.error}
               style={styles.warmingIcon}
             />
-            <Text style={styles.warningText}>
+            <ThemedText variant="bodyMedium" color="outline">
               {t(
                 'You haven’t linked with a companion yet. Link now to see and help manage their tasks.',
               )}
-            </Text>
+            </ThemedText>
           </View>
           <ThemedButton onPress={handleLinkAccount} icon="link">
             {t('Link Account')}
@@ -199,13 +200,15 @@ const HomeScreen = () => {
     // TODO: add animation for collapsed tasks
     <ScreenContainer style={styles.root} scrollable>
       <View style={styles.headlineRow}>
-        <Text style={styles.headline}>{t('Todays Tasks')}</Text>
+        <ThemedText variant="titleLarge" style={styles.headline}>
+          {t('Todays Tasks')}
+        </ThemedText>
         {user?.settings.linked && user.settings.linked.length > 0 && (
           <View style={styles.linkedUserIndicator}>
             <IconSymbol name="link" size={StaticTheme.iconSize.xs} color={theme.colors.secondary} />
-            <Text style={styles.linkedUserText}>
+            <ThemedText variant="bodyMedium" color="secondary">
               {user.settings.linked[0].name || user.settings.linked[0].email}
-            </Text>
+            </ThemedText>
           </View>
         )}
         {userDisplayMode === UserDisplayMode.FULL && (
@@ -221,8 +224,8 @@ const HomeScreen = () => {
       )}
       {!isLoading && sortedTasks.length === 0 && (
         <View style={styles.emptyContainer}>
-          <Text style={styles.hintText}>{t("You haven't added any tasks yet.")}</Text>
-          <Text style={styles.hintText}>{t('Add a task to get started!')}</Text>
+          <ThemedText color="onSurfaceVariant">{t("You haven't added any tasks yet.")}</ThemedText>
+          <ThemedText color="onSurfaceVariant">{t('Add a task to get started!')}</ThemedText>
         </View>
       )}
       {!isLoading && sortedTasks.length > 0 && (
@@ -319,7 +322,7 @@ const getStyles = createStyles<
     | 'noLinkContainer'
     | 'warningContainer'
     | 'notificationButton',
-    'headline' | 'linkedUserText' | 'hintText' | 'warmingIcon' | 'warningText'
+    'headline' | 'warmingIcon' | 'warningText'
   >,
   StyleParams
 >({
@@ -334,20 +337,11 @@ const getStyles = createStyles<
   },
   headline: {
     paddingVertical: StaticTheme.spacing.xs,
-    fontSize: ({ fonts }) => fonts.titleLarge.fontSize,
-    fontWeight: ({ fonts }) => fonts.titleLarge.fontWeight,
-    lineHeight: ({ fonts }) => fonts.titleLarge.lineHeight,
   },
   linkedUserIndicator: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: StaticTheme.spacing.xs * 0.25,
-  },
-  linkedUserText: {
-    fontSize: ({ fonts }) => fonts.bodyMedium.fontSize,
-    fontWeight: ({ fonts }) => fonts.bodyMedium.fontWeight,
-    lineHeight: ({ fonts }) => fonts.titleLarge.lineHeight,
-    color: ({ colors }) => colors.secondary,
   },
   listSection: {
     gap: StaticTheme.spacing.md,
@@ -373,12 +367,6 @@ const getStyles = createStyles<
     paddingVertical: StaticTheme.spacing.lg,
     gap: StaticTheme.spacing.xs,
   },
-  hintText: {
-    color: ({ colors }) => colors.onSurfaceVariant,
-    fontSize: ({ fonts }) => fonts.bodyLarge.fontSize,
-    fontWeight: ({ fonts }) => fonts.bodyLarge.fontWeight,
-    lineHeight: ({ fonts }) => fonts.bodyLarge.lineHeight,
-  },
   noLinkContainer: {
     paddingHorizontal: StaticTheme.spacing.lg,
   },
@@ -392,10 +380,6 @@ const getStyles = createStyles<
   },
   warningText: {
     flex: 1,
-    fontSize: ({ fonts }) => fonts.bodyMedium.fontSize,
-    fontWeight: ({ fonts }) => fonts.bodyMedium.fontWeight,
-    lineHeight: ({ fonts }) => fonts.bodyMedium.lineHeight,
-    color: ({ colors }) => colors.outline,
   },
   notificationButton: {
     marginLeft: 'auto',

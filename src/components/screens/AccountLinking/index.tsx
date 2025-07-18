@@ -4,7 +4,7 @@ import { Fragment, useCallback, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import { Stack } from 'expo-router';
-import { Alert, Share, Text, TextInput, View } from 'react-native';
+import { Alert, Share, TextInput, View } from 'react-native';
 import { TouchableRipple } from 'react-native-paper';
 
 import { useAcceptInvitation, useGenerateInvitation } from '@/api/invitation';
@@ -24,6 +24,7 @@ import IconSymbol from '@/components/atoms/IconSymbol';
 import ScreenContainer from '@/components/atoms/ScreenContainer';
 import ThemedButton from '@/components/atoms/ThemedButton';
 import ThemedIconButton from '@/components/atoms/ThemedIconButton';
+import ThemedText from '@/components/atoms/ThemedText';
 import ThemedView from '@/components/atoms/ThemedView';
 
 const AccountLinkingScreen = () => {
@@ -179,14 +180,14 @@ const AccountLinkingScreen = () => {
       >
         {/* Linked Account Section */}
         <ThemedView style={styles.linkedAccountsContainer}>
-          <Text style={styles.linkedAccountsTitle}>{t('Linked Accounts')}</Text>
+          <ThemedText variant="titleLarge">{t('Linked Accounts')}</ThemedText>
           {linkedUsers?.length > 0 ? (
             <View style={styles.linkedAccountsList}>
               {linkedUsers.map((user) => (
                 <View key={user.email} style={styles.linkedRow}>
-                  <Text style={styles.linkedName}>
+                  <ThemedText color="onSurfaceVariant" style={styles.linkedName}>
                     {user.name || '---'} ({user.email})
-                  </Text>
+                  </ThemedText>
                   <ThemedIconButton
                     name="xmark.circle"
                     color={theme.colors.error}
@@ -197,14 +198,14 @@ const AccountLinkingScreen = () => {
               ))}
             </View>
           ) : (
-            <Text style={styles.noteText}>
+            <ThemedText variant="bodyMedium" color="outline">
               {t('No linked accounts yet. Use the options below to connect with someone.')}
-            </Text>
+            </ThemedText>
           )}
         </ThemedView>
         {/* Add Link Section */}
         <ThemedView style={styles.addLinkContainer}>
-          <Text style={styles.addLinkTitle}>{t('Add Link')}</Text>
+          <ThemedText variant="titleLarge">{t('Add Link')}</ThemedText>
           {shouldDisableAddLink && (
             <View style={styles.warningContainer}>
               <IconSymbol
@@ -213,13 +214,13 @@ const AccountLinkingScreen = () => {
                 color={theme.colors.error}
                 style={styles.warmingIcon}
               />
-              <Text style={styles.noteText}>
+              <ThemedText variant="bodyMedium" color="outline">
                 {!isLoggedIn
                   ? t('Please sign in to link accounts with others.')
                   : t(
                       'Caregivers can only link with one account. To link other account, please remove existing links first.',
                     )}
-              </Text>
+              </ThemedText>
             </View>
           )}
           <View style={styles.addLinkContent}>
@@ -235,9 +236,9 @@ const AccountLinkingScreen = () => {
                   size={StaticTheme.iconSize.l}
                   color={shouldDisableAddLink ? theme.colors.outlineVariant : theme.colors.primary}
                 />
-                <Text style={[styles.actionCardText, shouldDisableAddLink && styles.disabledText]}>
+                <ThemedText color={shouldDisableAddLink ? 'outlineVariant' : 'primary'}>
                   {t('Invite Someone')}
-                </Text>
+                </ThemedText>
               </View>
             </TouchableRipple>
             <TouchableRipple
@@ -252,14 +253,19 @@ const AccountLinkingScreen = () => {
                   size={StaticTheme.iconSize.l}
                   color={shouldDisableAddLink ? theme.colors.outlineVariant : theme.colors.primary}
                 />
-                <Text style={[styles.actionCardText, shouldDisableAddLink && styles.disabledText]}>
+                <ThemedText
+                  color={shouldDisableAddLink ? 'onSurfaceVariant' : 'onSurface'}
+                  style={styles.actionCardText}
+                >
                   {t('I Got a Code')}
-                </Text>
+                </ThemedText>
               </View>
             </TouchableRipple>
           </View>
           <ThemedView style={styles.note}>
-            <Text style={styles.noteTitle}>{t('Why link accounts?')}</Text>
+            <ThemedText variant="titleMedium" color="onSurfaceVariant" style={styles.noteTitle}>
+              {t('Why link accounts?')}
+            </ThemedText>
             {purposeItems.map((item, idx) => (
               <View key={idx} style={styles.purposeRow}>
                 <IconSymbol
@@ -267,7 +273,9 @@ const AccountLinkingScreen = () => {
                   size={StaticTheme.iconSize.m}
                   color={theme.colors.primary}
                 />
-                <Text style={styles.noteText}>{item.text}</Text>
+                <ThemedText variant="bodyMedium" color="outline">
+                  {item.text}
+                </ThemedText>
               </View>
             ))}
           </ThemedView>
@@ -286,7 +294,9 @@ const AccountLinkingScreen = () => {
           topIcon="qrcode"
         >
           <View style={styles.codeDisplay}>
-            <Text style={styles.codeText}>{inviteCode}</Text>
+            <ThemedText variant="headlineMedium" style={styles.codeText}>
+              {inviteCode}
+            </ThemedText>
             <ThemedIconButton
               name={copySuccess ? 'checkmark.circle.fill' : 'document.on.document'}
               color={theme.colors.primary}
@@ -301,9 +311,9 @@ const AccountLinkingScreen = () => {
                 size={StaticTheme.iconSize.xs}
                 color={theme.colors.outline}
               />
-              <Text style={styles.expiryText}>
+              <ThemedText variant="bodySmall" color="outline">
                 {t('Expires at')}: {formatExpiryDate(inviteExpiresAt)}
-              </Text>
+              </ThemedText>
             </View>
           )}
           <View style={styles.modalButtonContainer}>
@@ -369,17 +379,7 @@ const getStyles = createStyles<
     | 'expiryContainer'
     | 'warningContainer'
     | 'signInButton',
-    | 'noteTitle'
-    | 'noteText'
-    | 'linkedAccountsTitle'
-    | 'linkedName'
-    | 'addLinkTitle'
-    | 'actionCardText'
-    | 'disabledText'
-    | 'codeText'
-    | 'codeInput'
-    | 'expiryText'
-    | 'warmingIcon'
+    'noteTitle' | 'linkedName' | 'actionCardText' | 'codeText' | 'codeInput' | 'warmingIcon'
   >
 >({
   container: {
@@ -398,17 +398,7 @@ const getStyles = createStyles<
     gap: StaticTheme.spacing.sm * 1.25,
   },
   noteTitle: {
-    fontSize: ({ fonts }) => fonts.titleMedium.fontSize,
-    fontWeight: ({ fonts }) => fonts.titleMedium.fontWeight,
-    lineHeight: ({ fonts }) => fonts.titleMedium.lineHeight,
-    color: ({ colors }) => colors.onSurfaceVariant,
     marginBottom: StaticTheme.spacing.xs,
-  },
-  noteText: {
-    fontSize: ({ fonts }) => fonts.bodyMedium.fontSize,
-    fontWeight: ({ fonts }) => fonts.bodyMedium.fontWeight,
-    lineHeight: ({ fonts }) => fonts.bodyMedium.lineHeight,
-    color: ({ colors }) => colors.outline,
   },
   purposeRow: {
     flexDirection: 'row',
@@ -421,12 +411,6 @@ const getStyles = createStyles<
   linkedAccountsList: {
     gap: StaticTheme.spacing.sm * 1.5,
     marginBottom: StaticTheme.spacing.xs * 1.5,
-  },
-  linkedAccountsTitle: {
-    fontSize: ({ fonts }) => fonts.titleLarge.fontSize,
-    fontWeight: ({ fonts }) => fonts.titleLarge.fontWeight,
-    lineHeight: ({ fonts }) => fonts.titleLarge.lineHeight,
-    color: ({ colors }) => colors.onSurface,
   },
   linkedRow: {
     alignItems: 'center',
@@ -441,19 +425,9 @@ const getStyles = createStyles<
   },
   linkedName: {
     flex: 1,
-    fontSize: ({ fonts }) => fonts.bodyLarge.fontSize,
-    fontWeight: ({ fonts }) => fonts.bodyLarge.fontWeight,
-    lineHeight: ({ fonts }) => fonts.bodyLarge.lineHeight,
-    color: ({ colors }) => colors.onSurfaceVariant,
   },
   addLinkContainer: {
     gap: StaticTheme.spacing.sm,
-  },
-  addLinkTitle: {
-    fontSize: ({ fonts }) => fonts.titleLarge.fontSize,
-    fontWeight: ({ fonts }) => fonts.titleLarge.fontWeight,
-    lineHeight: ({ fonts }) => fonts.titleLarge.lineHeight,
-    color: ({ colors }) => colors.onSurface,
   },
   addLinkContent: {
     flexDirection: 'row',
@@ -480,13 +454,6 @@ const getStyles = createStyles<
   },
   actionCardText: {
     textAlign: 'center',
-    fontSize: ({ fonts }) => fonts.bodyLarge.fontSize,
-    fontWeight: ({ fonts }) => fonts.bodyLarge.fontWeight,
-    lineHeight: ({ fonts }) => fonts.bodyLarge.lineHeight,
-    color: ({ colors }) => colors.primary,
-  },
-  disabledText: {
-    color: ({ colors }) => colors.outlineVariant,
   },
   codeDisplay: {
     paddingVertical: StaticTheme.spacing.sm,
@@ -501,9 +468,6 @@ const getStyles = createStyles<
   codeText: {
     letterSpacing: 2,
     marginRight: 'auto',
-    fontSize: ({ fonts }) => fonts.headlineMedium.fontSize,
-    fontWeight: ({ fonts }) => fonts.headlineMedium.fontWeight,
-    lineHeight: ({ fonts }) => fonts.headlineMedium.lineHeight,
   },
   codeInput: {
     borderRadius: StaticTheme.borderRadius.s,
@@ -524,12 +488,6 @@ const getStyles = createStyles<
     alignItems: 'center',
     gap: StaticTheme.spacing.xs,
     marginBottom: StaticTheme.spacing.md * 1.5,
-  },
-  expiryText: {
-    fontSize: ({ fonts }) => fonts.bodySmall.fontSize,
-    fontWeight: ({ fonts }) => fonts.bodySmall.fontWeight,
-    lineHeight: ({ fonts }) => fonts.bodySmall.lineHeight,
-    color: ({ colors }) => colors.outline,
   },
   warmingIcon: {
     marginTop: StaticTheme.spacing.xs * 0.5,

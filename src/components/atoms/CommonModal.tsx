@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react';
 
-import { Modal, Text, TouchableWithoutFeedback, View } from 'react-native';
+import { Modal, TouchableWithoutFeedback, View } from 'react-native';
 import { Portal } from 'react-native-paper';
 
 import useAppTheme from '@/hooks/useAppTheme';
@@ -9,6 +9,7 @@ import colorWithAlpha from '@/utils/colorWithAlpha';
 import { createStyles, StyleRecord } from '@/utils/createStyles';
 
 import IconSymbol, { type IconName } from '@/components/atoms/IconSymbol';
+import ThemedText from '@/components/atoms/ThemedText';
 import ThemedView from '@/components/atoms/ThemedView';
 
 interface CommonModalProps {
@@ -51,8 +52,14 @@ const CommonModal = ({
                 )}
                 <View style={styles.content}>
                   <View style={styles.titleWrapper}>
-                    <Text style={styles.title}>{title}</Text>
-                    {subtitle && <Text style={styles.subtitle}>{subtitle}</Text>}
+                    <ThemedText variant="titleLarge" style={styles.title}>
+                      {title}
+                    </ThemedText>
+                    {subtitle && (
+                      <ThemedText variant="bodyMedium" color="outline" style={styles.subtitle}>
+                        {subtitle}
+                      </ThemedText>
+                    )}
                   </View>
                   {children}
                 </View>
@@ -115,17 +122,9 @@ const getStyles = createStyles<
     marginBottom: StaticTheme.spacing.md,
   },
   title: {
-    fontSize: ({ fonts }) => fonts.titleLarge.fontSize,
-    fontWeight: ({ fonts }) => fonts.titleLarge.fontWeight,
-    lineHeight: ({ fonts }) => fonts.titleLarge.lineHeight,
-    color: ({ colors }) => colors.onSurface,
     textAlign: 'center',
   },
   subtitle: {
-    fontSize: ({ fonts }) => fonts.bodyMedium.fontSize,
-    fontWeight: ({ fonts }) => fonts.bodyMedium.fontWeight,
-    lineHeight: ({ fonts }) => fonts.bodyMedium.lineHeight,
-    color: ({ colors }) => colors.outline,
     textAlign: 'center',
   },
 });

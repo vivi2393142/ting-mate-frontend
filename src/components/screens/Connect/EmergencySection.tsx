@@ -3,7 +3,7 @@ import { useRouter } from 'expo-router';
 import { useCallback, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
-import { Alert, Text, View } from 'react-native';
+import { Alert, View } from 'react-native';
 
 import ROUTES from '@/constants/routes';
 import useAppTheme from '@/hooks/useAppTheme';
@@ -16,6 +16,7 @@ import { getDisplayPhone } from '@/utils/phoneNumberUtils';
 
 import ThemedButton from '@/components/atoms/ThemedButton';
 import ThemedIconButton from '@/components/atoms/ThemedIconButton';
+import ThemedText from '@/components/atoms/ThemedText';
 import NoteMessage from '@/components/screens/Connect/NoteMessage';
 import SectionContainer from '@/components/screens/Connect/SectionContainer';
 
@@ -86,8 +87,12 @@ const ContactRow = ({
   return (
     <View style={styles.contactRow}>
       <View style={styles.contactInfo}>
-        <Text style={styles.contactName}>{contact.name}</Text>
-        {isExpanded && <Text style={styles.contactPhone}>{getDisplayPhone(contact.phone)}</Text>}
+        <ThemedText>{contact.name}</ThemedText>
+        {isExpanded && (
+          <ThemedText variant="bodyMedium" color="onSurfaceVariant">
+            {getDisplayPhone(contact.phone)}
+          </ThemedText>
+        )}
       </View>
       <View style={styles.contactActions}>
         {contact.methods.includes(ContactMethod.PHONE) && (
@@ -194,7 +199,7 @@ const EmergencySection = () => {
 };
 
 const getContactRowStyles = createStyles<
-  StyleRecord<'contactRow' | 'contactInfo' | 'contactActions', 'contactName' | 'contactPhone'>
+  StyleRecord<'contactRow' | 'contactInfo' | 'contactActions'>
 >({
   contactRow: {
     alignItems: 'center',
@@ -208,18 +213,6 @@ const getContactRowStyles = createStyles<
   },
   contactInfo: {
     flex: 1,
-  },
-  contactName: {
-    fontSize: ({ fonts }) => fonts.bodyLarge.fontSize,
-    fontWeight: ({ fonts }) => fonts.bodyLarge.fontWeight,
-    lineHeight: ({ fonts }) => fonts.bodyLarge.lineHeight,
-    color: ({ colors }) => colors.onSurface,
-  },
-  contactPhone: {
-    fontSize: ({ fonts }) => fonts.bodyMedium.fontSize,
-    fontWeight: ({ fonts }) => fonts.bodyMedium.fontWeight,
-    lineHeight: ({ fonts }) => fonts.bodyMedium.lineHeight,
-    color: ({ colors }) => colors.onSurfaceVariant,
   },
   contactActions: {
     flexDirection: 'row',

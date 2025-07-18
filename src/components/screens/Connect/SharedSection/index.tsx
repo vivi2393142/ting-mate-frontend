@@ -1,7 +1,7 @@
 import { useCallback, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
-import { Text, View } from 'react-native';
+import { View } from 'react-native';
 import { TouchableRipple } from 'react-native-paper';
 
 import useAppTheme from '@/hooks/useAppTheme';
@@ -9,6 +9,7 @@ import { StaticTheme } from '@/theme';
 import colorWithAlpha from '@/utils/colorWithAlpha';
 import { createStyles, type StyleRecord } from '@/utils/createStyles';
 
+import ThemedText from '@/components/atoms/ThemedText';
 import SectionContainer from '@/components/screens/Connect/SectionContainer';
 import SharedLogContent from '@/components/screens/Connect/SharedSection/SharedLogContent';
 import SharedNoteContent from '@/components/screens/Connect/SharedSection/SharedNoteContent';
@@ -57,9 +58,9 @@ const SharedSection = () => {
               style={[styles.tabButton, activeTab === tab.type && styles.activeTabButton]}
               rippleColor={colorWithAlpha(theme.colors.primary, 0.1)}
             >
-              <Text style={[styles.tabText, activeTab === tab.type && styles.activeTabText]}>
+              <ThemedText color={activeTab === tab.type ? 'onPrimary' : 'onSurfaceVariant'}>
                 {tab.label}
-              </Text>
+              </ThemedText>
             </TouchableRipple>
           ))}
         </View>
@@ -71,10 +72,7 @@ const SharedSection = () => {
 };
 
 const getStyles = createStyles<
-  StyleRecord<
-    'root' | 'tabContainer' | 'tabButton' | 'activeTabButton',
-    'tabText' | 'activeTabText'
-  >
+  StyleRecord<'root' | 'tabContainer' | 'tabButton' | 'activeTabButton'>
 >({
   root: {
     gap: 0,
@@ -94,15 +92,6 @@ const getStyles = createStyles<
   },
   activeTabButton: {
     backgroundColor: ({ colors }) => colors.primary,
-  },
-  tabText: {
-    fontSize: ({ fonts }) => fonts.bodyLarge.fontSize,
-    fontWeight: ({ fonts }) => fonts.bodyLarge.fontWeight,
-    lineHeight: ({ fonts }) => fonts.bodyLarge.lineHeight,
-    color: ({ colors }) => colors.onSurfaceVariant,
-  },
-  activeTabText: {
-    color: ({ colors }) => colors.onPrimary,
   },
 });
 

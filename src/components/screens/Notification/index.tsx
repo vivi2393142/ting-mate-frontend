@@ -4,7 +4,6 @@ import { Fragment, useCallback, useEffect, useMemo, useState } from 'react';
 
 import { Stack } from 'expo-router';
 import { View } from 'react-native';
-import { Text } from 'react-native-paper';
 
 import IconSymbol, { IconName } from '@/components/atoms/IconSymbol';
 import ROUTES from '@/constants/routes';
@@ -18,6 +17,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import ScreenContainer from '@/components/atoms/ScreenContainer';
 import ThemedIconButton from '@/components/atoms/ThemedIconButton';
+import ThemedText from '@/components/atoms/ThemedText';
 
 dayjs.extend(relativeTime);
 
@@ -94,15 +94,15 @@ const NotificationScreen = () => {
                 size={StaticTheme.iconSize.m}
               />
               <View style={styles.listContent}>
-                <Text style={styles.message} numberOfLines={2}>
-                  {message}
-                </Text>
-                <Text style={styles.time}>{dayjs(createdAt).fromNow()}</Text>
+                <ThemedText numberOfLines={2}>{message}</ThemedText>
+                <ThemedText variant="bodyMedium" color="outline">
+                  {dayjs(createdAt).fromNow()}
+                </ThemedText>
               </View>
             </View>
           ))}
           {/* TODO: base on API response */}
-          {notifications.length === 0 && <Text style={styles.empty}>{t('No notifications')}</Text>}
+          {notifications.length === 0 && <ThemedText>{t('No notifications')}</ThemedText>}
           {hasMoreItems && (
             <ThemedIconButton
               name="arrow.down.circle"
@@ -119,9 +119,7 @@ const NotificationScreen = () => {
 
 export default NotificationScreen;
 
-const getStyles = createStyles<
-  StyleRecord<'listItem' | 'listContent' | 'loadMore', 'message' | 'time' | 'empty'>
->({
+const getStyles = createStyles<StyleRecord<'listItem' | 'listContent' | 'loadMore', 'empty'>>({
   listItem: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -135,23 +133,7 @@ const getStyles = createStyles<
     gap: StaticTheme.spacing.xs,
     flex: 1,
   },
-  message: {
-    fontSize: ({ fonts }) => fonts.bodyLarge.fontSize,
-    fontWeight: ({ fonts }) => fonts.bodyLarge.fontWeight,
-    lineHeight: ({ fonts }) => fonts.bodyLarge.lineHeight,
-    color: ({ colors }) => colors.onSurface,
-  },
-  time: {
-    fontSize: ({ fonts }) => fonts.bodyMedium.fontSize,
-    fontWeight: ({ fonts }) => fonts.bodyMedium.fontWeight,
-    lineHeight: ({ fonts }) => fonts.bodyMedium.lineHeight,
-    color: ({ colors }) => colors.outline,
-  },
   empty: {
-    fontSize: ({ fonts }) => fonts.bodyLarge.fontSize,
-    fontWeight: ({ fonts }) => fonts.bodyLarge.fontWeight,
-    lineHeight: ({ fonts }) => fonts.bodyLarge.lineHeight,
-    color: ({ colors }) => colors.onSurface,
     textAlign: 'center',
   },
   loadMore: { alignSelf: 'center', marginVertical: StaticTheme.spacing.md },

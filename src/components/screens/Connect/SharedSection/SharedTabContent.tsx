@@ -2,7 +2,7 @@ import dayjs from 'dayjs';
 import { Fragment, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 
-import { ScrollView, Text, View } from 'react-native';
+import { ScrollView, View } from 'react-native';
 
 import { LAST_UPDATE_DATETIME_FORMAT } from '@/constants';
 import useAppTheme from '@/hooks/useAppTheme';
@@ -10,6 +10,7 @@ import { StaticTheme } from '@/theme';
 import { createStyles, type StyleRecord } from '@/utils/createStyles';
 
 import ThemedIconButton from '@/components/atoms/ThemedIconButton';
+import ThemedText from '@/components/atoms/ThemedText';
 
 interface ContentContainerProps {
   isExpanded: boolean;
@@ -94,10 +95,10 @@ const SharedTabContent = ({
       </View>
       {/* Last updated & refresh */}
       <View style={styles.updateWrapper}>
-        <Text style={styles.updateText}>
+        <ThemedText variant="bodyMedium" color="onSurfaceVariant">
           {t('Last updated:')}{' '}
           {lastUpdated ? dayjs(lastUpdated).format(LAST_UPDATE_DATETIME_FORMAT) : '--'}
-        </Text>
+        </ThemedText>
         <ThemedIconButton
           name={isFetching ? 'arrow.clockwise.circle' : 'arrow.clockwise'}
           onPress={onRefresh}
@@ -118,9 +119,7 @@ const getStyles = createStyles<
     | 'scrollContainer'
     | 'content'
     | 'loadMoreButton'
-    | 'contentNoteTextContainer'
-    | 'updateWrapper',
-    'contentNoteText' | 'limitNoteText' | 'loadingText' | 'updateText'
+    | 'updateWrapper'
   >
 >({
   contentArea: {
@@ -134,24 +133,6 @@ const getStyles = createStyles<
   contentAreaExpanded: {
     height: 180,
   },
-  contentNoteTextContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: StaticTheme.spacing.xs,
-  },
-  contentNoteText: {
-    fontSize: ({ fonts }) => fonts.bodyLarge.fontSize,
-    fontWeight: ({ fonts }) => fonts.bodyLarge.fontWeight,
-    lineHeight: ({ fonts }) => fonts.bodyLarge.lineHeight,
-    color: ({ colors }) => colors.onSurfaceVariant,
-    fontStyle: 'italic',
-    textAlign: 'center',
-  },
-  limitNoteText: {
-    color: ({ colors }) => colors.outline,
-    marginTop: StaticTheme.spacing.xs,
-  },
   scrollContainer: {
     flex: 1,
   },
@@ -162,23 +143,11 @@ const getStyles = createStyles<
     alignSelf: 'center',
     marginTop: StaticTheme.spacing.sm,
   },
-  loadingText: {
-    textAlign: 'center' as const,
-    paddingVertical: StaticTheme.spacing.md,
-    color: ({ colors }) => colors.onSurfaceVariant,
-    fontSize: ({ fonts }) => fonts.bodyMedium.fontSize,
-  },
   updateWrapper: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
     marginTop: StaticTheme.spacing.xs * 1.5,
-  },
-  updateText: {
-    fontSize: ({ fonts }) => fonts.bodyMedium.fontSize,
-    fontWeight: ({ fonts }) => fonts.bodyMedium.fontWeight,
-    lineHeight: ({ fonts }) => fonts.bodyMedium.lineHeight,
-    color: ({ colors }) => colors.onSurfaceVariant,
   },
 });
 
