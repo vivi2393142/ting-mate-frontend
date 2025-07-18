@@ -10,12 +10,12 @@ export default {
     icon: './src/assets/images/icon.png',
     newArchEnabled: true,
     orientation: 'portrait',
-    notification: {
-      icon: './src/assets/images/icon.png',
-    },
     ios: {
       bundleIdentifier: 'com.vivi2393142.tingmate',
       supportsTablet: true,
+      infoPlist: {
+        UIBackgroundModes: ['location', 'fetch'],
+      },
     },
     android: {
       package: 'com.vivi2393142.tingmate',
@@ -24,6 +24,16 @@ export default {
         foregroundImage: './src/assets/images/adaptive-icon.png',
       },
       edgeToEdgeEnabled: true,
+      permissions: [
+        'ACCESS_COARSE_LOCATION',
+        'ACCESS_FINE_LOCATION',
+        'ACCESS_BACKGROUND_LOCATION',
+        'FOREGROUND_SERVICE',
+        'FOREGROUND_SERVICE_LOCATION',
+        'RECEIVE_BOOT_COMPLETED',
+        'VIBRATE',
+        'WAKE_LOCK',
+      ],
     },
     web: {
       bundler: 'metro',
@@ -45,9 +55,22 @@ export default {
         'expo-splash-screen',
         {
           backgroundColor: '#FFFFFF',
-          image: './src/assets/images/splash-icon.png',
           imageWidth: 200,
           resizeMode: 'contain',
+        },
+      ],
+      [
+        'expo-location',
+        {
+          locationAlwaysAndWhenInUsePermission:
+            'Allow Ting Mate to access your location even when the app is closed for background location tracking.',
+          locationAlwaysPermission:
+            'Allow Ting Mate to access your location even when the app is closed for background location tracking.',
+          locationWhenInUsePermission:
+            'Allow Ting Mate to access your location when the app is open.',
+          isIosBackgroundLocationEnabled: true,
+          isAndroidBackgroundLocationEnabled: true,
+          isAndroidForegroundServiceEnabled: true,
         },
       ],
     ],
