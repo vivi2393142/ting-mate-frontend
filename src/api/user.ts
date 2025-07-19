@@ -259,7 +259,7 @@ export const useRemoveUserLink = (
  * Utility Functions
  * ============================================================================= */
 
-const updateUser = useUserStore.getState().setUser;
 export const syncCurrentUserToStore = (user: User) => {
+  const updateUser = useUserStore.getState().setUser;
   updateUser(user);
 };

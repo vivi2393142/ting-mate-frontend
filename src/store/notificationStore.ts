@@ -1,28 +1,44 @@
 import { create } from 'zustand';
 
+import { Route } from '@/constants/routes';
 import type { Notification } from '@/types/notification';
 
 const NOTIFICATION_CTN_PER_PAGE = 10;
 const MAX_NOTIFICATION_COUNT = 50;
 
+/**
+ * Represents the latest screen that needs to show a refresh button
+ * Shows a temporary button for user to force refresh
+ */
+interface StaleDataService {
+  message: string; // Short message to show on the button, e.g. "Tasks updated"
+  screens: Route[]; // Screen name where to show the button
+  onRefresh: () => void; // Function to call when user clicks refresh
+}
+
 interface NotificationState {
-  // Notification state
+  // Notification list state
   notifications: Notification[];
   isLoading: boolean;
 
-  // API parameters
+  // Pagination state
   limit: number;
   offset: number;
   total: number;
 
+  // Stale data tracking - only stores the latest stale service
+  staleDataService: StaleDataService | null;
+
   // Actions
   setNotifications: (notifications: Notification[]) => void;
-
   setLoading: (loading: boolean) => void;
   setLimit: (limit: number) => void;
   setTotal: (total: number) => void;
   loadMore: () => void;
   reset: () => void;
+
+  // Stale data management
+  setStaleDataService: (staleService: StaleDataService | null) => void;
 }
 
 export const useNotificationStore = create<NotificationState>((set, get) => ({
@@ -34,6 +50,9 @@ export const useNotificationStore = create<NotificationState>((set, get) => ({
   limit: 10,
   offset: 0,
   total: 0,
+
+  // Stale data tracking
+  staleDataService: null,
 
   // Notification actions
   setNotifications: (notifications) =>
@@ -60,5 +79,18 @@ export const useNotificationStore = create<NotificationState>((set, get) => ({
       limit: NOTIFICATION_CTN_PER_PAGE,
       offset: 0,
       total: 0,
+      staleDataService: null,
     }),
+
+  // Stale data management actions
+  setStaleDataService: (staleDataService: StaleDataService | null) => set({ staleDataService }),
 }));
+
+/* =============================================================================
+ * Utility Functions
+ * ============================================================================= */
+
+export const setStaleDataServiceToStore = (staleService: StaleDataService | null) => {
+  const setStaleDataService = useNotificationStore.getState().setStaleDataService;
+  setStaleDataService(staleService);
+};

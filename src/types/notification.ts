@@ -6,7 +6,7 @@ export enum NotificationLevel {
 
 export enum NotificationCategory {
   TASK = 'TASK',
-  USER_SETTING = 'USER_SETTING',
+  LINKING_ACCOUNT = 'LINKING_ACCOUNT',
   SAFEZONE = 'SAFEZONE',
   SYSTEM = 'SYSTEM',
 }

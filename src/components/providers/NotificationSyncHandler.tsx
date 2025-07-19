@@ -1,9 +1,13 @@
 import * as Notifications from 'expo-notifications';
+import { usePathname } from 'expo-router';
 import { useCallback, useEffect, useRef } from 'react';
+import { useTranslation } from 'react-i18next';
 
 import { useGetNotifications, useGetNotificationSSE } from '@/api/notification';
-import { useNotificationStore } from '@/store/notificationStore';
+import ROUTES from '@/constants/routes';
+import { setStaleDataServiceToStore, useNotificationStore } from '@/store/notificationStore';
 import { NotificationCategory, type Notification } from '@/types/notification';
+import { useQueryClient } from '@tanstack/react-query';
 
 const MAX_NOTIFICATION_COUNT = 50;
 
@@ -21,12 +25,23 @@ Notifications.setNotificationHandler({
   }),
 });
 
+const TASK_REFRESH_SCREENS = [ROUTES.HOME, ROUTES.EDIT_TASK];
+
 // Global notification sync handler that manages API calls and SSE connections
 const NotificationSyncHandler = () => {
+  const { t } = useTranslation('common');
   const { limit } = useNotificationStore();
 
+  const queryClient = useQueryClient();
+
   // Track previous notification IDs to detect new notifications
-  const prevNotificationIdsRef = useRef<Set<string>>(new Set());
+  const prevNotificationIdsRef = useRef<Set<string>>(null);
+
+  const pathname = usePathname();
+  const pathRef = useRef(pathname);
+  useEffect(() => {
+    pathRef.current = pathname;
+  }, [pathname]);
 
   const { data: notificationsResponse, isLoading } = useGetNotifications(
     {
@@ -39,33 +54,44 @@ const NotificationSyncHandler = () => {
   );
 
   // Process refresh logic for new notifications
-  const processRefreshLogic = useCallback((notification: Notification) => {
-    switch (notification.category) {
-      case NotificationCategory.TASK:
-        // TODO: Invalidate tasks queries
-        // queryClient.invalidateQueries({ queryKey: ['tasks'] });
-        // if (notification.payload?.taskId) {
-        //   queryClient.invalidateQueries({ queryKey: ['task', notification.payload.taskId] });
-        // }
-        break;
-
-      case NotificationCategory.USER_SETTING:
-        // TODO: Invalidate user settings queries
-        // queryClient.invalidateQueries({ queryKey: ['userSettings'] });
-        break;
-
-      case NotificationCategory.SAFEZONE:
-        // TODO: Invalidate safezone queries
-        // queryClient.invalidateQueries({ queryKey: ['safezone'] });
-        break;
-
-      case NotificationCategory.SYSTEM:
-        // TODO: System notifications might need special handling
-        // For now, just invalidate general queries
-        // queryClient.invalidateQueries({ queryKey: ['system'] });
-        break;
-    }
-  }, []);
+  const processRefreshLogic = useCallback(
+    (notification: Notification) => {
+      switch (notification.category) {
+        case NotificationCategory.TASK:
+          // If the user is on a task refresh screen, show a temporary button to refresh the data
+          if ((TASK_REFRESH_SCREENS as string[]).includes(pathRef.current)) {
+            setStaleDataServiceToStore({
+              message: t('Tasks have been updated, please refresh to see changes'),
+              screens: TASK_REFRESH_SCREENS,
+              onRefresh: () => {
+                queryClient.invalidateQueries({ queryKey: ['tasks'] });
+                queryClient.invalidateQueries({ queryKey: ['task'] });
+              },
+            });
+          } else {
+            queryClient.invalidateQueries({ queryKey: ['tasks'] });
+            queryClient.invalidateQueries({ queryKey: ['task'] });
+          }
+          break;
+        case NotificationCategory.LINKING_ACCOUNT:
+          setStaleDataServiceToStore({
+            message: t('Linking account has been updated, please refresh to see changes'),
+            screens: [ROUTES.HOME, ROUTES.CONNECT, ROUTES.SETTINGS],
+            onRefresh: () => {
+              queryClient.invalidateQueries(); // Refresh all queries
+            },
+          });
+          break;
+        case NotificationCategory.SAFEZONE:
+          // Should call refresh immediately
+          queryClient.invalidateQueries({ queryKey: ['linkedLocation'] });
+          break;
+        case NotificationCategory.SYSTEM:
+          break;
+      }
+    },
+    [queryClient, t],
+  );
 
   // Sync the store with API results
   useEffect(() => {
@@ -78,20 +104,23 @@ const NotificationSyncHandler = () => {
       updateNotifications(notifications);
       updateTotal(notificationsResponse.total);
 
-      // Track current notification IDs for next comparison
       const currentIds = new Set(notifications.map((n) => n.id));
-      const prevIds = prevNotificationIdsRef.current;
+      if (prevNotificationIdsRef.current === null) {
+        // No need to process refresh logic for initial load
+        prevNotificationIdsRef.current = currentIds;
+      } else {
+        // Find new notifications by comparing with previous IDs
+        const prevIds = prevNotificationIdsRef.current;
+        const newNotifications = notifications.filter((n) => !prevIds.has(n.id));
 
-      // Find new notifications by comparing with previous IDs
-      const newNotifications = notifications.filter((n) => !prevIds.has(n.id));
+        // Process refresh logic for new notifications
+        newNotifications.forEach((notification) => {
+          processRefreshLogic(notification);
+        });
 
-      // Process refresh logic for new notifications
-      newNotifications.forEach((notification) => {
-        processRefreshLogic(notification);
-      });
-
-      // Update previous IDs for next comparison
-      prevNotificationIdsRef.current = currentIds;
+        // Update previous IDs for next comparison
+        prevNotificationIdsRef.current = currentIds;
+      }
     }
   }, [notificationsResponse, processRefreshLogic]);
 
@@ -110,7 +139,6 @@ const NotificationSyncHandler = () => {
       },
       trigger: null,
     });
-    // TODO: Handle refresh target screen
   }, []);
 
   useGetNotificationSSE({ onMessage: handleMessage });

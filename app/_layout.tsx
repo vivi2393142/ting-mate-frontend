@@ -10,6 +10,7 @@ import queryClient from '@/api/queryClient';
 import useColorScheme from '@/hooks/useColorScheme';
 import '@/i18n';
 
+import StaleDataRefreshSnackbar from '@/components/atoms/StaleDataRefreshButton';
 import CombinedThemeProvider from '@/components/providers/CombinedThemeProvider';
 import LocationSyncHandler from '@/components/providers/LocationSyncHandler';
 import NotificationSyncHandler from '@/components/providers/NotificationSyncHandler';
@@ -42,6 +43,7 @@ const RootLayout = () => {
             <Stack.Screen name="+not-found" />
           </Stack>
           <StatusBar style={colorScheme === 'dark' ? 'light' : 'dark'} />
+          <StaleDataRefreshSnackbar />
         </CombinedThemeProvider>
       </QueryClientProvider>
     </SafeAreaProvider>
