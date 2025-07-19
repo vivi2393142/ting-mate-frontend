@@ -28,6 +28,7 @@ const API_PATH = {
   // Notifications
   NOTIFICATIONS: '/notifications',
   NOTIFICATION_MARK_READ: '/notifications/mark-read',
+  NOTIFICATION_SSE: '/notifications/sse',
 };
 
 export default API_PATH;

@@ -5,10 +5,14 @@ import {
   type UseMutationOptions,
   type UseQueryOptions,
 } from '@tanstack/react-query';
+import { useCallback, useMemo } from 'react';
+import type { EventSourceEvent } from 'react-native-sse';
 import { z } from 'zod';
 
 import { axiosClientWithAuth } from '@/api/axiosClient';
 import API_PATH from '@/api/path';
+import useSSE from '@/hooks/useSSE';
+import useAuthStore from '@/store/useAuthStore';
 import {
   NotificationCategory,
   NotificationLevel,
@@ -84,10 +88,7 @@ export const useGetNotifications = (
           offset: params.offset ?? 0,
         },
       });
-      console.log({ data: res.data });
       const parsed = APINotificationListResponseSchema.parse(res.data);
-      console.log({ parsed });
-      console.log({ transformed: transformNotificationListFromAPI(parsed) });
       return transformNotificationListFromAPI(parsed);
     },
     ...options,
@@ -103,5 +104,35 @@ export const useMarkNotificationRead = (options?: UseMutationOptions<void, Error
       queryClient.invalidateQueries({ queryKey: ['notifications'] });
     },
     ...options,
+  });
+};
+
+export const useGetNotificationSSE = ({
+  onMessage,
+}: {
+  onMessage: (data: Notification, e: EventSourceEvent<'message'>) => void;
+}) => {
+  const queryClient = useQueryClient();
+  const token = useAuthStore((s) => s.token);
+  const headers = useMemo(() => ({ Authorization: `Bearer ${token}` }), [token]);
+  const enabled = !!token;
+
+  const handleMessage = useCallback(
+    (e: EventSourceEvent<'message'>) => {
+      const parsed = APINotificationSchema.parse(JSON.parse(e.data ?? '{}'));
+      const transformed = transformNotificationFromAPI(parsed);
+      if (transformed) {
+        onMessage(transformed, e);
+        queryClient.invalidateQueries({ queryKey: ['notifications'] });
+      }
+    },
+    [onMessage, queryClient],
+  );
+
+  return useSSE({
+    path: API_PATH.NOTIFICATION_SSE,
+    onMessage: handleMessage,
+    headers,
+    enabled,
   });
 };

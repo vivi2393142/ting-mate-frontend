@@ -1,6 +1,7 @@
+import * as Notifications from 'expo-notifications';
 import { useCallback, useEffect, useRef } from 'react';
 
-import { useGetNotifications } from '@/api/notification';
+import { useGetNotifications, useGetNotificationSSE } from '@/api/notification';
 import { useNotificationStore } from '@/store/notificationStore';
 import { NotificationCategory, type Notification } from '@/types/notification';
 
@@ -9,6 +10,16 @@ const MAX_NOTIFICATION_COUNT = 50;
 const updateLoading = useNotificationStore.getState().setLoading;
 const updateNotifications = useNotificationStore.getState().setNotifications;
 const updateTotal = useNotificationStore.getState().setTotal;
+
+// TODO: Set notification handler for when app is in foreground, should merged with local notification settings
+Notifications.setNotificationHandler({
+  handleNotification: async () => ({
+    shouldShowBanner: true,
+    shouldShowList: true,
+    shouldPlaySound: true,
+    shouldSetBadge: true,
+  }),
+});
 
 // Global notification sync handler that manages API calls and SSE connections
 const NotificationSyncHandler = () => {
@@ -84,21 +95,26 @@ const NotificationSyncHandler = () => {
     }
   }, [notificationsResponse, processRefreshLogic]);
 
-  // TODO: Implement SSE connection for real-time notifications
-  useEffect(() => {
-    // SSE connection logic would go here
-    // const eventSource = new EventSource('/api/notifications/sse');
-    // eventSource.onmessage = (event) => {
-    //   const notification = JSON.parse(event.data);
-    //   // Add notification to store
-    //   addNotification(notification);
-    //   // Process refresh logic
-    //   processRefreshLogic(notification);
-    // };
-    // return () => eventSource.close();
-  }, [processRefreshLogic]);
+  const handleMessage = useCallback((notification: Notification) => {
+    Notifications.scheduleNotificationAsync({
+      content: {
+        body: notification.message,
+        categoryIdentifier: notification.category,
+        sound: true,
+        badge: 1,
+        data: {
+          notificationId: notification.id,
+          category: notification.category,
+          payload: notification.payload,
+        },
+      },
+      trigger: null,
+    });
+    // TODO: Handle refresh target screen
+  }, []);
 
-  // This component doesn't render any UI
+  useGetNotificationSSE({ onMessage: handleMessage });
+
   return null;
 };
 
