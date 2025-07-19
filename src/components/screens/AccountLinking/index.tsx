@@ -1,6 +1,6 @@
 import * as Clipboard from 'expo-clipboard';
 import { router } from 'expo-router';
-import { Fragment, useCallback, useState } from 'react';
+import { Fragment, useCallback, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import { Stack } from 'expo-router';
@@ -15,7 +15,7 @@ import useStackScreenOptionsHelper from '@/hooks/useStackScreenOptionsHelper';
 import useAuthStore from '@/store/useAuthStore';
 import useUserStore from '@/store/useUserStore';
 import { StaticTheme } from '@/theme';
-import { Role } from '@/types/user';
+import { Role, type UserLink } from '@/types/user';
 import colorWithAlpha from '@/utils/colorWithAlpha';
 import { createStyles, StyleRecord } from '@/utils/createStyles';
 
@@ -27,6 +27,43 @@ import ThemedIconButton from '@/components/atoms/ThemedIconButton';
 import ThemedText from '@/components/atoms/ThemedText';
 import ThemedView from '@/components/atoms/ThemedView';
 
+const LinkedAccountList = ({
+  title,
+  users,
+  handleUnlink,
+}: {
+  title: string;
+  users: UserLink[];
+  handleUnlink: (userEmail: string, userName: string) => () => void;
+}) => {
+  const { t } = useTranslation('accountLinking');
+  const theme = useAppTheme();
+  const styles = getLinkedAccountListStyles(theme);
+
+  return (
+    <Fragment>
+      <ThemedText variant="bodyMedium" color="outline">
+        {title}
+      </ThemedText>
+      <View style={styles.linkedAccountsList}>
+        {users.map((user) => (
+          <View key={user.email} style={styles.linkedRow}>
+            <ThemedText color="onSurfaceVariant" style={styles.linkedName}>
+              {user.name || '---'} ({user.email})
+            </ThemedText>
+            <ThemedIconButton
+              name="xmark.circle"
+              color={theme.colors.error}
+              onPress={handleUnlink(user.email, user.name)}
+              accessibilityLabel={t('Unlink')}
+            />
+          </View>
+        ))}
+      </View>
+    </Fragment>
+  );
+};
+
 const AccountLinkingScreen = () => {
   const { t } = useTranslation('accountLinking');
   const { t: tCommon } = useTranslation('common');
@@ -36,7 +73,7 @@ const AccountLinkingScreen = () => {
   const styles = getStyles(theme);
 
   const user = useUserStore((s) => s.user);
-  const linkedUsers = user?.settings.linked || [];
+  const linkedUsers = useMemo(() => user?.settings.linked || [], [user]);
 
   // Check if user is caregiver and has linked accounts
   const isCaregiver = user?.role === Role.CAREGIVER;
@@ -161,6 +198,18 @@ const AccountLinkingScreen = () => {
     });
   }, []);
 
+  const [carereceivers, caregivers] = useMemo(
+    () =>
+      linkedUsers.reduce<[UserLink[], UserLink[]]>(
+        (acc, curr) => {
+          acc[curr.role === Role.CAREGIVER ? 1 : 0].push(curr);
+          return acc;
+        },
+        [[], []],
+      ),
+    [linkedUsers],
+  );
+
   const purposeItems = [
     { text: t('Keep track of tasks together'), icon: 'checklist' },
     { text: t('Get gentle updates when things are done'), icon: 'bell' },
@@ -181,23 +230,21 @@ const AccountLinkingScreen = () => {
         {/* Linked Account Section */}
         <ThemedView style={styles.linkedAccountsContainer}>
           <ThemedText variant="titleLarge">{t('Linked Accounts')}</ThemedText>
-          {linkedUsers?.length > 0 ? (
-            <View style={styles.linkedAccountsList}>
-              {linkedUsers.map((user) => (
-                <View key={user.email} style={styles.linkedRow}>
-                  <ThemedText color="onSurfaceVariant" style={styles.linkedName}>
-                    {user.name || '---'} ({user.email})
-                  </ThemedText>
-                  <ThemedIconButton
-                    name="xmark.circle"
-                    color={theme.colors.error}
-                    onPress={handleUnlink(user.email, user.name)}
-                    accessibilityLabel={t('Unlink')}
-                  />
-                </View>
-              ))}
-            </View>
-          ) : (
+          {carereceivers.length !== 0 && (
+            <LinkedAccountList
+              title={tCommon('role.Core User')}
+              users={carereceivers}
+              handleUnlink={handleUnlink}
+            />
+          )}
+          {caregivers.length !== 0 && (
+            <LinkedAccountList
+              title={tCommon('role.Companion')}
+              users={caregivers}
+              handleUnlink={handleUnlink}
+            />
+          )}
+          {linkedUsers?.length === 0 && (
             <ThemedText variant="bodyMedium" color="outline">
               {t('No linked accounts yet. Use the options below to connect with someone.')}
             </ThemedText>
@@ -253,10 +300,7 @@ const AccountLinkingScreen = () => {
                   size={StaticTheme.iconSize.l}
                   color={shouldDisableAddLink ? theme.colors.outlineVariant : theme.colors.primary}
                 />
-                <ThemedText
-                  color={shouldDisableAddLink ? 'onSurfaceVariant' : 'onSurface'}
-                  style={styles.actionCardText}
-                >
+                <ThemedText color={shouldDisableAddLink ? 'outlineVariant' : 'primary'}>
                   {t('I Got a Code')}
                 </ThemedText>
               </View>
@@ -360,6 +404,29 @@ const AccountLinkingScreen = () => {
   );
 };
 
+const getLinkedAccountListStyles = createStyles<
+  StyleRecord<'linkedAccountsList' | 'linkedRow', 'linkedName'>
+>({
+  linkedAccountsList: {
+    gap: StaticTheme.spacing.sm * 1.5,
+    marginBottom: StaticTheme.spacing.xs * 1.5,
+  },
+  linkedRow: {
+    alignItems: 'center',
+    flexDirection: 'row',
+    gap: StaticTheme.spacing.sm,
+    borderRadius: StaticTheme.borderRadius.s,
+    paddingLeft: StaticTheme.spacing.md,
+    paddingRight: StaticTheme.spacing.sm * 1.25,
+    paddingVertical: StaticTheme.spacing.sm,
+    borderWidth: 1,
+    borderColor: ({ colors }) => colorWithAlpha(colors.primary, 0.5),
+  },
+  linkedName: {
+    flex: 1,
+  },
+});
+
 const getStyles = createStyles<
   StyleRecord<
     | 'container'
@@ -367,8 +434,6 @@ const getStyles = createStyles<
     | 'note'
     | 'purposeRow'
     | 'linkedAccountsContainer'
-    | 'linkedAccountsList'
-    | 'linkedRow'
     | 'addLinkContainer'
     | 'addLinkContent'
     | 'actionCard'
@@ -379,7 +444,7 @@ const getStyles = createStyles<
     | 'expiryContainer'
     | 'warningContainer'
     | 'signInButton',
-    'noteTitle' | 'linkedName' | 'actionCardText' | 'codeText' | 'codeInput' | 'warmingIcon'
+    'noteTitle' | 'codeText' | 'codeInput' | 'warmingIcon'
   >
 >({
   container: {
@@ -408,24 +473,6 @@ const getStyles = createStyles<
   linkedAccountsContainer: {
     gap: StaticTheme.spacing.sm,
   },
-  linkedAccountsList: {
-    gap: StaticTheme.spacing.sm * 1.5,
-    marginBottom: StaticTheme.spacing.xs * 1.5,
-  },
-  linkedRow: {
-    alignItems: 'center',
-    flexDirection: 'row',
-    gap: StaticTheme.spacing.sm,
-    borderRadius: StaticTheme.borderRadius.s,
-    paddingLeft: StaticTheme.spacing.md,
-    paddingRight: StaticTheme.spacing.sm * 1.25,
-    paddingVertical: StaticTheme.spacing.sm,
-    borderWidth: 1,
-    borderColor: ({ colors }) => colorWithAlpha(colors.primary, 0.5),
-  },
-  linkedName: {
-    flex: 1,
-  },
   addLinkContainer: {
     gap: StaticTheme.spacing.sm,
   },
@@ -451,9 +498,6 @@ const getStyles = createStyles<
     alignItems: 'center',
     justifyContent: 'center',
     gap: StaticTheme.spacing.sm,
-  },
-  actionCardText: {
-    textAlign: 'center',
   },
   codeDisplay: {
     paddingVertical: StaticTheme.spacing.sm,

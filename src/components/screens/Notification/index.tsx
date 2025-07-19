@@ -1,27 +1,29 @@
 import dayjs from 'dayjs';
 import relativeTime from 'dayjs/plugin/relativeTime';
-import { Fragment, useCallback, useEffect, useMemo, useState } from 'react';
+import { Fragment, useCallback, useEffect, useMemo } from 'react';
 
 import { Stack } from 'expo-router';
 import { View } from 'react-native';
 
+import { useMarkNotificationRead } from '@/api/notification';
 import IconSymbol, { IconName } from '@/components/atoms/IconSymbol';
 import ROUTES from '@/constants/routes';
 import useAppTheme from '@/hooks/useAppTheme';
 import useStackScreenOptionsHelper from '@/hooks/useStackScreenOptionsHelper';
+import { useNotificationStore } from '@/store/notificationStore';
 import { StaticTheme } from '@/theme';
-import { Notification, NotificationCategory, NotificationLevel } from '@/types/notification';
+import { NotificationCategory, NotificationLevel } from '@/types/notification';
 import { createStyles, type StyleRecord } from '@/utils/createStyles';
 import { useTranslation } from 'react-i18next';
+import { TouchableRipple } from 'react-native-paper';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import ScreenContainer from '@/components/atoms/ScreenContainer';
 import ThemedIconButton from '@/components/atoms/ThemedIconButton';
 import ThemedText from '@/components/atoms/ThemedText';
+import colorWithAlpha from '@/utils/colorWithAlpha';
 
 dayjs.extend(relativeTime);
-
-const NOTIFICATION_CTN_PER_PAGE = 10;
 
 const categoryIconMap: Record<NotificationCategory, IconName> = {
   [NotificationCategory.TASK]: 'checklist',
@@ -29,22 +31,6 @@ const categoryIconMap: Record<NotificationCategory, IconName> = {
   [NotificationCategory.SAFEZONE]: 'location',
   [NotificationCategory.SYSTEM]: 'bell',
 };
-
-const mockNotifications: Notification[] = Array.from({ length: 16 }).map((_, i) => ({
-  id: `notification-${i + 1}`,
-  userId: 'user-1',
-  category: NotificationCategory.SYSTEM,
-  message: `This is notification message #${i + 1}`,
-  level: i % 2 === 0 ? NotificationLevel.ERROR : NotificationLevel.GENERAL,
-  isRead: false,
-  createdAt: dayjs()
-    .subtract(i * 30, 'minutes')
-    .toISOString(),
-  payload: {
-    notificationId: i + 1,
-    timestamp: Date.now(),
-  },
-}));
 
 const NotificationScreen = () => {
   const getStackScreenOptions = useStackScreenOptionsHelper();
@@ -55,23 +41,19 @@ const NotificationScreen = () => {
 
   const insets = useSafeAreaInsets();
 
-  const [notificationFetchedCtn, setNotificationFetchedCtn] = useState(NOTIFICATION_CTN_PER_PAGE);
+  // Get synced notifications and pagination state from store
+  const { notifications, isLoading, total, loadMore } = useNotificationStore();
+  const hasMore = total > notifications.length;
 
-  const hasMoreItems = mockNotifications.length > notificationFetchedCtn;
-
-  const handleMarkAllAsRead = useCallback(() => {
-    // TODO: call mark read API
-  }, []);
+  const markAsReadMutation = useMarkNotificationRead();
 
   const handleLoadMore = useCallback(() => {
-    setNotificationFetchedCtn((prev) => prev + NOTIFICATION_CTN_PER_PAGE);
-  }, []);
+    loadMore();
+  }, [loadMore]);
 
-  const notifications = mockNotifications.slice(0, notificationFetchedCtn);
-
-  useEffect(() => {
-    handleMarkAllAsRead();
-  }, [handleMarkAllAsRead]);
+  const handleMarkAsRead = (id: string, isRead: boolean) => () => {
+    if (!isRead) markAsReadMutation.mutate([id]);
+  };
 
   const levelColorMap: Record<NotificationLevel, string> = useMemo(
     () => ({
@@ -81,34 +63,53 @@ const NotificationScreen = () => {
     }),
     [theme],
   );
+
+  useEffect(() => {
+    return () => {
+      // Mark all as read when screen unmounts
+      const currentStore = useNotificationStore.getState();
+      const unreadIds = currentStore.notifications.filter((n) => !n.isRead).map((n) => n.id);
+      if (unreadIds.length > 0) markAsReadMutation.mutate(unreadIds);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   return (
     <Fragment>
       <Stack.Screen options={getStackScreenOptions({ title: ROUTES.NOTIFICATIONS })} />
       <ScreenContainer scrollable isRoot={false}>
         <View style={{ paddingBottom: insets.bottom }}>
-          {notifications.map(({ id, level, message, createdAt, category }) => (
-            <View key={id} style={styles.listItem}>
-              <IconSymbol
-                name={categoryIconMap[category]}
-                color={levelColorMap[level]}
-                size={StaticTheme.iconSize.m}
-              />
-              <View style={styles.listContent}>
-                <ThemedText numberOfLines={2}>{message}</ThemedText>
-                <ThemedText variant="bodyMedium" color="outline">
-                  {dayjs(createdAt).fromNow()}
-                </ThemedText>
-              </View>
-            </View>
+          {notifications.map(({ id, level, message, createdAt, category, isRead }) => (
+            <TouchableRipple
+              key={id}
+              style={[styles.listItem, !isRead && styles.listItemUnread]}
+              onPress={handleMarkAsRead(id, isRead)}
+            >
+              <Fragment>
+                <IconSymbol
+                  name={categoryIconMap[category]}
+                  color={levelColorMap[level]}
+                  size={StaticTheme.iconSize.m}
+                />
+                <View style={styles.listContent}>
+                  <ThemedText numberOfLines={2}>{message}</ThemedText>
+                  <ThemedText variant="bodyMedium" color="outline">
+                    {dayjs(createdAt).fromNow()}
+                  </ThemedText>
+                </View>
+              </Fragment>
+            </TouchableRipple>
           ))}
-          {/* TODO: base on API response */}
-          {notifications.length === 0 && <ThemedText>{t('No notifications')}</ThemedText>}
-          {hasMoreItems && (
+          {notifications.length === 0 && !isLoading && (
+            <ThemedText style={styles.empty}>{t('No notifications')}</ThemedText>
+          )}
+          {hasMore && (
             <ThemedIconButton
               name="arrow.down.circle"
               size="medium"
               onPress={handleLoadMore}
               style={styles.loadMore}
+              disabled={isLoading}
             />
           )}
         </View>
@@ -119,7 +120,9 @@ const NotificationScreen = () => {
 
 export default NotificationScreen;
 
-const getStyles = createStyles<StyleRecord<'listItem' | 'listContent' | 'loadMore', 'empty'>>({
+const getStyles = createStyles<
+  StyleRecord<'listItem' | 'listItemUnread' | 'listContent' | 'loadMore' | 'empty', 'empty'>
+>({
   listItem: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -128,6 +131,9 @@ const getStyles = createStyles<StyleRecord<'listItem' | 'listContent' | 'loadMor
     paddingVertical: StaticTheme.spacing.sm,
     borderBottomWidth: 1 / 3,
     borderColor: ({ colors }) => colors.outline,
+  },
+  listItemUnread: {
+    backgroundColor: ({ colors }) => colorWithAlpha(colors.primary, 0.1),
   },
   listContent: {
     gap: StaticTheme.spacing.xs,

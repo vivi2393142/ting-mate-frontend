@@ -12,7 +12,7 @@ import '@/i18n';
 
 import CombinedThemeProvider from '@/components/providers/CombinedThemeProvider';
 import LocationSyncHandler from '@/components/providers/LocationSyncHandler';
-import NotificationHandler from '@/components/providers/NotificationHandler';
+import NotificationSyncHandler from '@/components/providers/NotificationSyncHandler';
 import UserSyncHandler from '@/components/providers/UserSyncHandler';
 import ROUTES from '@/constants/routes';
 import useStackScreenOptionsHelper from '@/hooks/useStackScreenOptionsHelper';
@@ -31,7 +31,7 @@ const RootLayout = () => {
     <SafeAreaProvider>
       <QueryClientProvider client={queryClient}>
         <UserSyncHandler />
-        <NotificationHandler />
+        <NotificationSyncHandler />
         <CombinedThemeProvider>
           <LocationSyncHandler />
           <Stack>

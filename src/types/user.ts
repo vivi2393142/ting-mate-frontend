@@ -11,18 +11,21 @@ export enum UserDisplayMode {
 }
 
 export interface ReminderSettings {
-  taskTimeReminder: boolean;
+  taskReminder: boolean;
   overdueReminder: {
     enabled: boolean;
     delayMinutes: number;
     repeat: boolean;
   };
-  safeZoneReminder: boolean;
+  safeZoneExitReminder: boolean;
+  taskCompletionNotification: boolean;
+  taskChangeNotification: boolean;
 }
 
 export interface UserLink {
   email: string;
   name: string;
+  role: Role;
 }
 
 export interface EmergencyContact {

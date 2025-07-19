@@ -1,19 +1,25 @@
 import { useRouter } from 'expo-router';
+import { useMemo } from 'react';
 import { type StyleProp, StyleSheet, View, type ViewStyle } from 'react-native';
 
 import { Badge } from 'react-native-paper';
 
 import ROUTES from '@/constants/routes';
 import useAppTheme from '@/hooks/useAppTheme';
+import { useNotificationStore } from '@/store/notificationStore';
 
 import ThemedIconButton from '@/components/atoms/ThemedIconButton';
-
-// TODO: Get from API
-const hasUnread = true;
 
 const NotificationCenterButton = ({ style }: { style?: StyleProp<ViewStyle> }) => {
   const theme = useAppTheme();
   const router = useRouter();
+
+  const notifications = useNotificationStore((s) => s.notifications);
+
+  const hasUnread = useMemo(
+    () => notifications?.some((notification) => !notification.isRead),
+    [notifications],
+  );
 
   const handlePress = () => {
     router.push(ROUTES.NOTIFICATIONS);

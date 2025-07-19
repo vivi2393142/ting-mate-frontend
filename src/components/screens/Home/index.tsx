@@ -185,7 +185,7 @@ const HomeScreen = () => {
               color={theme.colors.error}
               style={styles.warmingIcon}
             />
-            <ThemedText variant="bodyMedium" color="outline">
+            <ThemedText variant="bodyMedium" color="outline" style={styles.warningText}>
               {t(
                 'You haven’t linked with a companion yet. Link now to see and help manage their tasks.',
               )}
@@ -378,12 +378,13 @@ const getStyles = createStyles<
     flexDirection: 'row',
     gap: StaticTheme.spacing.sm,
     marginBottom: StaticTheme.spacing.md,
+    paddingVertical: StaticTheme.spacing.md,
   },
   warmingIcon: {
     marginTop: StaticTheme.spacing.xs * 0.5,
   },
   warningText: {
-    flex: 1,
+    flexShrink: 1,
   },
   notificationButton: {
     marginLeft: 'auto',

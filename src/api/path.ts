@@ -25,6 +25,9 @@ const API_PATH = {
   // Assistant
   ASSISTANT_VOICE_COMMAND: '/assistant/voice-command',
   ASSISTANT_EXECUTE_PENDING_TASK: '/assistant/execute-pending-task',
+  // Notifications
+  NOTIFICATIONS: '/notifications',
+  NOTIFICATION_MARK_READ: '/notifications/mark-read',
 };
 
 export default API_PATH;

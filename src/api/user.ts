@@ -11,7 +11,7 @@ import { axiosClientWithAuth } from '@/api/axiosClient';
 import API_PATH from '@/api/path';
 import useUserStore from '@/store/useUserStore';
 import { ContactMethod } from '@/types/connect';
-import type { User, UserSettings } from '@/types/user';
+import type { ReminderSettings, User, UserSettings } from '@/types/user';
 import { Role, UserDisplayMode, UserTextSize } from '@/types/user';
 
 /* =============================================================================
@@ -24,16 +24,19 @@ export const UserDisplayModeSchema = z.nativeEnum(UserDisplayMode);
 const UserLinkSchema = z.object({
   email: z.string(),
   name: z.string(),
+  role: z.nativeEnum(Role),
 });
 
 const ReminderSettingsSchema = z.object({
-  taskTimeReminder: z.boolean(),
-  overdueReminder: z.object({
+  task_reminder: z.boolean(),
+  overdue_reminder: z.object({
     enabled: z.boolean(),
-    delayMinutes: z.number(),
+    delay_minutes: z.number(),
     repeat: z.boolean(),
   }),
-  safeZoneReminder: z.boolean(),
+  safe_zone_exit_reminder: z.boolean(),
+  task_completion_notification: z.boolean(),
+  task_change_notification: z.boolean(),
 });
 
 const ContactMethodSchema = z.nativeEnum(ContactMethod);
@@ -50,7 +53,7 @@ const UserSettingsSchema = z.object({
   linked: z.array(UserLinkSchema),
   textSize: UserTextSizeSchema,
   displayMode: UserDisplayModeSchema,
-  reminder: ReminderSettingsSchema.nullable(),
+  reminder: z.any(),
   emergency_contacts: z.array(EmergencyContactSchema).optional().nullable(),
   allow_share_location: z.boolean().optional().nullable(),
   // language: z.string().optional(),
@@ -72,6 +75,8 @@ const RemoveLinkResponseSchema = z.object({
 
 type APIUserSettings = z.infer<typeof UserSettingsSchema>;
 
+type APIReminderSettings = z.infer<typeof ReminderSettingsSchema>;
+
 type APIUser = z.infer<typeof UserSchema>;
 
 export type UserSettingsUpdateRequest = Partial<UserSettings>;
@@ -82,6 +87,35 @@ type RemoveLinkResponse = z.infer<typeof RemoveLinkResponseSchema>;
  * Data Transform Functions
  * ============================================================================= */
 
+const transformReminderSettingsFromAPI = (apiReminderSettings: unknown): ReminderSettings => {
+  const result = ReminderSettingsSchema.safeParse(apiReminderSettings);
+  if (result.success) {
+    return {
+      taskReminder: result.data.task_reminder,
+      overdueReminder: {
+        enabled: result.data.overdue_reminder.enabled,
+        delayMinutes: result.data.overdue_reminder.delay_minutes,
+        repeat: result.data.overdue_reminder.repeat,
+      },
+      safeZoneExitReminder: result.data.safe_zone_exit_reminder,
+      taskCompletionNotification: result.data.task_completion_notification,
+      taskChangeNotification: result.data.task_change_notification,
+    };
+  } else {
+    return {
+      taskReminder: false,
+      overdueReminder: {
+        enabled: false,
+        delayMinutes: 30,
+        repeat: false,
+      },
+      safeZoneExitReminder: false,
+      taskCompletionNotification: false,
+      taskChangeNotification: false,
+    };
+  }
+};
+
 // Transform API user settings (snake_case, nullable) to FE UserSettings (camelCase, strict)
 const transformUserSettingsFromAPI = (apiUserSettings: APIUserSettings): UserSettings => {
   const userSettings: UserSettings = {
@@ -89,15 +123,7 @@ const transformUserSettingsFromAPI = (apiUserSettings: APIUserSettings): UserSet
     linked: apiUserSettings.linked,
     textSize: apiUserSettings.textSize,
     displayMode: apiUserSettings.displayMode,
-    reminder: apiUserSettings.reminder || {
-      taskTimeReminder: true,
-      overdueReminder: {
-        enabled: true,
-        delayMinutes: 30,
-        repeat: false,
-      },
-      safeZoneReminder: false,
-    },
+    reminder: transformReminderSettingsFromAPI(apiUserSettings.reminder),
     emergencyContacts: apiUserSettings.emergency_contacts || [],
     allowShareLocation: apiUserSettings.allow_share_location || false,
     // language: apiUserSettings.language, // TODO: implement if needed
@@ -115,6 +141,33 @@ export const transformUserFromAPI = (apiUser: APIUser): User => {
   return user;
 };
 
+const transformReminderSettingsToAPI = (
+  reminderSettings: ReminderSettings | undefined,
+): APIReminderSettings =>
+  reminderSettings
+    ? {
+        task_reminder: reminderSettings.taskReminder,
+        overdue_reminder: {
+          enabled: reminderSettings.overdueReminder.enabled,
+          delay_minutes: reminderSettings.overdueReminder.delayMinutes,
+          repeat: reminderSettings.overdueReminder.repeat,
+        },
+        safe_zone_exit_reminder: reminderSettings.safeZoneExitReminder,
+        task_completion_notification: reminderSettings.taskCompletionNotification,
+        task_change_notification: reminderSettings.taskChangeNotification,
+      }
+    : {
+        task_reminder: false,
+        overdue_reminder: {
+          enabled: false,
+          delay_minutes: 30,
+          repeat: false,
+        },
+        safe_zone_exit_reminder: false,
+        task_completion_notification: false,
+        task_change_notification: false,
+      };
+
 // Transform FE UserSettings (camelCase) to API user settings (snake_case)
 const transformUserSettingsToAPI = (
   userSettings: UserSettingsUpdateRequest,
@@ -124,7 +177,7 @@ const transformUserSettingsToAPI = (
     linked: userSettings.linked,
     textSize: userSettings.textSize,
     displayMode: userSettings.displayMode,
-    reminder: userSettings.reminder,
+    reminder: transformReminderSettingsToAPI(userSettings.reminder),
     emergency_contacts: userSettings.emergencyContacts,
     allow_share_location: userSettings.allowShareLocation,
     // language: userSettings.language, // TODO: implement if needed

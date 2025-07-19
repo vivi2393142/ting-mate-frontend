@@ -94,6 +94,13 @@ const SettingsScreen = () => {
     });
   }, [router]);
 
+  const handleNotificationPress = useCallback(() => {
+    router.push({
+      pathname: ROUTES.EDIT_NOTIFICATION,
+      params: { from: ROUTES.SETTINGS },
+    });
+  }, [router]);
+
   const handleNamePress = useCallback(() => {
     router.push({
       pathname: ROUTES.EDIT_NAME,
@@ -132,7 +139,28 @@ const SettingsScreen = () => {
     router.push({ pathname: ROUTES.ACCOUNT_LINKING, params: { from: ROUTES.SETTINGS } });
   }, [router]);
 
-  // TODO: Add a section for reminder settings
+  const displayNotification = useMemo(() => {
+    const reminder = user?.settings?.reminder;
+    if (!reminder) return t('Off');
+
+    const hasLinked = !!user?.settings?.linked?.length;
+
+    let requiredCount = 2;
+    if (hasLinked) requiredCount += 2;
+    if (user.role === Role.CAREGIVER && hasLinked) requiredCount++;
+
+    let count = 0;
+    if (reminder.taskReminder) count++;
+    if (reminder.overdueReminder.enabled) count++;
+    if (reminder.safeZoneExitReminder) count++;
+    if (reminder.taskCompletionNotification) count++;
+    if (reminder.taskChangeNotification) count++;
+
+    if (count >= requiredCount) return t('All');
+    if (count === 0) return t('Off');
+    return t('Partial');
+  }, [t, user]);
+
   // TODO: Adjust layout for Large mode
   return (
     <ScreenContainer scrollable>
@@ -163,6 +191,17 @@ const SettingsScreen = () => {
               onSelect={handleDisplayModeSelect}
             />
           )}
+        />
+      </SectionGroup>
+      <SectionGroup title={t('Notification')} subheaderStyle={styles.subheader}>
+        <FormInput
+          valueAlign="right"
+          rightIconName="chevron.right"
+          dense={false}
+          label={t('Notification')}
+          value={displayNotification}
+          valueColor={theme.colors.primary}
+          onPress={handleNotificationPress}
         />
       </SectionGroup>
       <SectionGroup title={t('Account')} subheaderStyle={styles.subheader}>

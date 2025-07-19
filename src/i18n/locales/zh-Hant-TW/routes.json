@@ -6,6 +6,7 @@
   "/connect": "Connect",
   "/edit-emergency-contact": "Edit Contact",
   "/edit-name": "Edit Name",
+  "/edit-notification": "Edit Notification",
   "/edit-safe-zone": "Edit Safe Zone",
   "/edit-task": "Edit Task",
   "/log-detail": "Log Detail",

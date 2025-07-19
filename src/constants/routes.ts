@@ -4,6 +4,7 @@ const ROUTES = {
   CONNECT: '/connect',
   ACCOUNT_LINKING: '/account-linking',
   ROLE_SELECTION: '/role-selection',
+  EDIT_NOTIFICATION: '/edit-notification',
   EDIT_NAME: '/edit-name',
   LOGIN: '/login',
   ADD_TASK: '/add-task',

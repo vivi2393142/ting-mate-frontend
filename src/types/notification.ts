@@ -21,3 +21,10 @@ export interface Notification {
   isRead: boolean;
   createdAt: string; // ISO string
 }
+
+export interface NotificationListResponse {
+  notifications: Notification[];
+  total: number;
+  limit: number;
+  offset: number;
+}
