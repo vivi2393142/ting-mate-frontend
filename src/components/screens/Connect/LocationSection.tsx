@@ -168,7 +168,7 @@ const LocationSection = () => {
     isFetched: isFetchedLocation,
     refetch: refetchLinkedLocation,
   } = useGetLinkedLocation(targetEmail || '', {
-    enabled: !!canCaregiverGetLocation,
+    enabled: user?.role === Role.CAREGIVER && !!canCaregiverGetLocation,
     refetchInterval: LOCATION_SYNC_REFRESH_INTERVAL,
   });
   const isInitialingCaregiverLocation = !!canCaregiverGetLocation && !isFetchedLocation;
