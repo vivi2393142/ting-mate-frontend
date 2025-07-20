@@ -59,7 +59,7 @@ const EditSafeZoneScreen = () => {
   const targetEmail = useMemo<string | undefined>(() => {
     if (!user || !user.email) return undefined;
     if (user.role === Role.CARERECEIVER) return user.email;
-    return user.settings.linked[0]?.email;
+    return user.settings.linked.filter((u) => u.role === Role.CARERECEIVER)?.[0]?.email;
   }, [user]);
   const { data: initSafeZone, isFetched } = useGetLinkedSafeZone(targetEmail || '', {
     enabled: !!targetEmail,

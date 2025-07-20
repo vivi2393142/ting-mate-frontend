@@ -170,6 +170,17 @@ const HomeScreen = () => {
     });
   }, [router]);
 
+  const linkedText = useMemo(() => {
+    const linkedList = user?.settings?.linked;
+    if (!linkedList?.length) return '';
+    if (user?.role === Role.CAREGIVER) {
+      const target = linkedList.filter((u) => u.role === Role.CARERECEIVER)?.[0];
+      return target ? target.name || target.email : '';
+    } else {
+      return linkedList.map((u) => u.name || u.email).join(', ');
+    }
+  }, [user]);
+
   // Show caregiver warning if user is caregiver without linked accounts
   if (shouldShowCaregiverWarning) {
     return (
@@ -207,11 +218,11 @@ const HomeScreen = () => {
         <ThemedText variant="titleLarge" style={styles.headline}>
           {t('Todays Tasks')}
         </ThemedText>
-        {user?.settings.linked && user.settings.linked.length > 0 && (
+        {linkedText && (
           <View style={styles.linkedUserIndicator}>
             <IconSymbol name="link" size={StaticTheme.iconSize.xs} color={theme.colors.secondary} />
             <ThemedText variant="bodyMedium" color="secondary">
-              {user.settings.linked[0].name || user.settings.linked[0].email}
+              {linkedText}
             </ThemedText>
           </View>
         )}

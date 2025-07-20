@@ -132,7 +132,7 @@ const LocationSection = () => {
   const targetEmail = useMemo<string | undefined>(() => {
     if (!user || !user.email) return undefined;
     if (user.role === Role.CARERECEIVER) return user.email;
-    return user.settings.linked[0]?.email;
+    return user.settings.linked.filter((u) => u.role === Role.CARERECEIVER)?.[0]?.email;
   }, [user]);
 
   // Carereceiver get linked user's location
@@ -313,7 +313,9 @@ const LocationSection = () => {
   });
 
   const markerName = useMemo(() => {
-    if (user?.role === Role.CAREGIVER) return user.settings.linked?.[0]?.name;
+    if (user?.role === Role.CAREGIVER) {
+      return user.settings.linked.filter((u) => u.role === Role.CARERECEIVER)?.[0]?.name;
+    }
     return t('Me');
   }, [user, t]);
 
