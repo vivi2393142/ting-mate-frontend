@@ -22,6 +22,12 @@ export interface ReminderSettings {
   taskChangeNotification: boolean;
 }
 
+export interface MergedReminderSettings {
+  enableReminder: boolean;
+  enableOverdueReminder: boolean;
+  delayMinutes: number;
+}
+
 export interface UserLink {
   email: string;
   name: string;

@@ -1,13 +1,10 @@
 import { Dayjs } from 'dayjs';
 import * as Notifications from 'expo-notifications';
 
-import {
-  MAX_NOTIFICATIONS_PER_TASK,
-  NOTIFICATION_SCHEDULE_MONTHS_AHEAD,
-  OVERDUE_MINUTES,
-} from '@/constants';
+import { MAX_NOTIFICATIONS_PER_TASK, NOTIFICATION_SCHEDULE_MONTHS_AHEAD } from '@/constants';
 import { LocalNotificationCategory } from '@/types/notification';
 import type { Task } from '@/types/task';
+import type { MergedReminderSettings } from '@/types/user';
 import { getFutureNotificationTimes } from '@/utils/taskUtils';
 
 // TODO: i18n
@@ -50,30 +47,52 @@ const scheduleTaskReminder = (
     },
   });
 
+// TODO: Repeat overdue reminder if it's true in user settings
 /** Schedule both reminder and overdue reminder */
 const scheduleTaskReminderAndOverdueReminder = async (
   task: Task,
   reminderTime: Dayjs,
   now: Date,
+  reminderSettings: MergedReminderSettings,
 ) => {
-  const overdueTime = reminderTime.add(OVERDUE_MINUTES, 'minute');
-  const results = await Promise.allSettled([
-    scheduleTaskReminder(task, LocalNotificationCategory.TASK_REMINDER, reminderTime, now),
-    scheduleTaskReminder(task, LocalNotificationCategory.TASK_OVERDUE, overdueTime, now),
-  ]);
-  if (__DEV__) {
-    results.forEach((r, idx) => {
-      console.log(`Schedule reminder ${r.status === 'fulfilled' ? 'success' : 'failed'}:`, {
-        title: task.title,
-        type: idx === 0 ? 'reminder' : 'overdue',
-        time: idx === 0 ? reminderTime.format('MM-DD HH:mm') : overdueTime.format('MM-DD HH:mm'),
+  const overdueTime = reminderTime.add(reminderSettings.delayMinutes, 'minute');
+  const types: LocalNotificationCategory[] = [];
+  const promises = [];
+
+  if (reminderSettings.enableReminder) {
+    types.push(LocalNotificationCategory.TASK_REMINDER);
+    promises.push(
+      scheduleTaskReminder(task, LocalNotificationCategory.TASK_REMINDER, reminderTime, now),
+    );
+  }
+  if (reminderSettings.enableOverdueReminder) {
+    types.push(LocalNotificationCategory.TASK_OVERDUE);
+    promises.push(
+      scheduleTaskReminder(task, LocalNotificationCategory.TASK_OVERDUE, overdueTime, now),
+    );
+  }
+
+  if (promises.length > 0) {
+    const results = await Promise.allSettled(promises);
+    if (__DEV__) {
+      results.forEach((r, idx) => {
+        const time =
+          types[idx] === LocalNotificationCategory.TASK_REMINDER ? reminderTime : overdueTime;
+        console.log(`Schedule reminder ${r.status === 'fulfilled' ? 'success' : 'failed'}:`, {
+          title: task.title,
+          type: types[idx],
+          time: time.format('MM-DD HH:mm'),
+        });
       });
-    });
+    }
   }
 };
 
 /** Schedule recent task reminders and overdue reminders */
-export const scheduleTaskReminders = async (task: Task) => {
+export const scheduleTaskReminders = async (
+  task: Task,
+  reminderSettings: MergedReminderSettings,
+) => {
   // Get all future notification times for this task
   const reminderTimes = getFutureNotificationTimes(
     task,
@@ -84,8 +103,8 @@ export const scheduleTaskReminders = async (task: Task) => {
   // Schedule both reminder and overdue notifications for each reminder time
   const now = new Date();
   await Promise.allSettled(
-    reminderTimes.map((reminderTime) =>
-      scheduleTaskReminderAndOverdueReminder(task, reminderTime, now),
+    reminderTimes.map((time) =>
+      scheduleTaskReminderAndOverdueReminder(task, time, now, reminderSettings),
     ),
   );
 };
