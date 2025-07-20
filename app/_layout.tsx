@@ -13,7 +13,7 @@ import '@/i18n';
 import StaleDataRefreshSnackbar from '@/components/atoms/StaleDataRefreshButton';
 import CombinedThemeProvider from '@/components/providers/CombinedThemeProvider';
 import LocationSyncHandler from '@/components/providers/LocationSyncHandler';
-import NotificationSyncHandler from '@/components/providers/NotificationSyncHandler';
+import NotificationHandler from '@/components/providers/NotificationHandler';
 import UserSyncHandler from '@/components/providers/UserSyncHandler';
 import ROUTES from '@/constants/routes';
 import useStackScreenOptionsHelper from '@/hooks/useStackScreenOptionsHelper';
@@ -32,7 +32,7 @@ const RootLayout = () => {
     <SafeAreaProvider>
       <QueryClientProvider client={queryClient}>
         <UserSyncHandler />
-        <NotificationSyncHandler />
+        <NotificationHandler />
         <CombinedThemeProvider>
           <LocationSyncHandler />
           <Stack>

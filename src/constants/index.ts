@@ -19,13 +19,13 @@ export const MAX_DAYS_OF_MONTH = 31;
 // ============================================================================
 
 /** How many months ahead to schedule notifications for recurring tasks */
-export const NOTIFICATION_SCHEDULE_MONTHS_AHEAD = 2;
+export const NOTIFICATION_SCHEDULE_MONTHS_AHEAD = 1;
 
 /** Maximum number of notifications to schedule per task */
-export const MAX_NOTIFICATIONS_PER_TASK = 10;
+export const MAX_NOTIFICATIONS_PER_TASK = 2;
 
 /** Minutes after which a task is considered overdue */
-export const OVERDUE_MINUTES = 15;
+export const OVERDUE_MINUTES = 30;
 
 // ============================================================================
 // UI & Display Constants

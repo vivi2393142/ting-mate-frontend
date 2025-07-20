@@ -1,3 +1,16 @@
+// ============================================================================
+// Local Notification Types (Local)
+// ============================================================================
+
+export enum LocalNotificationCategory {
+  TASK_REMINDER = 'TASK_REMINDER',
+  TASK_OVERDUE = 'TASK_OVERDUE',
+}
+
+// ============================================================================
+// Server Notification Types (SSE, Push)
+// ============================================================================
+
 export enum NotificationLevel {
   GENERAL = 'GENERAL',
   WARNING = 'WARNING',

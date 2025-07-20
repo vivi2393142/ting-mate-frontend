@@ -11,25 +11,14 @@ import { NotificationCategory, type Notification } from '@/types/notification';
 import { useQueryClient } from '@tanstack/react-query';
 
 const MAX_NOTIFICATION_COUNT = 50;
+const TASK_REFRESH_SCREENS = [ROUTES.HOME, ROUTES.EDIT_TASK];
 
 const updateLoading = useNotificationStore.getState().setLoading;
 const updateNotifications = useNotificationStore.getState().setNotifications;
 const updateTotal = useNotificationStore.getState().setTotal;
 
-// TODO: Set notification handler for when app is in foreground, should merged with local notification settings
-Notifications.setNotificationHandler({
-  handleNotification: async () => ({
-    shouldShowBanner: true,
-    shouldShowList: true,
-    shouldPlaySound: true,
-    shouldSetBadge: true,
-  }),
-});
-
-const TASK_REFRESH_SCREENS = [ROUTES.HOME, ROUTES.EDIT_TASK];
-
 // Global notification sync handler that manages API calls and SSE connections
-const NotificationSyncHandler = () => {
+const SSENotificationHandler = () => {
   const { t } = useTranslation('common');
 
   const { limit } = useNotificationStore();
@@ -40,6 +29,7 @@ const NotificationSyncHandler = () => {
   // Track previous notification IDs to detect new notifications
   const prevNotificationIdsRef = useRef<Set<string>>(null);
 
+  // Track current path to determine if user is on a task refresh screen
   const pathname = usePathname();
   const pathRef = useRef(pathname);
   useEffect(() => {
@@ -106,6 +96,7 @@ const NotificationSyncHandler = () => {
     updateLoading(isLoading);
   }, [isLoading]);
 
+  // Sync the store with API results and process refresh logic for new notifications
   useEffect(() => {
     if (notificationsResponse) {
       const notifications = notificationsResponse.notifications;
@@ -162,4 +153,4 @@ const NotificationSyncHandler = () => {
   return null;
 };
 
-export default NotificationSyncHandler;
+export default SSENotificationHandler;
