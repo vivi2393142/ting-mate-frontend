@@ -94,7 +94,7 @@ const VoiceCommandButton = ({ style, ...props }: VoiceCommandButtonProps) => {
       return true;
     } catch (err) {
       handleRecordingError('Failed to request recording permissions', () => {
-        if (__DEV__) console.error('Failed to request recording permissions:', err);
+        if (__DEV__) console.log('Failed to request recording permissions:', err);
       });
       return false;
     }
@@ -112,7 +112,7 @@ const VoiceCommandButton = ({ style, ...props }: VoiceCommandButtonProps) => {
       setIsRecording(true);
     } catch (err) {
       handleRecordingError('Failed to start recording', () => {
-        if (__DEV__) console.error('Failed to start recording:', err);
+        if (__DEV__) console.log('Failed to start recording:', err);
       });
     }
   }, [audioRecorder, playStartRecording, requestRecordingPermission, handleRecordingError]);
@@ -146,7 +146,7 @@ const VoiceCommandButton = ({ style, ...props }: VoiceCommandButtonProps) => {
 
   const handleVoiceCommandError = useCallback(
     (error: Error) => {
-      if (__DEV__) console.error('Voice command error:', error);
+      if (__DEV__) console.log('Voice command error:', error);
       const errorMessage = t('Oops, something went wrong! Please try again.');
       addToConversation(TalkRole.SYSTEM, errorMessage, true, true);
     },

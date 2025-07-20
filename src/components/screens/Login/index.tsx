@@ -78,7 +78,7 @@ const LoginScreen = () => {
 
   const handleSignUp = useCallback(async () => {
     if (!anonymousId) {
-      if (__DEV__) console.error('Anonymous ID is not found');
+      if (__DEV__) console.log('Anonymous ID is not found');
       return;
     }
 

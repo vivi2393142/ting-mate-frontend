@@ -4,7 +4,7 @@ import { useCallback, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import { Alert, View } from 'react-native';
-import MapView, { Circle, Marker, PROVIDER_GOOGLE } from 'react-native-maps';
+import MapView, { Circle, MAP_TYPES, Marker, UrlTile } from 'react-native-maps';
 
 import { useUpdateUserSettings } from '@/api/user';
 import {
@@ -21,13 +21,19 @@ import useAuthStore from '@/store/useAuthStore';
 import useLocationStore from '@/store/useLocationStore';
 import useUserStore from '@/store/useUserStore';
 import { StaticTheme } from '@/theme';
-import { googleMapStyles } from '@/theme/mapStyles';
 import type { SafeZone } from '@/types/connect';
 import type { LocationData } from '@/types/location';
 import { Role, User } from '@/types/user';
 import colorWithAlpha from '@/utils/colorWithAlpha';
 import { createStyles, type StyleRecord } from '@/utils/createStyles';
-import { getMapDelta, isPointInCircle } from '@/utils/locationUtils';
+import {
+  getMapDelta,
+  getSafeCoordinatePair,
+  getSafeLatitude,
+  getSafeLongitude,
+  getSafeRadius,
+  isPointInCircle,
+} from '@/utils/locationUtils';
 
 import IconSymbol from '@/components/atoms/IconSymbol';
 import Skeleton from '@/components/atoms/Skeleton';
@@ -187,17 +193,7 @@ const LocationSection = () => {
   }, []);
 
   const handleTurnOnLocationSharing = useCallback(() => {
-    updateUserSettingsMutation.mutate(
-      { allowShareLocation: true },
-      {
-        onSuccess: () => {
-          // TODO: Handle on success
-        },
-        onError: () => {
-          // TODO: Handle on error
-        },
-      },
-    );
+    updateUserSettingsMutation.mutate({ allowShareLocation: true });
   }, [updateUserSettingsMutation]);
 
   // Handles refresh for both caregiver and carereceiver
@@ -494,15 +490,13 @@ const LocationSection = () => {
           <MapView
             ref={mapRef}
             style={styles.map}
-            mapType="standard"
-            provider={PROVIDER_GOOGLE}
+            mapType={MAP_TYPES.NONE}
             initialRegion={{
-              latitude: location.latitude,
-              longitude: location.longitude,
+              latitude: getSafeLatitude(location.latitude),
+              longitude: getSafeLongitude(location.longitude),
               latitudeDelta: 0.01,
               longitudeDelta: 0.01,
             }}
-            customMapStyle={googleMapStyles}
             showsUserLocation={false}
             showsMyLocationButton={false}
             showsCompass={true}
@@ -516,12 +510,18 @@ const LocationSection = () => {
             loadingIndicatorColor={theme.colors.primary}
             loadingBackgroundColor={theme.colors.surface}
           >
+            {/* BUG: Default map is not working on iOS 18 simulator, 
+                see https://developer.apple.com/forums/thread/765787 for updates */}
+            <UrlTile
+              // eslint-disable-next-line i18next/no-literal-string
+              urlTemplate="http://c.tile.openstreetmap.org/{z}/{x}/{y}.png"
+              maximumZ={19}
+              flipY={false}
+              shouldReplaceMapContent={true}
+            />
             {/* User Location Marker */}
             <Marker
-              coordinate={{
-                latitude: location.latitude,
-                longitude: location.longitude,
-              }}
+              coordinate={getSafeCoordinatePair(location.latitude, location.longitude)}
               tracksViewChanges={false}
               anchor={{ x: 0.5, y: 0.5 }}
             >
@@ -541,11 +541,11 @@ const LocationSection = () => {
             {/* Safe Zone Circle */}
             {safeZone && (
               <Circle
-                center={{
-                  latitude: safeZone.location.latitude,
-                  longitude: safeZone.location.longitude,
-                }}
-                radius={safeZone.radius}
+                center={getSafeCoordinatePair(
+                  safeZone.location.latitude,
+                  safeZone.location.longitude,
+                )}
+                radius={getSafeRadius(safeZone.radius)}
                 fillColor={colorWithAlpha(
                   isInSafeZone ? theme.colors.primary : theme.colors.error,
                   0.2,

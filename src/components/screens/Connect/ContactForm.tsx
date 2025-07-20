@@ -131,7 +131,7 @@ const ContactFormScreen = () => {
         setPhoneNumber(phoneData.number.replace(/[^\d]/g, ''));
       }
     } catch (error) {
-      if (__DEV__) console.error('Error loading contacts:', error);
+      if (__DEV__) console.log('Error loading contacts:', error);
       Alert.alert('Error', t('Failed to load contacts'));
     } finally {
       setIsRequesting(false);

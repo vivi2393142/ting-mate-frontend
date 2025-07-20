@@ -6,6 +6,7 @@ import { useTranslation } from 'react-i18next';
 import { useGetNotifications, useGetNotificationSSE } from '@/api/notification';
 import ROUTES from '@/constants/routes';
 import { setStaleDataServiceToStore, useNotificationStore } from '@/store/notificationStore';
+import useAuthStore from '@/store/useAuthStore';
 import { NotificationCategory, type Notification } from '@/types/notification';
 import { useQueryClient } from '@tanstack/react-query';
 
@@ -30,7 +31,9 @@ const TASK_REFRESH_SCREENS = [ROUTES.HOME, ROUTES.EDIT_TASK];
 // Global notification sync handler that manages API calls and SSE connections
 const NotificationSyncHandler = () => {
   const { t } = useTranslation('common');
+
   const { limit } = useNotificationStore();
+  const token = useAuthStore((s) => s.token);
 
   const queryClient = useQueryClient();
 
@@ -93,6 +96,11 @@ const NotificationSyncHandler = () => {
     [queryClient, t],
   );
 
+  // Reset previous notification IDs when token changes
+  useEffect(() => {
+    prevNotificationIdsRef.current = null;
+  }, [token]);
+
   // Sync the store with API results
   useEffect(() => {
     updateLoading(isLoading);
@@ -123,6 +131,14 @@ const NotificationSyncHandler = () => {
       }
     }
   }, [notificationsResponse, processRefreshLogic]);
+
+  useEffect(() => {
+    if (notificationsResponse) {
+      const notifications = notificationsResponse.notifications;
+      updateNotifications(notifications);
+      updateTotal(notificationsResponse.total);
+    }
+  }, [notificationsResponse]);
 
   const handleMessage = useCallback((notification: Notification) => {
     Notifications.scheduleNotificationAsync({

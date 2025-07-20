@@ -1,16 +1,10 @@
-import { router, Stack } from 'expo-router';
+import { Stack, useRouter } from 'expo-router';
 import { Fragment, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import Slider from '@react-native-community/slider';
 import { Button, Keyboard, TouchableWithoutFeedback, View } from 'react-native';
-import MapView, {
-  Circle,
-  type MapPressEvent,
-  Marker,
-  PROVIDER_GOOGLE,
-  Region,
-} from 'react-native-maps';
+import MapView, { Circle, type MapPressEvent, Marker, Region, UrlTile } from 'react-native-maps';
 import { Divider } from 'react-native-paper';
 
 import { useGetLinkedSafeZone, useUpdateSafeZone } from '@/api/userLocations';
@@ -19,12 +13,17 @@ import useAppTheme from '@/hooks/useAppTheme';
 import useStackScreenOptionsHelper from '@/hooks/useStackScreenOptionsHelper';
 import useUserStore from '@/store/useUserStore';
 import { StaticTheme } from '@/theme';
-import { googleMapStyles } from '@/theme/mapStyles';
 import type { AddressData } from '@/types/connect';
 import { Role } from '@/types/user';
 import colorWithAlpha from '@/utils/colorWithAlpha';
 import { createStyles, StyleRecord } from '@/utils/createStyles';
-import { getMapDelta } from '@/utils/locationUtils';
+import {
+  getMapDelta,
+  getSafeCoordinatePair,
+  getSafeLatitude,
+  getSafeLongitude,
+  getSafeRadius,
+} from '@/utils/locationUtils';
 
 import FormInput from '@/components/atoms/FormInput';
 import IconSymbol from '@/components/atoms/IconSymbol';
@@ -48,6 +47,7 @@ const EditSafeZoneScreen = () => {
 
   const theme = useAppTheme();
   const styles = getStyles(theme);
+  const router = useRouter();
 
   const user = useUserStore((s) => s.user);
   const mapRef = useRef<MapView>(null);
@@ -103,11 +103,11 @@ const EditSafeZoneScreen = () => {
       },
     });
     router.back();
-  }, [safeZone, targetEmail, updateSafeZoneMutation]);
+  }, [router, safeZone, targetEmail, updateSafeZoneMutation]);
 
   const handleCancel = useCallback(() => {
     router.back();
-  }, []);
+  }, [router]);
 
   // When user selects a new address, auto-zoom to fit the safe zone
   const handleAddressSelect = useCallback(
@@ -139,6 +139,13 @@ const EditSafeZoneScreen = () => {
   const handleMapPress = useCallback(
     (e: MapPressEvent) => {
       const { latitude, longitude } = e.nativeEvent.coordinate;
+
+      // Validate coordinates
+      if (!isFinite(latitude) || !isFinite(longitude)) {
+        console.warn('Invalid coordinates received:', { latitude, longitude });
+        return;
+      }
+
       setSafeZone((prev) =>
         prev && prev.location
           ? { ...prev, location: { ...prev.location, latitude, longitude } }
@@ -147,8 +154,8 @@ const EditSafeZoneScreen = () => {
       mapRef.current?.animateToRegion({
         latitude,
         longitude,
-        latitudeDelta: mapDelta.latitudeDelta,
-        longitudeDelta: mapDelta.longitudeDelta,
+        latitudeDelta: isFinite(mapDelta.latitudeDelta) ? mapDelta.latitudeDelta : 0.01,
+        longitudeDelta: isFinite(mapDelta.longitudeDelta) ? mapDelta.longitudeDelta : 0.01,
       });
     },
     [mapDelta],
@@ -161,13 +168,16 @@ const EditSafeZoneScreen = () => {
       if (safeZone?.location) {
         const { latitudeDelta, longitudeDelta } = getMapDelta(value, safeZone.location.latitude);
         mapRef.current?.animateToRegion({
-          latitude: safeZone.location.latitude,
-          longitude: safeZone.location.longitude,
-          latitudeDelta,
-          longitudeDelta,
+          latitude: isFinite(safeZone.location.latitude) ? safeZone.location.latitude : 0,
+          longitude: isFinite(safeZone.location.longitude) ? safeZone.location.longitude : 0,
+          latitudeDelta: isFinite(latitudeDelta) ? latitudeDelta : 0.01,
+          longitudeDelta: isFinite(longitudeDelta) ? longitudeDelta : 0.01,
         });
         // Update mapDelta state to keep in sync with user zoom
-        setMapDelta({ latitudeDelta, longitudeDelta });
+        setMapDelta({
+          latitudeDelta: isFinite(latitudeDelta) ? latitudeDelta : 0.01,
+          longitudeDelta: isFinite(longitudeDelta) ? longitudeDelta : 0.01,
+        });
       }
     },
     [safeZone?.location],
@@ -175,7 +185,10 @@ const EditSafeZoneScreen = () => {
 
   // Keep mapDelta in sync with user manual zoom/pan
   const handleRegionChangeComplete = useCallback((region: Region) => {
-    setMapDelta({ latitudeDelta: region.latitudeDelta, longitudeDelta: region.longitudeDelta });
+    setMapDelta({
+      latitudeDelta: isFinite(region.latitudeDelta) ? region.latitudeDelta : 0.01,
+      longitudeDelta: isFinite(region.longitudeDelta) ? region.longitudeDelta : 0.01,
+    });
   }, []);
 
   const instructions = [
@@ -250,19 +263,21 @@ const EditSafeZoneScreen = () => {
                 ref={mapRef}
                 style={styles.map}
                 mapType="standard"
-                provider={PROVIDER_GOOGLE}
                 initialRegion={
                   safeZone?.location
                     ? {
-                        latitude: safeZone.location.latitude,
-                        longitude: safeZone.location.longitude,
-                        latitudeDelta: mapDelta.latitudeDelta,
-                        longitudeDelta: mapDelta.longitudeDelta,
+                        latitude: getSafeLatitude(safeZone.location.latitude),
+                        longitude: getSafeLongitude(safeZone.location.longitude),
+                        latitudeDelta: isFinite(mapDelta.latitudeDelta)
+                          ? mapDelta.latitudeDelta
+                          : 0.01,
+                        longitudeDelta: isFinite(mapDelta.longitudeDelta)
+                          ? mapDelta.longitudeDelta
+                          : 0.01,
                       }
                     : undefined
                 }
                 onRegionChangeComplete={handleRegionChangeComplete}
-                customMapStyle={googleMapStyles}
                 showsUserLocation={false}
                 showsMyLocationButton={false}
                 showsCompass={true}
@@ -277,14 +292,23 @@ const EditSafeZoneScreen = () => {
                 loadingBackgroundColor={theme.colors.surface}
                 onPress={handleMapPress}
               >
+                {/* BUG: Default map is not working on iOS 18 simulator, 
+                see https://developer.apple.com/forums/thread/765787 for updates */}
+                <UrlTile
+                  // eslint-disable-next-line i18next/no-literal-string
+                  urlTemplate="http://c.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                  maximumZ={19}
+                  flipY={false}
+                  shouldReplaceMapContent={true}
+                />
                 {/* Safe Zone Center Marker */}
                 {safeZone.location && (
                   <Fragment>
                     <Marker
-                      coordinate={{
-                        latitude: safeZone.location.latitude,
-                        longitude: safeZone.location.longitude,
-                      }}
+                      coordinate={getSafeCoordinatePair(
+                        safeZone.location.latitude,
+                        safeZone.location.longitude,
+                      )}
                       tracksViewChanges={false}
                       anchor={{ x: 0.5, y: 0.5 }}
                     >
@@ -298,11 +322,11 @@ const EditSafeZoneScreen = () => {
                     </Marker>
                     {/* Safe Zone Circle */}
                     <Circle
-                      center={{
-                        latitude: safeZone.location.latitude,
-                        longitude: safeZone.location.longitude,
-                      }}
-                      radius={safeZone.radius}
+                      center={getSafeCoordinatePair(
+                        safeZone.location.latitude,
+                        safeZone.location.longitude,
+                      )}
+                      radius={getSafeRadius(safeZone.radius)}
                       fillColor={colorWithAlpha(theme.colors.primary, 0.2)}
                       strokeColor={theme.colors.primary}
                       strokeWidth={2}

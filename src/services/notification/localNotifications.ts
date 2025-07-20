@@ -160,7 +160,7 @@ const scheduleTaskReminders = async (task: Task): Promise<string[]> => {
       notificationIds.push(overdueNotificationId);
     } catch (error) {
       if (__DEV__) {
-        console.error(`Failed to schedule notification for task ${task.id}:`, error);
+        console.log(`Failed to schedule notification for task ${task.id}:`, error);
         console.log('Reminder time:', reminderTime.format());
         console.log('Overdue time:', reminderTime.add(OVERDUE_MINUTES, 'minute').format());
       }

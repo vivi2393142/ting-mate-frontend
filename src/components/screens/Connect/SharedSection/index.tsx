@@ -26,7 +26,7 @@ const SharedSection = () => {
   const { t } = useTranslation('connect');
 
   const [isExpanded, setIsExpanded] = useState(false);
-  const [activeTab, setActiveTab] = useState<TabType>(TabType.LOG);
+  const [activeTab, setActiveTab] = useState<TabType>(TabType.NOTE);
 
   const handleToggleExpanded = useCallback(() => {
     setIsExpanded((prev) => !prev);

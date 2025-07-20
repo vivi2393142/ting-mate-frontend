@@ -21,6 +21,14 @@ const sizes = {
   },
 };
 
+const getMicrophoneIconName = () => {
+  if (Platform.OS === 'ios') {
+    const majorVersionIOS = parseInt(Platform.Version as string, 10);
+    return majorVersionIOS >= 17 ? 'mic' : 'microphone';
+  }
+  return 'mic';
+};
+
 export interface VoiceButtonProps extends Omit<IconButtonProps, 'icon'> {
   isRecording: boolean;
   style?: ViewStyle;
@@ -67,7 +75,7 @@ const VoiceButton = ({ isRecording, onPress, style, ...props }: VoiceButtonProps
         containerColor={isRecording ? theme.colors.error : theme.colors.primary}
         icon={(iconProps) => (
           <IconSymbol
-            name={isRecording ? 'stop' : 'microphone'}
+            name={isRecording ? 'stop' : getMicrophoneIconName()}
             size={iconSize}
             color={iconProps.color}
           />

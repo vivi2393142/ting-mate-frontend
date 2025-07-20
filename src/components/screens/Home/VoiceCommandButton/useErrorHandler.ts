@@ -7,7 +7,7 @@ const useErrorHandler = () => {
   const { t } = useTranslation('common');
 
   const handleRecordingError = useCallback((error: string, onError: () => void) => {
-    console.error('Recording error:', error);
+    if (__DEV__) console.log('Recording error:', error);
     onError();
   }, []);
 

@@ -32,6 +32,7 @@ const useSSE = ({
       es = new EventSource(`${process.env.EXPO_PUBLIC_API_URL}${path}`, {
         headers,
         pollingInterval,
+        lineEndingCharacter: '\n', // Fix line ending warning
       });
       esRef.current = es;
 
