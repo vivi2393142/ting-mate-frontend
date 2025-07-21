@@ -63,7 +63,7 @@ const LoginScreen = () => {
       { email, password },
       {
         onSuccess: () => {
-          router.replace('/(tabs)');
+          router.replace(ROUTES.HOME);
         },
         onError: () => {
           setError(

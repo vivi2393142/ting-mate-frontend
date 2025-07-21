@@ -1,4 +1,4 @@
-import { Stack, useRouter } from 'expo-router';
+import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
 import { Fragment, useCallback, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Alert, Button } from 'react-native';
@@ -26,6 +26,10 @@ const EditNameScreen = () => {
   const user = useUserStore((s) => s.user);
   const router = useRouter();
   const updateUserSettingsMutation = useUpdateUserSettings();
+  const params = useLocalSearchParams();
+
+  // Check if user came from signup
+  const isFromSignup = params.from === 'signup';
 
   const [name, setName] = useState(user?.settings.name || '');
   const [isSaving, setIsSaving] = useState(false);
@@ -42,7 +46,13 @@ const EditNameScreen = () => {
       { name: name.trim() },
       {
         onSuccess: () => {
-          router.back();
+          if (isFromSignup) {
+            router.replace({
+              pathname: ROUTES.HOME,
+            });
+          } else {
+            router.back();
+          }
         },
         onError: () => {
           Alert.alert(tCommon('Error'), t('Failed to update name. Please try again.'));
@@ -52,7 +62,7 @@ const EditNameScreen = () => {
         },
       },
     );
-  }, [name, updateUserSettingsMutation, router, t, tCommon]);
+  }, [name, updateUserSettingsMutation, router, t, tCommon, isFromSignup]);
 
   const handleCancel = useCallback(() => {
     router.back();
@@ -63,17 +73,23 @@ const EditNameScreen = () => {
       <Stack.Screen
         options={{
           ...getStackScreenOptions({ title: ROUTES.EDIT_NAME }),
-          headerLeft: () => (
-            <Button color={theme.colors.primary} onPress={handleCancel} title={tCommon('Cancel')} />
-          ),
+          headerLeft: () =>
+            isFromSignup ? undefined : (
+              <Button
+                color={theme.colors.primary}
+                onPress={handleCancel}
+                title={tCommon('Cancel')}
+              />
+            ),
           headerRight: () => (
             <Button
               color={theme.colors.primary}
               onPress={handleSave}
-              title={tCommon('Save')}
+              title={isFromSignup ? tCommon('Done') : tCommon('Save')}
               disabled={!name.trim() || isSaving}
             />
           ),
+          headerBackVisible: !isFromSignup,
         }}
       />
       <ScreenContainer isRoot={false} style={styles.screenContainer}>

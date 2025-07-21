@@ -53,6 +53,17 @@ const RoleSelectionScreen = () => {
     setSelectedRole(role);
   }, []);
 
+  const handleDone = useCallback(() => {
+    if (isFromSignup) {
+      router.replace({
+        pathname: ROUTES.EDIT_NAME,
+        params: { from: 'signup' },
+      });
+    } else {
+      router.back();
+    }
+  }, [isFromSignup, router]);
+
   const doTransition = useCallback(() => {
     if (!selectedRole) return;
 
@@ -61,7 +72,7 @@ const RoleSelectionScreen = () => {
       { target_role: selectedRole },
       {
         onSuccess: () => {
-          router.back();
+          handleDone();
         },
         onError: () => {
           Alert.alert(tCommon('Error'), t('Failed to update role. Please try again.'));
@@ -71,14 +82,14 @@ const RoleSelectionScreen = () => {
         },
       },
     );
-  }, [selectedRole, transitionUserRoleMutation, router, tCommon, t]);
+  }, [selectedRole, transitionUserRoleMutation, handleDone, tCommon, t]);
 
   const handleConfirm = useCallback(() => {
     if (!selectedRole) return;
 
     // 1. If the target role is the same as the current role, just go back without API call
     if (selectedRole === user?.role) {
-      router.back();
+      handleDone();
       return;
     }
 
@@ -119,7 +130,16 @@ const RoleSelectionScreen = () => {
 
     // 4. Otherwise, call the API to switch role
     doTransition();
-  }, [selectedRole, user, tasks, t, tCommon, router, doTransition]);
+  }, [
+    selectedRole,
+    user?.role,
+    user.settings.linked,
+    tasks.length,
+    doTransition,
+    handleDone,
+    t,
+    tCommon,
+  ]);
 
   const handleSignInPress = useCallback(() => {
     router.push({
