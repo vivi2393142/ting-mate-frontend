@@ -102,16 +102,6 @@ jest.mock('@/store/useUserStore', () => ({
   useUserDisplayMode: () => 'full',
 }));
 
-// Mock notification service
-jest.mock('@/services/notification', () => ({
-  NotificationService: {
-    initialize: jest.fn(),
-    reinitializeAllLocalNotifications: jest.fn(),
-    logCurrentLocalNotifications: jest.fn(),
-    setupPushNotificationListeners: jest.fn(),
-  },
-}));
-
 // Global test setup
 global.console = {
   ...console,

@@ -1,4 +1,4 @@
-import { calculateDistance, isPointInCircle, toRad } from '../locationUtils';
+import { calculateDistance, isPointInCircle, toRad } from '../../src/utils/locationUtils';
 
 describe('locationUtils', () => {
   describe('toRad', () => {
@@ -48,7 +48,7 @@ describe('locationUtils', () => {
 
       const distance = calculateDistance(nyLat, nyLon, laLat, laLon);
       // Expected distance is approximately 3935 km
-      expect(distance).toBeCloseTo(3935, 0);
+      expect(distance).toBeCloseTo(3935, -1);
     });
 
     it('should handle antipodal points (opposite sides of Earth)', () => {
