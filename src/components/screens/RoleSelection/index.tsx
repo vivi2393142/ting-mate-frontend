@@ -133,7 +133,7 @@ const RoleSelectionScreen = () => {
   }, [
     selectedRole,
     user?.role,
-    user.settings.linked,
+    user?.settings.linked,
     tasks.length,
     doTransition,
     handleDone,

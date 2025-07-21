@@ -50,7 +50,7 @@ export default [
         {
           mode: 'jsx-only',
           'jsx-attributes': {
-            exclude: ['href', 'name', 'variant', 'outlineColor', 'activeOutlineColor', 'icon'],
+            exclude: ['href', 'name', 'variant', 'outlineColor', 'activeOutlineColor', 'icon', 'd'],
           },
           callees: {
             exclude: ['format'],

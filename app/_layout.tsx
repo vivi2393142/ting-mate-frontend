@@ -8,15 +8,16 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 import queryClient from '@/api/queryClient';
 import useColorScheme from '@/hooks/useColorScheme';
+import useStackScreenOptionsHelper from '@/hooks/useStackScreenOptionsHelper';
 import '@/i18n';
 
 import StaleDataRefreshSnackbar from '@/components/atoms/StaleDataRefreshButton';
+import OnboardingScreen from '@/components/organisms/OnboardingSlides';
 import CombinedThemeProvider from '@/components/providers/CombinedThemeProvider';
 import LocationSyncHandler from '@/components/providers/LocationSyncHandler';
 import NotificationHandler from '@/components/providers/NotificationHandler';
 import UserSyncHandler from '@/components/providers/UserSyncHandler';
 import ROUTES from '@/constants/routes';
-import useStackScreenOptionsHelper from '@/hooks/useStackScreenOptionsHelper';
 
 const RootLayout = () => {
   const colorScheme = useColorScheme();
@@ -35,6 +36,7 @@ const RootLayout = () => {
         <NotificationHandler />
         <CombinedThemeProvider>
           <LocationSyncHandler />
+          <OnboardingScreen />
           <Stack>
             <Stack.Screen
               name="(tabs)"

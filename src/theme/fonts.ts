@@ -23,10 +23,12 @@ const fonts: Record<UserTextSize, Record<MD3TypescaleKey, Partial<MD3Type>>> = {
     headlineMedium: {
       fontSize: 24,
       lineHeight: 32,
+      fontWeight: '600',
     },
     headlineLarge: {
       fontSize: 28,
       lineHeight: 38,
+      fontWeight: '600',
     },
     titleSmall: {
       fontSize: 14,
@@ -89,10 +91,12 @@ const fonts: Record<UserTextSize, Record<MD3TypescaleKey, Partial<MD3Type>>> = {
     headlineMedium: {
       fontSize: 36,
       lineHeight: 48,
+      fontWeight: '600',
     },
     headlineLarge: {
       fontSize: 40,
       lineHeight: 52,
+      fontWeight: '600',
     },
     titleSmall: {
       fontSize: 18,
