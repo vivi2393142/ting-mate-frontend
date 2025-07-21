@@ -10,9 +10,9 @@ import SSENotificationHandler from '@/components/providers/NotificationHandler/S
 Notifications.setNotificationHandler({
   handleNotification: async () => ({
     shouldShowBanner: true,
-    shouldShowList: true,
+    shouldShowList: false,
     shouldPlaySound: true,
-    shouldSetBadge: true,
+    shouldSetBadge: false,
   }),
 });
 
@@ -34,6 +34,8 @@ const NotificationHandler = () => {
   useEffect(() => {
     const initializeNotifications = async () => {
       try {
+        Notifications.setBadgeCountAsync(0);
+
         const hasPermission = await requestPermissions();
         if (!hasPermission && __DEV__) console.log('Notification permissions not granted');
       } catch (error) {
