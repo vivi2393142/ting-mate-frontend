@@ -13,6 +13,7 @@ import { createStyles, type StyleRecord } from '@/utils/createStyles';
 
 import FormInput from '@/components/atoms/FormInput';
 import ScreenContainer from '@/components/atoms/ScreenContainer';
+import ThemedButton from '@/components/atoms/ThemedButton';
 import ThemedView from '@/components/atoms/ThemedView';
 
 const EditNameScreen = () => {
@@ -48,7 +49,8 @@ const EditNameScreen = () => {
         onSuccess: () => {
           if (isFromSignup) {
             router.replace({
-              pathname: ROUTES.HOME,
+              pathname: ROUTES.ROLE_SELECTION,
+              params: { from: 'signup' },
             });
           } else {
             router.back();
@@ -108,15 +110,27 @@ const EditNameScreen = () => {
             editable={!isSaving}
           />
         </ThemedView>
+        {isFromSignup && (
+          <ThemedButton
+            onPress={handleSave}
+            disabled={!name.trim() || isSaving}
+            style={styles.doneButton}
+          >
+            {tCommon('Done')}
+          </ThemedButton>
+        )}
       </ScreenContainer>
     </Fragment>
   );
 };
 
-const getStyles = createStyles<StyleRecord<'screenContainer'>>({
+const getStyles = createStyles<StyleRecord<'screenContainer' | 'doneButton'>>({
   screenContainer: {
     gap: StaticTheme.spacing.md,
     paddingTop: StaticTheme.spacing.md,
+  },
+  doneButton: {
+    marginTop: StaticTheme.spacing.md,
   },
 });
 

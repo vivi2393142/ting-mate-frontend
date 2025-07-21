@@ -54,15 +54,22 @@ const RoleSelectionScreen = () => {
   }, []);
 
   const handleDone = useCallback(() => {
-    if (isFromSignup) {
-      router.replace({
-        pathname: ROUTES.EDIT_NAME,
-        params: { from: 'signup' },
-      });
-    } else {
+    if (!user) {
       router.back();
+    } else {
+      if (selectedRole === Role.CAREGIVER && user.settings.linked.length === 0) {
+        router.replace({
+          pathname: ROUTES.ACCOUNT_LINKING,
+        });
+      } else if (isFromSignup) {
+        router.replace({
+          pathname: ROUTES.HOME,
+        });
+      } else {
+        router.back();
+      }
     }
-  }, [isFromSignup, router]);
+  }, [isFromSignup, router, selectedRole, user]);
 
   const doTransition = useCallback(() => {
     if (!selectedRole) return;

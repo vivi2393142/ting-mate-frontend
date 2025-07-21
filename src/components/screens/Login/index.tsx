@@ -88,7 +88,7 @@ const LoginScreen = () => {
       {
         onSuccess: () => {
           router.replace({
-            pathname: ROUTES.ROLE_SELECTION,
+            pathname: ROUTES.EDIT_NAME,
             params: { from: 'signup' },
           });
         },
