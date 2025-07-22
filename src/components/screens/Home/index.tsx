@@ -232,15 +232,15 @@ const HomeScreen = () => {
   }, [user]);
 
   // Handle copilot
-  const { visible, copilotEvents, start } = useCopilot();
+  const { copilotEvents, start } = useCopilot();
   const hasSeenOnboarding = useOnboardingStore((s) => s.hasSeenOnboarding);
   const hasVisitedTask = useOnboardingStore((s) => s.hasVisitedTask);
 
   useEffect(() => {
-    if (!visible && hasSeenOnboarding && !hasVisitedTask && !isLoading) {
-      start();
-    }
-  }, [hasSeenOnboarding, hasVisitedTask, start, isLoading, visible]);
+    if (hasSeenOnboarding && !hasVisitedTask && !isLoading) start();
+    // HACK: States got from copilot keep changing, disable to avoid unexpected re-render
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [hasSeenOnboarding, hasVisitedTask, isLoading]);
 
   useEffect(() => {
     const onFinish = () => {
