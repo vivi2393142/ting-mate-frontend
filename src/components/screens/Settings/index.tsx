@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { walkthroughable } from 'react-native-copilot';
 
 import { Alert, View } from 'react-native';
-import { List } from 'react-native-paper';
+import { List, Switch } from 'react-native-paper';
 
 import { useLogout } from '@/api/auth';
 import { useUpdateUserSettings } from '@/api/user';
@@ -108,6 +108,76 @@ const SettingsScreen = () => {
       params: { from: ROUTES.SETTINGS },
     });
   }, [router]);
+
+  const isAllowLocationSharing = useMemo(() => {
+    if (!user || user.role !== Role.CARERECEIVER) return false;
+    if (!token) return false;
+    return user.settings.allowShareLocation;
+  }, [user, token]);
+
+  const handleLocationSharingPress = useCallback(
+    (newAllowShareLocation: boolean) => {
+      if (!user || user.role !== Role.CARERECEIVER) return;
+
+      if (!token) {
+        Alert.alert(t('Sign In Required'), t('Please sign in to use this feature.'));
+      } else if (user.settings.linked.length > 0) {
+        if (newAllowShareLocation) {
+          Alert.alert(
+            t('Share Location?'),
+            t('Turn this on to let your companions see where you are.'),
+            [
+              {
+                text: tCommon('Cancel'),
+                style: 'cancel',
+              },
+              {
+                text: tCommon('Confirm'),
+                style: 'destructive',
+                onPress: () => {
+                  updateUserSettingsMutation.mutate({
+                    allowShareLocation: newAllowShareLocation,
+                  });
+                },
+              },
+            ],
+          );
+        } else {
+          Alert.alert(
+            t('Stop Sharing Location?'),
+            t('If you turn this off, your companions won’t be able to see where you are.'),
+            [
+              {
+                text: tCommon('Cancel'),
+                style: 'cancel',
+              },
+              {
+                text: tCommon('Confirm'),
+                style: 'destructive',
+                onPress: () => {
+                  updateUserSettingsMutation.mutate({
+                    allowShareLocation: newAllowShareLocation,
+                  });
+                },
+              },
+            ],
+          );
+        }
+      } else {
+        Alert.alert(
+          t('Location Sharing'),
+          t('You need to link with someone first to share your location.'),
+          [
+            {
+              text: tCommon('Cancel'),
+              style: 'cancel',
+            },
+          ],
+        );
+      }
+    },
+    [t, tCommon, token, updateUserSettingsMutation, user],
+  );
 
   const handleNamePress = useCallback(() => {
     router.push({
@@ -229,6 +299,19 @@ const SettingsScreen = () => {
           onPress={handleNotificationPress}
         />
       </SectionGroup>
+      {user?.role === Role.CARERECEIVER && (
+        <SectionGroup title={t('Connect')} subheaderStyle={styles.subheader}>
+          <FormInput
+            valueAlign="right"
+            rightIconName="chevron.right"
+            dense={false}
+            label={t('Allow Location Sharing')}
+            render={() => (
+              <Switch value={isAllowLocationSharing} onValueChange={handleLocationSharingPress} />
+            )}
+          />
+        </SectionGroup>
+      )}
       <SectionGroup title={t('Account')} subheaderStyle={styles.subheader}>
         <FormInput
           valueAlign="right"
