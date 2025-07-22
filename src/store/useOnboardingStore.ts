@@ -4,18 +4,18 @@ import { create } from 'zustand';
 const ONBOARDING_KEY = 'onboarding_shown';
 const VISITED_TASK_KEY = 'visited_task';
 const VISITED_CONNECT_KEY = 'visited_connect';
-const VISITED_SETTING_KEY = 'visited_setting';
+const VISITED_SETTING_KEY = 'visited_settings';
 
 interface OnboardingState {
   hasSeenOnboarding: boolean;
   hasVisitedTask: boolean;
   hasVisitedConnect: boolean;
-  hasVisitedSetting: boolean;
+  hasVisitedSettings: boolean;
 
   setHasSeenOnboarding: (value: boolean) => Promise<void>;
   setHasVisitedTask: (value: boolean) => Promise<void>;
   setHasVisitedConnect: (value: boolean) => Promise<void>;
-  setHasVisitedSetting: (value: boolean) => Promise<void>;
+  setHasVisitedSettings: (value: boolean) => Promise<void>;
 
   loadFromStorage: () => Promise<void>;
 }
@@ -24,7 +24,7 @@ export const useOnboardingStore = create<OnboardingState>((set) => ({
   hasSeenOnboarding: true,
   hasVisitedTask: true,
   hasVisitedConnect: true,
-  hasVisitedSetting: true,
+  hasVisitedSettings: true,
 
   setHasSeenOnboarding: async (value: boolean) => {
     await AsyncStorage.setItem(ONBOARDING_KEY, value ? 'true' : 'false');
@@ -38,9 +38,9 @@ export const useOnboardingStore = create<OnboardingState>((set) => ({
     await AsyncStorage.setItem(VISITED_CONNECT_KEY, value ? 'true' : 'false');
     set({ hasVisitedConnect: value });
   },
-  setHasVisitedSetting: async (value: boolean) => {
+  setHasVisitedSettings: async (value: boolean) => {
     await AsyncStorage.setItem(VISITED_SETTING_KEY, value ? 'true' : 'false');
-    set({ hasVisitedSetting: value });
+    set({ hasVisitedSettings: value });
   },
 
   loadFromStorage: async () => {
@@ -50,12 +50,11 @@ export const useOnboardingStore = create<OnboardingState>((set) => ({
       AsyncStorage.getItem(VISITED_CONNECT_KEY),
       AsyncStorage.getItem(VISITED_SETTING_KEY),
     ]);
-    console.log({ onboarding, task, connect, setting });
     set({
       hasSeenOnboarding: onboarding === 'true',
       hasVisitedTask: task === 'true',
       hasVisitedConnect: connect === 'true',
-      hasVisitedSetting: setting === 'true',
+      hasVisitedSettings: setting === 'true',
     });
   },
 }));

@@ -1,18 +1,21 @@
 import { useRouter } from 'expo-router';
 import { useCallback, useMemo, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
+import { walkthroughable } from 'react-native-copilot';
 
-import { Alert } from 'react-native';
+import { Alert, View } from 'react-native';
 import { List } from 'react-native-paper';
 
 import { useLogout } from '@/api/auth';
 import { useUpdateUserSettings } from '@/api/user';
 import ROUTES from '@/constants/routes';
 import useAppTheme from '@/hooks/useAppTheme';
+import { useCopilotOnboarding } from '@/hooks/useCopilotOnboarding';
 import useRoleTranslation from '@/hooks/useRoleTranslation';
 import useUserDisplayModeTranslation from '@/hooks/useUserDisplayModeTranslation';
 import useUserTextSizeTranslation from '@/hooks/useUserTextSizeTranslation';
 import useAuthStore from '@/store/useAuthStore';
+import { useOnboardingStore } from '@/store/useOnboardingStore';
 import useUserStore from '@/store/useUserStore';
 import { StaticTheme } from '@/theme';
 import { Role, UserDisplayMode, UserTextSize } from '@/types/user';
@@ -21,6 +24,10 @@ import { createStyles, StyleRecord } from '@/utils/createStyles';
 import FormInput from '@/components/atoms/FormInput';
 import ScreenContainer from '@/components/atoms/ScreenContainer';
 import Select from '@/components/atoms/Select';
+import SettingsCopilotStep, { CopilotStepName } from '@/components/screens/Settings/CopilotStep';
+
+const CopilotView = walkthroughable(View);
+const CopilotListItem = walkthroughable(List.Item);
 
 interface SectionGroupProps {
   title: string;
@@ -161,37 +168,53 @@ const SettingsScreen = () => {
     return t('Partial');
   }, [t, user]);
 
+  // Handle copilot
+  const hasSeenOnboarding = useOnboardingStore((s) => s.hasSeenOnboarding);
+  const hasVisitedSettings = useOnboardingStore((s) => s.hasVisitedSettings);
+
+  useCopilotOnboarding({
+    hasSeenOnboarding,
+    hasVisitedSection: hasVisitedSettings,
+    onStop: () => useOnboardingStore.getState().setHasVisitedSettings(true),
+  });
+
   // TODO: Adjust layout for Large mode
   return (
     <ScreenContainer scrollable>
       <SectionGroup title={t('General')} subheaderStyle={styles.subheader}>
-        <FormInput
-          valueAlign="right"
-          rightIconName="chevron.up.chevron.down"
-          dense={false}
-          label={t('Text Size')}
-          render={() => (
-            <Select
-              displayValue={tUserTextSize(user?.settings.textSize ?? UserTextSize.STANDARD)}
-              options={textSizeOptions}
-              onSelect={handleTextSizeSelect}
+        <SettingsCopilotStep name={CopilotStepName.DISPLAY}>
+          <CopilotView>
+            <FormInput
+              valueAlign="right"
+              rightIconName="chevron.up.chevron.down"
+              dense={false}
+              label={t('Text Size')}
+              render={() => (
+                <Select
+                  displayValue={tUserTextSize(user?.settings.textSize ?? UserTextSize.STANDARD)}
+                  options={textSizeOptions}
+                  onSelect={handleTextSizeSelect}
+                />
+              )}
             />
-          )}
-        />
-        <FormInput
-          valueAlign="right"
-          rightIconName="chevron.up.chevron.down"
-          dense={false}
-          divider={false}
-          label={t('Display Mode')}
-          render={() => (
-            <Select
-              displayValue={tUserDisplayMode(user?.settings.displayMode ?? UserDisplayMode.FULL)}
-              options={displayModeOptions}
-              onSelect={handleDisplayModeSelect}
+            <FormInput
+              valueAlign="right"
+              rightIconName="chevron.up.chevron.down"
+              dense={false}
+              divider={false}
+              label={t('Display Mode')}
+              render={() => (
+                <Select
+                  displayValue={tUserDisplayMode(
+                    user?.settings.displayMode ?? UserDisplayMode.FULL,
+                  )}
+                  options={displayModeOptions}
+                  onSelect={handleDisplayModeSelect}
+                />
+              )}
             />
-          )}
-        />
+          </CopilotView>
+        </SettingsCopilotStep>
       </SectionGroup>
       <SectionGroup title={t('Notification')} subheaderStyle={styles.subheader}>
         <FormInput
@@ -223,24 +246,30 @@ const SettingsScreen = () => {
           valueColor={theme.colors.primary}
           onPress={handleRolePress}
         />
-        <FormInput
-          valueAlign="right"
-          rightIconName="chevron.right"
-          dense={false}
-          label={t('Linked Accounts')}
-          value={user?.settings.linked?.length ? t('Linked') : '---'}
-          valueColor={theme.colors.primary}
-          onPress={handleAccountLinkingPress}
-        />
+        <SettingsCopilotStep name={CopilotStepName.LINK_ACCOUNT}>
+          <CopilotView>
+            <FormInput
+              valueAlign="right"
+              rightIconName="chevron.right"
+              dense={false}
+              label={t('Linked Accounts')}
+              value={user?.settings.linked?.length ? t('Linked') : '---'}
+              valueColor={theme.colors.primary}
+              onPress={handleAccountLinkingPress}
+            />
+          </CopilotView>
+        </SettingsCopilotStep>
         {!token && (
-          <List.Item
-            title={tCommon('Login / Sign Up')}
-            style={styles.buttonItem}
-            containerStyle={styles.buttonContainer}
-            contentStyle={styles.buttonContent}
-            titleStyle={styles.signInText}
-            onPress={handleAccountAction}
-          />
+          <SettingsCopilotStep name={CopilotStepName.LOGIN} active={!token}>
+            <CopilotListItem
+              title={tCommon('Login / Sign Up')}
+              style={styles.buttonItem}
+              containerStyle={styles.buttonContainer}
+              contentStyle={styles.buttonContent}
+              titleStyle={styles.signInText}
+              onPress={handleAccountAction}
+            />
+          </SettingsCopilotStep>
         )}
         {token && (
           <List.Item

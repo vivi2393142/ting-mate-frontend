@@ -1,7 +1,7 @@
-import { useRouter } from 'expo-router';
-import { Fragment, type ReactElement, useCallback, useEffect, useMemo, useState } from 'react';
+import { usePathname, useRouter } from 'expo-router';
+import { Fragment, useCallback, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { CopilotStep, useCopilot, walkthroughable } from 'react-native-copilot';
+import { walkthroughable } from 'react-native-copilot';
 
 import { Alert, View } from 'react-native';
 import { Divider, List, Portal } from 'react-native-paper';
@@ -9,6 +9,7 @@ import { Divider, List, Portal } from 'react-native-paper';
 import { useGetTasks, useUpdateTaskStatus } from '@/api/tasks';
 import ROUTES from '@/constants/routes';
 import useAppTheme from '@/hooks/useAppTheme';
+import { useCopilotOnboarding } from '@/hooks/useCopilotOnboarding';
 import useCurrentTime from '@/hooks/useCurrentTime';
 import useRecurrenceText from '@/hooks/useRecurrenceText';
 import { useOnboardingStore } from '@/store/useOnboardingStore';
@@ -24,62 +25,24 @@ import ScreenContainer from '@/components/atoms/ScreenContainer';
 import Skeleton from '@/components/atoms/Skeleton';
 import ThemedButton from '@/components/atoms/ThemedButton';
 import ThemedText from '@/components/atoms/ThemedText';
+import HomeCopilotStep, { CopilotStepName } from '@/components/screens/Home/CopilotStep';
 import ExpandableSectionHeader from '@/components/screens/Home/ExpandableSectionHeader';
 import NotificationCenterButton from '@/components/screens/Home/NotificationCenterButton';
 import OtherTaskListItem from '@/components/screens/Home/OtherTaskListItem';
 import TaskListItem from '@/components/screens/Home/TaskListItem';
 import VoiceCommandButton from '@/components/screens/Home/VoiceCommandButton';
 
-const enum CopilotStepName {
-  VIEW_TASKS = 'VIEW_TASKS',
-  ADD_TASK = 'ADD_TASK',
-  VOICE_COMMAND = 'VOICE_COMMAND',
-}
-
 const CopilotView = walkthroughable(View);
 const CopilotThemedButton = walkthroughable(ThemedButton);
 const CopilotVoiceCommandButton = walkthroughable(VoiceCommandButton);
 
-const HomeCopilotStep = ({
-  name,
-  active,
-  children,
-}: {
-  name: CopilotStepName;
-  active?: boolean;
-  children: ReactElement;
-}) => {
-  const { t } = useTranslation('home');
-
-  const { order, text } = useMemo(
-    () =>
-      ({
-        [CopilotStepName.VIEW_TASKS]: {
-          text: t('Your tasks will show up here.'),
-          order: 1,
-        },
-        [CopilotStepName.ADD_TASK]: {
-          text: t('Tap here to add a task.'),
-          order: 2,
-        },
-        [CopilotStepName.VOICE_COMMAND]: {
-          text: t('You can also edit tasks with your voice.'),
-          order: 3,
-        },
-      })[name],
-    [name, t],
-  );
-
-  return (
-    <CopilotStep text={text} order={order} name={name} active={active}>
-      {children}
-    </CopilotStep>
-  );
-};
-
 const HomeScreen = () => {
   const { t } = useTranslation('home');
   const { tRecurrenceText } = useRecurrenceText();
+
+  const pathName = usePathname();
+  const isOnHomeScreen = pathName === ROUTES.HOME;
+
   const router = useRouter();
   const userTextSize = useUserTextSize();
   const userDisplayMode = useUserDisplayMode();
@@ -232,26 +195,14 @@ const HomeScreen = () => {
   }, [user]);
 
   // Handle copilot
-  const { copilotEvents, start } = useCopilot();
   const hasSeenOnboarding = useOnboardingStore((s) => s.hasSeenOnboarding);
   const hasVisitedTask = useOnboardingStore((s) => s.hasVisitedTask);
 
-  useEffect(() => {
-    if (hasSeenOnboarding && !hasVisitedTask && !isLoading) start();
-    // HACK: States got from copilot keep changing, disable to avoid unexpected re-render
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [hasSeenOnboarding, hasVisitedTask, isLoading]);
-
-  useEffect(() => {
-    const onFinish = () => {
-      useOnboardingStore.getState().setHasVisitedTask(true);
-    };
-    copilotEvents.on('stop', onFinish);
-
-    return () => {
-      copilotEvents.off('stop', onFinish);
-    };
-  }, [copilotEvents]);
+  useCopilotOnboarding({
+    hasSeenOnboarding,
+    hasVisitedSection: hasVisitedTask,
+    onStop: () => useOnboardingStore.getState().setHasVisitedTask(true),
+  });
 
   // Show caregiver warning if user is caregiver without linked accounts
   if (shouldShowCaregiverWarning) {
@@ -401,11 +352,13 @@ const HomeScreen = () => {
         {/* Spacer to avoid overlapping with the voice command button */}
         <View style={styles.bottomSpacer} />
       </ScreenContainer>
-      <Portal>
-        <HomeCopilotStep name={CopilotStepName.VOICE_COMMAND}>
-          <CopilotVoiceCommandButton style={styles.voiceCommandButton} />
-        </HomeCopilotStep>
-      </Portal>
+      {isOnHomeScreen && (
+        <Portal>
+          <HomeCopilotStep name={CopilotStepName.VOICE_COMMAND}>
+            <CopilotVoiceCommandButton style={styles.voiceCommandButton} />
+          </HomeCopilotStep>
+        </Portal>
+      )}
     </Fragment>
   );
 };
