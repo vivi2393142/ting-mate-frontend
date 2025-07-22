@@ -1,4 +1,4 @@
-import { router, Stack, useLocalSearchParams } from 'expo-router';
+import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
 import { Fragment, useCallback, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -26,6 +26,8 @@ const NoteEditScreen = () => {
   const { t } = useTranslation('connect');
   const { t: tCommon } = useTranslation('common');
   const getStackScreenOptions = useStackScreenOptionsHelper();
+
+  const router = useRouter();
 
   const insets = useSafeAreaInsets();
 
@@ -88,11 +90,11 @@ const NoteEditScreen = () => {
         },
       );
     }
-  }, [title, isEditMode, t, updateNoteMutation, noteId, content, createNoteMutation]);
+  }, [title, isEditMode, t, updateNoteMutation, noteId, content, createNoteMutation, router]);
 
   const handleCancel = useCallback(() => {
     router.back();
-  }, []);
+  }, [router]);
 
   const handleDeleteNote = useCallback(() => {
     if (!noteId) return;
@@ -109,7 +111,7 @@ const NoteEditScreen = () => {
         },
       },
     ]);
-  }, [noteId, t, tCommon, deleteNoteMutation]);
+  }, [noteId, t, tCommon, deleteNoteMutation, router]);
 
   return (
     <Fragment>

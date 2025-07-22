@@ -1,15 +1,17 @@
 import { useRouter } from 'expo-router';
-import { Fragment, useCallback, useMemo, useState } from 'react';
+import { Fragment, type ReactElement, useCallback, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { CopilotStep, useCopilot, walkthroughable } from 'react-native-copilot';
 
 import { Alert, View } from 'react-native';
-import { Divider, List } from 'react-native-paper';
+import { Divider, List, Portal } from 'react-native-paper';
 
 import { useGetTasks, useUpdateTaskStatus } from '@/api/tasks';
 import ROUTES from '@/constants/routes';
 import useAppTheme from '@/hooks/useAppTheme';
 import useCurrentTime from '@/hooks/useCurrentTime';
 import useRecurrenceText from '@/hooks/useRecurrenceText';
+import { useOnboardingStore } from '@/store/useOnboardingStore';
 import useUserStore, { useUserDisplayMode, useUserTextSize } from '@/store/useUserStore';
 import { StaticTheme } from '@/theme';
 import type { Task } from '@/types/task';
@@ -26,6 +28,54 @@ import ExpandableSectionHeader from '@/components/screens/Home/ExpandableSection
 import NotificationCenterButton from '@/components/screens/Home/NotificationCenterButton';
 import OtherTaskListItem from '@/components/screens/Home/OtherTaskListItem';
 import TaskListItem from '@/components/screens/Home/TaskListItem';
+import VoiceCommandButton from '@/components/screens/Home/VoiceCommandButton';
+
+const enum CopilotStepName {
+  VIEW_TASKS = 'VIEW_TASKS',
+  ADD_TASK = 'ADD_TASK',
+  VOICE_COMMAND = 'VOICE_COMMAND',
+}
+
+const CopilotView = walkthroughable(View);
+const CopilotThemedButton = walkthroughable(ThemedButton);
+const CopilotVoiceCommandButton = walkthroughable(VoiceCommandButton);
+
+const HomeCopilotStep = ({
+  name,
+  active,
+  children,
+}: {
+  name: CopilotStepName;
+  active?: boolean;
+  children: ReactElement;
+}) => {
+  const { t } = useTranslation('home');
+
+  const { order, text } = useMemo(
+    () =>
+      ({
+        [CopilotStepName.VIEW_TASKS]: {
+          text: t('Your tasks will show up here.'),
+          order: 1,
+        },
+        [CopilotStepName.ADD_TASK]: {
+          text: t('Tap here to add a task.'),
+          order: 2,
+        },
+        [CopilotStepName.VOICE_COMMAND]: {
+          text: t('You can also edit tasks with your voice.'),
+          order: 3,
+        },
+      })[name],
+    [name, t],
+  );
+
+  return (
+    <CopilotStep text={text} order={order} name={name} active={active}>
+      {children}
+    </CopilotStep>
+  );
+};
 
 const HomeScreen = () => {
   const { t } = useTranslation('home');
@@ -181,6 +231,28 @@ const HomeScreen = () => {
     }
   }, [user]);
 
+  // Handle copilot
+  const { visible, copilotEvents, start } = useCopilot();
+  const hasSeenOnboarding = useOnboardingStore((s) => s.hasSeenOnboarding);
+  const hasVisitedTask = useOnboardingStore((s) => s.hasVisitedTask);
+
+  useEffect(() => {
+    if (!visible && hasSeenOnboarding && !hasVisitedTask && !isLoading) {
+      start();
+    }
+  }, [hasSeenOnboarding, hasVisitedTask, start, isLoading, visible]);
+
+  useEffect(() => {
+    const onFinish = () => {
+      useOnboardingStore.getState().setHasVisitedTask(true);
+    };
+    copilotEvents.on('stop', onFinish);
+
+    return () => {
+      copilotEvents.off('stop', onFinish);
+    };
+  }, [copilotEvents]);
+
   // Show caregiver warning if user is caregiver without linked accounts
   if (shouldShowCaregiverWarning) {
     return (
@@ -211,109 +283,130 @@ const HomeScreen = () => {
   }
 
   return (
-    // TODO: add voice assistant button
     // TODO: add animation for collapsed tasks
-    <ScreenContainer style={styles.root} scrollable>
-      <View style={styles.headlineRow}>
-        <ThemedText variant="titleLarge" style={styles.headline}>
-          {t('Todays Tasks')}
-        </ThemedText>
-        {linkedText && (
-          <View style={styles.linkedUserIndicator}>
-            <IconSymbol name="link" size={StaticTheme.iconSize.xs} color={theme.colors.secondary} />
-            <ThemedText variant="bodyMedium" color="secondary">
-              {linkedText}
-            </ThemedText>
+    <Fragment>
+      <ScreenContainer style={styles.root} scrollable>
+        <View style={styles.headlineRow}>
+          <ThemedText variant="titleLarge" style={styles.headline}>
+            {t('Todays Tasks')}
+          </ThemedText>
+          {linkedText && (
+            <View style={styles.linkedUserIndicator}>
+              <IconSymbol
+                name="link"
+                size={StaticTheme.iconSize.xs}
+                color={theme.colors.secondary}
+              />
+              <ThemedText variant="bodyMedium" color="secondary">
+                {linkedText}
+              </ThemedText>
+            </View>
+          )}
+          {userDisplayMode === UserDisplayMode.FULL && (
+            <NotificationCenterButton style={styles.notificationButton} />
+          )}
+        </View>
+        {isLoading && (
+          <View style={styles.loadingContainer}>
+            {Array.from({ length: 3 }).map((_, idx) => (
+              <Skeleton key={idx} width={'100%'} height={58} />
+            ))}
           </View>
         )}
-        {userDisplayMode === UserDisplayMode.FULL && (
-          <NotificationCenterButton style={styles.notificationButton} />
-        )}
-      </View>
-      {isLoading && (
-        <View style={styles.loadingContainer}>
-          {Array.from({ length: 3 }).map((_, idx) => (
-            <Skeleton key={idx} width={'100%'} height={58} />
-          ))}
-        </View>
-      )}
-      {!isLoading && sortedTasks.length === 0 && (
-        <View style={styles.emptyContainer}>
-          <ThemedText color="onSurfaceVariant">{t("You haven't added any tasks yet.")}</ThemedText>
-          <ThemedText color="onSurfaceVariant">{t('Add a task to get started!')}</ThemedText>
-        </View>
-      )}
-      {!isLoading && sortedTasks.length > 0 && (
-        /* Today's tasks */
-        <List.Section style={styles.listSection}>
-          {sortedTasks.map((task, idx) => {
-            const isMissed = !task.completed && isTaskMissed(task.reminderTime, currentTime);
-            const isLastCompleted = task.completed && !sortedTasks?.[idx + 1]?.completed;
-            const taskTemplate = tasks.find((t) => t.id === task.id);
-            const recurrenceText = taskTemplate?.recurrence
-              ? tRecurrenceText(taskTemplate.recurrence)
-              : '';
-            const shouldShowRecurrence = taskTemplate && !!taskTemplate?.recurrence;
-            return (
-              <Fragment key={task.id}>
-                <TaskListItem
-                  {...task}
-                  isMissed={isMissed}
-                  isLastCompleted={isLastCompleted}
-                  isStackExpanded={isStackExpanded}
-                  recurrenceText={recurrenceText}
-                  shouldShowRecurrence={shouldShowRecurrence}
-                  onPress={handleListItemPress(task.id)}
-                  onCheck={handleCheckboxPress(task.id, task.completed)}
-                  onStackPress={handleStackPress}
-                />
-                {isLastCompleted && isStackExpanded && (
-                  <ExpandableSectionHeader
-                    title={t('Collapse Completed')}
-                    chevronType="up"
-                    isExpanded={isStackExpanded}
-                    onPress={handleStackPress}
+        <HomeCopilotStep name={CopilotStepName.VIEW_TASKS}>
+          <CopilotView>
+            {!isLoading && sortedTasks.length === 0 && (
+              <View style={styles.emptyContainer}>
+                <ThemedText color="onSurfaceVariant">
+                  {t("You haven't added any tasks yet.")}
+                </ThemedText>
+                <ThemedText color="onSurfaceVariant">{t('Add a task to get started!')}</ThemedText>
+              </View>
+            )}
+            {!isLoading && sortedTasks.length > 0 && (
+              /* Today's tasks */
+              <List.Section style={styles.listSection}>
+                {sortedTasks.map((task, idx) => {
+                  const isMissed = !task.completed && isTaskMissed(task.reminderTime, currentTime);
+                  const isLastCompleted = task.completed && !sortedTasks?.[idx + 1]?.completed;
+                  const taskTemplate = tasks.find((t) => t.id === task.id);
+                  const recurrenceText = taskTemplate?.recurrence
+                    ? tRecurrenceText(taskTemplate.recurrence)
+                    : '';
+                  const shouldShowRecurrence = taskTemplate && !!taskTemplate?.recurrence;
+                  return (
+                    <Fragment key={task.id}>
+                      <TaskListItem
+                        {...task}
+                        isMissed={isMissed}
+                        isLastCompleted={isLastCompleted}
+                        isStackExpanded={isStackExpanded}
+                        recurrenceText={recurrenceText}
+                        shouldShowRecurrence={shouldShowRecurrence}
+                        onPress={handleListItemPress(task.id)}
+                        onCheck={handleCheckboxPress(task.id, task.completed)}
+                        onStackPress={handleStackPress}
+                      />
+                      {isLastCompleted && isStackExpanded && (
+                        <ExpandableSectionHeader
+                          title={t('Collapse Completed')}
+                          chevronType="up"
+                          isExpanded={isStackExpanded}
+                          onPress={handleStackPress}
+                        />
+                      )}
+                    </Fragment>
+                  );
+                })}
+              </List.Section>
+            )}
+          </CopilotView>
+        </HomeCopilotStep>
+        {/* Other tasks section */}
+        {otherTasks.length > 0 && (
+          <Fragment>
+            <Divider style={styles.divider} />
+            <List.Section style={styles.listSection}>
+              <ExpandableSectionHeader
+                title={t('Other Tasks')}
+                isExpanded={isOtherTasksExpanded}
+                count={otherTasks.length}
+                chevronType={isOtherTasksExpanded ? 'down' : 'right'}
+                onPress={handleOtherTasksToggle}
+              />
+              {isOtherTasksExpanded &&
+                otherTasks.map(({ task, recurrenceText, nextOccurrence }) => (
+                  <OtherTaskListItem
+                    key={task.id}
+                    {...task}
+                    recurrenceText={recurrenceText}
+                    nextOccurrence={nextOccurrence ?? undefined}
+                    onPress={handleListItemPress(task.id)}
+                    disabled={userDisplayMode === UserDisplayMode.SIMPLE}
                   />
-                )}
-              </Fragment>
-            );
-          })}
-        </List.Section>
-      )}
-      {/* Other tasks section */}
-      {otherTasks.length > 0 && (
-        <Fragment>
-          <Divider style={styles.divider} />
-          <List.Section style={styles.listSection}>
-            <ExpandableSectionHeader
-              title={t('Other Tasks')}
-              isExpanded={isOtherTasksExpanded}
-              count={otherTasks.length}
-              chevronType={isOtherTasksExpanded ? 'down' : 'right'}
-              onPress={handleOtherTasksToggle}
-            />
-            {isOtherTasksExpanded &&
-              otherTasks.map(({ task, recurrenceText, nextOccurrence }) => (
-                <OtherTaskListItem
-                  key={task.id}
-                  {...task}
-                  recurrenceText={recurrenceText}
-                  nextOccurrence={nextOccurrence ?? undefined}
-                  onPress={handleListItemPress(task.id)}
-                  disabled={userDisplayMode === UserDisplayMode.SIMPLE}
-                />
-              ))}
-          </List.Section>
-        </Fragment>
-      )}
-      {userDisplayMode === UserDisplayMode.FULL && (
-        <ThemedButton onPress={handleAddTask} icon={'plus'} style={styles.addTaskButton}>
-          {t('Add Task')}
-        </ThemedButton>
-      )}
-      {/* Spacer to avoid overlapping with the voice command button */}
-      <View style={styles.bottomSpacer} />
-    </ScreenContainer>
+                ))}
+            </List.Section>
+          </Fragment>
+        )}
+        {userDisplayMode === UserDisplayMode.FULL && (
+          <HomeCopilotStep
+            name={CopilotStepName.ADD_TASK}
+            active={userDisplayMode === UserDisplayMode.FULL}
+          >
+            <CopilotThemedButton onPress={handleAddTask} icon={'plus'} style={styles.addTaskButton}>
+              {t('Add Task')}
+            </CopilotThemedButton>
+          </HomeCopilotStep>
+        )}
+        {/* Spacer to avoid overlapping with the voice command button */}
+        <View style={styles.bottomSpacer} />
+      </ScreenContainer>
+      <Portal>
+        <HomeCopilotStep name={CopilotStepName.VOICE_COMMAND}>
+          <CopilotVoiceCommandButton style={styles.voiceCommandButton} />
+        </HomeCopilotStep>
+      </Portal>
+    </Fragment>
   );
 };
 
@@ -336,7 +429,8 @@ const getStyles = createStyles<
     | 'emptyContainer'
     | 'noLinkContainer'
     | 'warningContainer'
-    | 'notificationButton',
+    | 'notificationButton'
+    | 'voiceCommandButton',
     'headline' | 'warmingIcon' | 'warningText'
   >,
   StyleParams
@@ -399,5 +493,10 @@ const getStyles = createStyles<
   },
   notificationButton: {
     marginLeft: 'auto',
+  },
+  voiceCommandButton: {
+    alignSelf: 'center',
+    position: 'absolute',
+    bottom: 32,
   },
 });

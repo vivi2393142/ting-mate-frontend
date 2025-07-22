@@ -1,9 +1,8 @@
 import * as Clipboard from 'expo-clipboard';
-import { router } from 'expo-router';
 import { Fragment, useCallback, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
-import { Stack } from 'expo-router';
+import { Stack, useRouter } from 'expo-router';
 import { Alert, Share, TextInput, View } from 'react-native';
 import { TouchableRipple } from 'react-native-paper';
 
@@ -68,6 +67,8 @@ const AccountLinkingScreen = () => {
   const { t } = useTranslation('accountLinking');
   const { t: tCommon } = useTranslation('common');
   const getStackScreenOptions = useStackScreenOptionsHelper();
+
+  const router = useRouter();
 
   const theme = useAppTheme();
   const styles = getStyles(theme);
@@ -196,7 +197,7 @@ const AccountLinkingScreen = () => {
         from: ROUTES.ACCOUNT_LINKING,
       },
     });
-  }, []);
+  }, [router]);
 
   const [carereceivers, caregivers] = useMemo(
     () =>

@@ -1,5 +1,5 @@
 import dayjs from 'dayjs';
-import { router } from 'expo-router';
+import { useRouter } from 'expo-router';
 import { useCallback, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
@@ -26,6 +26,8 @@ const LOG_CTN_PER_PAGE = 10;
 const SharedLogContent = ({ isExpanded }: { isExpanded: boolean }) => {
   const theme = useAppTheme();
   const styles = getStyles(theme);
+
+  const router = useRouter();
 
   const { t } = useTranslation('connect');
   const formatLogText = useLogTranslation();
@@ -73,7 +75,7 @@ const SharedLogContent = ({ isExpanded }: { isExpanded: boolean }) => {
         },
       });
     },
-    [formatLogText],
+    [formatLogText, router],
   );
 
   const handleLoadMoreLogs = useCallback(() => {

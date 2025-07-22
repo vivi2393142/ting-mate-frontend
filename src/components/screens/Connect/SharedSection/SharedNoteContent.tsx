@@ -1,4 +1,4 @@
-import { router } from 'expo-router';
+import { useRouter } from 'expo-router';
 import { Fragment, useCallback, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
@@ -24,6 +24,8 @@ const SharedNoteContent = ({ isExpanded }: { isExpanded: boolean }) => {
   const theme = useAppTheme();
   const styles = getStyles(theme);
 
+  const router = useRouter();
+
   const { t } = useTranslation('connect');
 
   const [lastNoteUpdate, setLastNoteUpdate] = useState<Date | null>(null);
@@ -45,22 +47,25 @@ const SharedNoteContent = ({ isExpanded }: { isExpanded: boolean }) => {
     refetchNotes();
   }, [refetchNotes]);
 
-  const handleNotePress = useCallback((note: SharedNote) => {
-    router.push({
-      pathname: ROUTES.NOTE_EDIT,
-      params: {
-        id: note.id,
-        from: ROUTES.CONNECT,
-      },
-    });
-  }, []);
+  const handleNotePress = useCallback(
+    (note: SharedNote) => {
+      router.push({
+        pathname: ROUTES.NOTE_EDIT,
+        params: {
+          id: note.id,
+          from: ROUTES.CONNECT,
+        },
+      });
+    },
+    [router],
+  );
 
   const handleAddNote = useCallback(() => {
     router.push({
       pathname: ROUTES.NOTE_EDIT,
       params: { from: ROUTES.CONNECT },
     });
-  }, []);
+  }, [router]);
 
   return (
     <SharedTabContent

@@ -1,10 +1,12 @@
+import { useRouter } from 'expo-router';
 import { useCallback, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Pressable, StyleSheet, useWindowDimensions, View } from 'react-native';
 import Animated, { useAnimatedStyle, useSharedValue, withTiming } from 'react-native-reanimated';
 
+import ROUTES from '@/constants/routes';
 import useAppTheme from '@/hooks/useAppTheme';
-import { useOnboardingState } from '@/hooks/useOnboardingState';
+import { useOnboardingStore } from '@/store/useOnboardingStore';
 import { StaticTheme } from '@/theme';
 import { createStyles, type StyleRecord } from '@/utils/createStyles';
 
@@ -53,13 +55,15 @@ const AnimatedDot = ({ isActive, onClick }: { isActive: boolean; onClick: () => 
 // OnboardingScreen manages its own onboarding state and completion.
 export const OnboardingScreen = () => {
   const { t } = useTranslation('common');
+  const router = useRouter();
 
   const theme = useAppTheme();
   const styles = getStyles(theme);
 
   const [current, setCurrent] = useState(0);
 
-  const { hasSeenOnboarding, setHasSeenOnboarding } = useOnboardingState();
+  const hasSeenOnboarding = useOnboardingStore((s) => s.hasSeenOnboarding);
+  const setHasSeenOnboarding = useOnboardingStore((s) => s.setHasSeenOnboarding);
 
   const handleClickDot = (idx: number) => () => {
     setCurrent(idx);
@@ -70,8 +74,12 @@ export const OnboardingScreen = () => {
   }, [current]);
 
   const handleDone = useCallback(() => {
+    router.replace({
+      pathname: ROUTES.HOME,
+      params: { from: 'onboarding' },
+    }); // Encourage user to login and link
     void setHasSeenOnboarding(true);
-  }, [setHasSeenOnboarding]);
+  }, [router, setHasSeenOnboarding]);
 
   // Animate slide content
   const { width } = useWindowDimensions();

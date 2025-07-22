@@ -1,12 +1,10 @@
 import { Tabs, usePathname } from 'expo-router';
-import { StyleSheet } from 'react-native';
 
 import useAppTheme from '@/hooks/useAppTheme';
 import useRouteTranslation from '@/hooks/useRouteTranslation';
 import { StaticTheme } from '@/theme';
 
 import IconSymbol from '@/components/atoms/IconSymbol';
-import VoiceCommandButton from '@/components/screens/Home/VoiceCommandButton';
 import ROUTES from '@/constants/routes';
 
 const tabScreensSettings = [
@@ -54,9 +52,7 @@ const TabLayout = () => {
               title: showVoiceButton ? '' : tRoutes(titleKey),
               tabBarAccessibilityLabel: showVoiceButton ? '' : tRoutes(titleKey),
               tabBarIcon: ({ color }) =>
-                showVoiceButton ? (
-                  <VoiceCommandButton style={styles.floatingButton} />
-                ) : (
+                showVoiceButton ? null : (
                   <IconSymbol name={iconName} color={color} size={StaticTheme.iconSize.l} />
                 ),
             }}
@@ -68,9 +64,3 @@ const TabLayout = () => {
 };
 
 export default TabLayout;
-
-const styles = StyleSheet.create({
-  floatingButton: {
-    justifyContent: 'flex-end',
-  },
-});

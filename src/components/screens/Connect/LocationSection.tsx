@@ -1,5 +1,5 @@
 import dayjs from 'dayjs';
-import { router } from 'expo-router';
+import { useRouter } from 'expo-router';
 import { useCallback, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
@@ -116,6 +116,8 @@ const LocationSection = () => {
   const styles = getStyles(theme);
   const { t } = useTranslation('connect');
   const { t: tCommon } = useTranslation('common');
+
+  const router = useRouter();
 
   const token = useAuthStore((s) => s.token);
   const user = useUserStore((s) => s.user);
@@ -271,21 +273,21 @@ const LocationSection = () => {
       pathname: ROUTES.LOGIN,
       params: { from: ROUTES.CONNECT },
     });
-  }, []);
+  }, [router]);
 
   const handleLinkAccount = useCallback(() => {
     router.push({
       pathname: ROUTES.ACCOUNT_LINKING,
       params: { from: ROUTES.CONNECT },
     });
-  }, []);
+  }, [router]);
 
   const handleEditSafeZone = useCallback(() => {
     router.push({
       pathname: ROUTES.EDIT_SAFE_ZONE,
       params: { from: ROUTES.CONNECT },
     });
-  }, []);
+  }, [router]);
 
   // Check if the user is inside the safe zone
   const isInSafeZone = useMemo(() => {
