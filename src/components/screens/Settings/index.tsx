@@ -24,6 +24,7 @@ import { createStyles, StyleRecord } from '@/utils/createStyles';
 import FormInput from '@/components/atoms/FormInput';
 import ScreenContainer from '@/components/atoms/ScreenContainer';
 import Select from '@/components/atoms/Select';
+import CopilotProvider from '@/components/providers/CopilotProvider';
 import SettingsCopilotStep, { CopilotStepName } from '@/components/screens/Settings/CopilotStep';
 
 const CopilotView = walkthroughable(View);
@@ -173,9 +174,10 @@ const SettingsScreen = () => {
   const hasVisitedSettings = useOnboardingStore((s) => s.hasVisitedSettings);
 
   useCopilotOnboarding({
-    hasSeenOnboarding,
-    hasVisitedSection: hasVisitedSettings,
-    onStop: () => useOnboardingStore.getState().setHasVisitedSettings(true),
+    shouldShowCopilot: hasSeenOnboarding && !hasVisitedSettings,
+    onStop: () => {
+      useOnboardingStore.getState().setHasVisitedSettings(true);
+    },
   });
 
   // TODO: Adjust layout for Large mode
@@ -286,6 +288,14 @@ const SettingsScreen = () => {
   );
 };
 
+const SettingsScreenWithCopilot = () => (
+  <CopilotProvider>
+    <SettingsScreen />
+  </CopilotProvider>
+);
+
+export default SettingsScreenWithCopilot;
+
 const getStyles = createStyles<
   StyleRecord<
     'buttonItem' | 'buttonContainer' | 'buttonContent',
@@ -320,5 +330,3 @@ const getStyles = createStyles<
     fontWeight: ({ fonts }) => fonts.bodyLarge.fontWeight,
   },
 });
-
-export default SettingsScreen;

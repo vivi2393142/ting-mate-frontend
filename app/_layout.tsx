@@ -16,7 +16,6 @@ import { useOnboardingStore } from '@/store/useOnboardingStore';
 import StaleDataRefreshSnackbar from '@/components/atoms/StaleDataRefreshButton';
 import OnboardingScreen from '@/components/organisms/OnboardingSlides';
 import CombinedThemeProvider from '@/components/providers/CombinedThemeProvider';
-import CopilotProvider from '@/components/providers/CopilotProvider';
 import LocationSyncHandler from '@/components/providers/LocationSyncHandler';
 import NotificationHandler from '@/components/providers/NotificationHandler';
 import UserSyncHandler from '@/components/providers/UserSyncHandler';
@@ -39,25 +38,23 @@ const RootLayout = () => {
   if (!loaded) return null;
   return (
     <SafeAreaProvider>
-      <CopilotProvider>
-        <QueryClientProvider client={queryClient}>
-          <UserSyncHandler />
-          <NotificationHandler />
-          <CombinedThemeProvider>
-            <LocationSyncHandler />
-            <OnboardingScreen />
-            <Stack>
-              <Stack.Screen
-                name="(tabs)"
-                options={{ headerShown: false, ...getStackScreenOptions({ title: ROUTES.HOME }) }}
-              />
-              <Stack.Screen name="+not-found" />
-            </Stack>
-            <StatusBar style={colorScheme === 'dark' ? 'light' : 'dark'} />
-            <StaleDataRefreshSnackbar />
-          </CombinedThemeProvider>
-        </QueryClientProvider>
-      </CopilotProvider>
+      <QueryClientProvider client={queryClient}>
+        <UserSyncHandler />
+        <NotificationHandler />
+        <CombinedThemeProvider>
+          <LocationSyncHandler />
+          <OnboardingScreen />
+          <Stack>
+            <Stack.Screen
+              name="(tabs)"
+              options={{ headerShown: false, ...getStackScreenOptions({ title: ROUTES.HOME }) }}
+            />
+            <Stack.Screen name="+not-found" />
+          </Stack>
+          <StatusBar style={colorScheme === 'dark' ? 'light' : 'dark'} />
+          <StaleDataRefreshSnackbar />
+        </CombinedThemeProvider>
+      </QueryClientProvider>
     </SafeAreaProvider>
   );
 };

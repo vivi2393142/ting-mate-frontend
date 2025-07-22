@@ -8,6 +8,7 @@ import { walkthroughable } from 'react-native-copilot';
 import { View } from 'react-native';
 
 import ScreenContainer from '@/components/atoms/ScreenContainer';
+import CopilotProvider from '@/components/providers/CopilotProvider';
 import ConnectCopilotStep, { CopilotStepName } from '@/components/screens/Connect/CopilotStep';
 import EmergencySection from '@/components/screens/Connect/EmergencySection';
 import LocationSection from '@/components/screens/Connect/LocationSection';
@@ -24,8 +25,7 @@ const ConnectScreen = () => {
   const hasVisitedConnect = useOnboardingStore((s) => s.hasVisitedConnect);
 
   useCopilotOnboarding({
-    hasSeenOnboarding,
-    hasVisitedSection: hasVisitedConnect,
+    shouldShowCopilot: hasSeenOnboarding && !hasVisitedConnect,
     onStop: () => useOnboardingStore.getState().setHasVisitedConnect(true),
   });
 
@@ -50,6 +50,14 @@ const ConnectScreen = () => {
   );
 };
 
+const ConnectScreenWithCopilot = () => (
+  <CopilotProvider>
+    <ConnectScreen />
+  </CopilotProvider>
+);
+
+export default ConnectScreenWithCopilot;
+
 const getStyles = createStyles<StyleRecord<'container' | 'content'>>({
   container: {
     flex: 1,
@@ -59,5 +67,3 @@ const getStyles = createStyles<StyleRecord<'container' | 'content'>>({
     paddingBottom: StaticTheme.spacing.md,
   },
 });
-
-export default ConnectScreen;

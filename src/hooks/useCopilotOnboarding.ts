@@ -3,22 +3,20 @@ import { useEffect, useLayoutEffect } from 'react';
 import { useCopilot } from 'react-native-copilot';
 
 interface UseCopilotOnboardingProps {
-  hasSeenOnboarding: boolean;
-  hasVisitedSection: boolean;
+  shouldShowCopilot: boolean;
   onStop: () => void;
   debounceMs?: number;
 }
 
 export function useCopilotOnboarding({
-  hasSeenOnboarding,
-  hasVisitedSection,
+  shouldShowCopilot,
   onStop,
   debounceMs = 1000,
 }: UseCopilotOnboardingProps) {
   const { copilotEvents, totalStepsNumber, start } = useCopilot();
 
   useLayoutEffect(() => {
-    if (!hasSeenOnboarding || hasVisitedSection) return;
+    if (!shouldShowCopilot) return;
     const debouncedStart = debounce(() => {
       start();
     }, debounceMs);
@@ -32,16 +30,16 @@ export function useCopilotOnboarding({
     // HACK: Start call multiple times when the screen is mounted
     // see: https://github.com/mohebifar/react-native-copilot/issues/322
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [hasSeenOnboarding, hasVisitedSection, totalStepsNumber]);
+  }, [shouldShowCopilot, totalStepsNumber]);
 
   useEffect(() => {
-    const onStop = () => {
+    const handleStop = () => {
       onStop();
     };
-    copilotEvents.on('stop', onStop);
+    copilotEvents.on('stop', handleStop);
 
     return () => {
-      copilotEvents.off('stop', onStop);
+      copilotEvents.off('stop', handleStop);
     };
   }, [copilotEvents, onStop]);
 }

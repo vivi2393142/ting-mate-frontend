@@ -25,6 +25,7 @@ import ScreenContainer from '@/components/atoms/ScreenContainer';
 import Skeleton from '@/components/atoms/Skeleton';
 import ThemedButton from '@/components/atoms/ThemedButton';
 import ThemedText from '@/components/atoms/ThemedText';
+import CopilotProvider from '@/components/providers/CopilotProvider';
 import HomeCopilotStep, { CopilotStepName } from '@/components/screens/Home/CopilotStep';
 import ExpandableSectionHeader from '@/components/screens/Home/ExpandableSectionHeader';
 import NotificationCenterButton from '@/components/screens/Home/NotificationCenterButton';
@@ -34,7 +35,6 @@ import VoiceCommandButton from '@/components/screens/Home/VoiceCommandButton';
 
 const CopilotView = walkthroughable(View);
 const CopilotThemedButton = walkthroughable(ThemedButton);
-const CopilotVoiceCommandButton = walkthroughable(VoiceCommandButton);
 
 const HomeScreen = () => {
   const { t } = useTranslation('home');
@@ -199,9 +199,10 @@ const HomeScreen = () => {
   const hasVisitedTask = useOnboardingStore((s) => s.hasVisitedTask);
 
   useCopilotOnboarding({
-    hasSeenOnboarding,
-    hasVisitedSection: hasVisitedTask,
-    onStop: () => useOnboardingStore.getState().setHasVisitedTask(true),
+    shouldShowCopilot: hasSeenOnboarding && !hasVisitedTask && !isLoading,
+    onStop: () => {
+      useOnboardingStore.getState().setHasVisitedTask(true);
+    },
   });
 
   // Show caregiver warning if user is caregiver without linked accounts
@@ -352,18 +353,27 @@ const HomeScreen = () => {
         {/* Spacer to avoid overlapping with the voice command button */}
         <View style={styles.bottomSpacer} />
       </ScreenContainer>
-      {isOnHomeScreen && (
+      {/* HACK: Portal VoiceCommandButton cannot work with CopilotProvider,
+      so use fake space component to simulate the voice command button */}
+      <HomeCopilotStep name={CopilotStepName.VOICE_COMMAND}>
+        <CopilotView style={styles.voiceCommandButtonForCopilot} />
+      </HomeCopilotStep>
+      {isOnHomeScreen && hasSeenOnboarding && (
         <Portal>
-          <HomeCopilotStep name={CopilotStepName.VOICE_COMMAND}>
-            <CopilotVoiceCommandButton style={styles.voiceCommandButton} />
-          </HomeCopilotStep>
+          <VoiceCommandButton style={styles.voiceCommandButton} />
         </Portal>
       )}
     </Fragment>
   );
 };
 
-export default HomeScreen;
+const HomeScreenWithCopilot = () => (
+  <CopilotProvider>
+    <HomeScreen />
+  </CopilotProvider>
+);
+
+export default HomeScreenWithCopilot;
 
 interface StyleParams {
   userTextSize: UserTextSize;
@@ -383,7 +393,8 @@ const getStyles = createStyles<
     | 'noLinkContainer'
     | 'warningContainer'
     | 'notificationButton'
-    | 'voiceCommandButton',
+    | 'voiceCommandButton'
+    | 'voiceCommandButtonForCopilot',
     'headline' | 'warmingIcon' | 'warningText'
   >,
   StyleParams
@@ -451,5 +462,13 @@ const getStyles = createStyles<
     alignSelf: 'center',
     position: 'absolute',
     bottom: 32,
+  },
+  voiceCommandButtonForCopilot: {
+    borderRadius: StaticTheme.borderRadius.round,
+    width: 72,
+    height: 72,
+    bottom: -52,
+    position: 'absolute',
+    alignSelf: 'center',
   },
 });
