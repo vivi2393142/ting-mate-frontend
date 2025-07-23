@@ -1,7 +1,7 @@
-import { useRouter } from 'expo-router';
-import { useCallback, useEffect, useState } from 'react';
+import { Stack, useRouter } from 'expo-router';
+import { Fragment, useCallback, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Pressable, StyleSheet, useWindowDimensions, View } from 'react-native';
+import { Pressable, useWindowDimensions, View } from 'react-native';
 import Animated, { useAnimatedStyle, useSharedValue, withTiming } from 'react-native-reanimated';
 
 import ROUTES from '@/constants/routes';
@@ -52,8 +52,8 @@ const AnimatedDot = ({ isActive, onClick }: { isActive: boolean; onClick: () => 
   );
 };
 
-// OnboardingScreen manages its own onboarding state and completion.
-export const OnboardingScreen = () => {
+// OnboardingSlidesScreen manages its own onboarding state and completion.
+export const OnboardingSlidesScreen = () => {
   const { t } = useTranslation('common');
   const router = useRouter();
 
@@ -77,7 +77,7 @@ export const OnboardingScreen = () => {
     router.replace({
       pathname: ROUTES.HOME,
       params: { from: 'onboarding' },
-    }); // Encourage user to login and link
+    });
     void setHasSeenOnboarding(true);
   }, [router, setHasSeenOnboarding]);
 
@@ -112,56 +112,63 @@ export const OnboardingScreen = () => {
   if (hasSeenOnboarding) return null;
 
   return (
-    <ScreenContainer isRoot style={[StyleSheet.absoluteFill, styles.root]}>
-      <View style={styles.content}>
-        <View style={[styles.slidesContainer, styles.imageSlidesContainer]}>
-          {slideKeys.map((slideKey) => {
-            const SvgImage = svgMap[slideKey];
-            return (
+    <Fragment>
+      <Stack.Screen
+        options={{
+          headerShown: false,
+        }}
+      />
+      <ScreenContainer isRoot style={styles.root}>
+        <View style={styles.content}>
+          <View style={[styles.slidesContainer, styles.imageSlidesContainer]}>
+            {slideKeys.map((slideKey) => {
+              const SvgImage = svgMap[slideKey];
+              return (
+                <Animated.View key={slideKey} style={[styles.slide, animatedContentStyle]}>
+                  <SvgImage />
+                </Animated.View>
+              );
+            })}
+          </View>
+          <View style={styles.dotsContainer}>
+            {slideKeys.map((_, idx) => (
+              <AnimatedDot key={idx} isActive={current === idx} onClick={handleClickDot(idx)} />
+            ))}
+          </View>
+          <View style={styles.slidesContainer}>
+            {slideKeys.map((slideKey) => (
               <Animated.View key={slideKey} style={[styles.slide, animatedContentStyle]}>
-                <SvgImage />
+                <ThemedText variant="headlineLarge" color="primary" style={styles.title}>
+                  {slideTitles[slideKey].title}
+                </ThemedText>
+                <ThemedText color="onSurfaceVariant" style={styles.subtitle}>
+                  {slideTitles[slideKey].subtitle}
+                </ThemedText>
               </Animated.View>
-            );
-          })}
-        </View>
-        <View style={styles.dotsContainer}>
-          {slideKeys.map((_, idx) => (
-            <AnimatedDot key={idx} isActive={current === idx} onClick={handleClickDot(idx)} />
-          ))}
-        </View>
-        <View style={styles.slidesContainer}>
-          {slideKeys.map((slideKey) => (
-            <Animated.View key={slideKey} style={[styles.slide, animatedContentStyle]}>
-              <ThemedText variant="headlineLarge" color="primary" style={styles.title}>
-                {slideTitles[slideKey].title}
-              </ThemedText>
-              <ThemedText color="onSurfaceVariant" style={styles.subtitle}>
-                {slideTitles[slideKey].subtitle}
-              </ThemedText>
-            </Animated.View>
-          ))}
-        </View>
-        <View style={styles.slide}>
-          {current < slideKeys.length - 1 ? (
-            <ThemedButton accessibilityLabel={t('Next slide')} onPress={handleNext}>
-              {t('Next')}
+            ))}
+          </View>
+          <View style={styles.slide}>
+            {current < slideKeys.length - 1 ? (
+              <ThemedButton accessibilityLabel={t('Next slide')} onPress={handleNext}>
+                {t('Next')}
+              </ThemedButton>
+            ) : (
+              <ThemedButton accessibilityLabel={t('Next slide')} onPress={handleDone}>
+                {t('Get Started')}
+              </ThemedButton>
+            )}
+            <ThemedButton
+              accessibilityLabel={t('Skip Onboarding')}
+              onPress={handleDone}
+              style={styles.skipButton}
+              labelStyle={styles.skipButtonLabel}
+            >
+              {t('Skip')}
             </ThemedButton>
-          ) : (
-            <ThemedButton accessibilityLabel={t('Next slide')} onPress={handleDone}>
-              {t('Get Started')}
-            </ThemedButton>
-          )}
-          <ThemedButton
-            accessibilityLabel={t('Skip Onboarding')}
-            onPress={handleDone}
-            style={styles.skipButton}
-            labelStyle={styles.skipButtonLabel}
-          >
-            {t('Skip')}
-          </ThemedButton>
+          </View>
         </View>
-      </View>
-    </ScreenContainer>
+      </ScreenContainer>
+    </Fragment>
   );
 };
 
@@ -191,7 +198,6 @@ const getStyles = createStyles<
   >
 >({
   root: {
-    zIndex: 9999,
     backgroundColor: ({ colors }) => colors.background,
     paddingHorizontal: 0,
   },
@@ -236,4 +242,4 @@ const getStyles = createStyles<
   },
 });
 
-export default OnboardingScreen;
+export default OnboardingSlidesScreen;

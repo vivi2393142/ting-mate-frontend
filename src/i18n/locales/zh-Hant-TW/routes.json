@@ -13,6 +13,7 @@
   "/login": "Login",
   "/note-edit": "Edit Note",
   "/notifications": "Notifications",
+  "/onboarding-slides": "Onboarding",
   "/role-selection": "Role Selection",
   "/settings": "Settings"
 }

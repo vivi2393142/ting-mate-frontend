@@ -15,6 +15,8 @@ const ROUTES = {
   NOTE_EDIT: '/note-edit',
   EDIT_SAFE_ZONE: '/edit-safe-zone',
   NOTIFICATIONS: '/notifications',
+  // Onboarding
+  ONBOARDING_SLIDES: '/onboarding-slides',
 } as const;
 
 export type Route = (typeof ROUTES)[keyof typeof ROUTES];
