@@ -68,7 +68,7 @@ const SSENotificationHandler = () => {
           break;
         case NotificationCategory.LINKING_ACCOUNT:
           setStaleDataServiceToStore({
-            message: t('Linking account has been updated, please refresh to see changes'),
+            message: t('Your mate list changed. Tap to update.'),
             screens: [ROUTES.HOME, ROUTES.CONNECT, ROUTES.SETTINGS],
             onRefresh: () => {
               queryClient.invalidateQueries(); // Refresh all queries

@@ -335,7 +335,7 @@ const LocationSection = () => {
   // If not authenticated, show sign in button
   if (!token) {
     return (
-      <SectionContainer title={t('Location')} hideToggle>
+      <SectionContainer title={t('Mate’s Location')} hideToggle>
         <NoteMessage
           message={t('Please sign in to use this feature.')}
           buttonProps={{
@@ -349,7 +349,7 @@ const LocationSection = () => {
 
   if (status === Status.INITIALIZING || !user) {
     return (
-      <SectionContainer title={t('Location')} hideToggle>
+      <SectionContainer title={t('Mate’s Location')} hideToggle>
         <View style={styles.container}>
           <Skeleton width={'100%'} height={150} />
         </View>
@@ -359,12 +359,12 @@ const LocationSection = () => {
 
   if (status === Status.NO_LINKED) {
     return (
-      <SectionContainer title={t('Location')} hideToggle>
+      <SectionContainer title={t('Mate’s Location')} hideToggle>
         <NoteMessage
           message={t('Connect with a mate first to use this feature.')}
           buttonProps={{
             onPress: handleLinkAccount,
-            children: t('Link Now'),
+            children: t('Connect Now'),
           }}
         />
       </SectionContainer>
@@ -373,11 +373,11 @@ const LocationSection = () => {
 
   if (status === Status.NO_AGREEMENT) {
     return (
-      <SectionContainer title={t('Location')} hideToggle>
+      <SectionContainer title={t('Mate’s Location')} hideToggle>
         {user.role === Role.CAREGIVER ? (
           <NoteMessage
             message={t(
-              'Your mate hasn’t turned on location sharing. Ask them to enable it in their app, then refresh.',
+              'Your mate hasn’t shared their location yet. Ask them to turn it on and refresh.',
             )}
             buttonProps={{
               onPress: handleRefresh,
@@ -388,7 +388,7 @@ const LocationSection = () => {
           />
         ) : (
           <NoteMessage
-            message={t('Location sharing is off. Turn it on to let your mates know you’re safe.')}
+            message={t('Location is off. Turn it on to let mates know you’re okay.')}
             buttonProps={{
               onPress: handleTurnOnLocationSharing,
               children: t('Turn On Location Sharing'),
@@ -401,11 +401,9 @@ const LocationSection = () => {
 
   if (status === Status.NO_PERMISSION) {
     return (
-      <SectionContainer title={t('Location')} hideToggle>
+      <SectionContainer title={t('Mate’s Location')} hideToggle>
         <NoteMessage
-          message={t(
-            'You’re sharing your location, but the app still needs permission from your phone.',
-          )}
+          message={t('YTurn on location access in your phone to share.')}
           buttonProps={{
             onPress: requestPermission,
             children: tCommon('Go to Settings'),
@@ -417,11 +415,11 @@ const LocationSection = () => {
 
   if (status === Status.NO_DATA) {
     return (
-      <SectionContainer title={t('Location')} hideToggle>
+      <SectionContainer title={t('Mate’s Location')} hideToggle>
         {user.role === Role.CAREGIVER ? (
           <NoteMessage
             message={t(
-              'We can’t get their location. Your mate might have just enabled sharing or hasn’t allowed access yet. Please check settings or try again.',
+              'Can’t load their location yet. They might’ve just turned it on or need to allow access. Try again soon.',
             )}
             buttonProps={{
               onPress: handleRefresh,
@@ -447,7 +445,7 @@ const LocationSection = () => {
 
   if (status === Status.ONLY_SAFEZONE || !location) {
     return (
-      <SectionContainer title={t('Location')} hideToggle>
+      <SectionContainer title={t('Mate’s Location')} hideToggle>
         {user.role === Role.CAREGIVER ? (
           <NoteMessage
             message={t('No location info yet. Please check your mate’s settings or try again.')}
@@ -475,7 +473,11 @@ const LocationSection = () => {
 
   // --- UI: Ready ---
   return (
-    <SectionContainer title={t('Location')} isExpanded={isExpanded} onToggle={handleToggleExpanded}>
+    <SectionContainer
+      title={t('Mate’s Location')}
+      isExpanded={isExpanded}
+      onToggle={handleToggleExpanded}
+    >
       <View style={styles.container}>
         {/* Map Container */}
         <View

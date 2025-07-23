@@ -34,18 +34,18 @@ const SharedSection = () => {
 
   const tabs = [
     {
-      label: t('Shared Note'),
+      label: t('Notes'),
       type: TabType.NOTE,
     },
     {
-      label: t('Shared Log'),
+      label: t('Logs'),
       type: TabType.LOG,
     },
   ];
 
   return (
     <SectionContainer
-      title={t('Shared Information')}
+      title={t('Shared Info')}
       isExpanded={isExpanded}
       onToggle={handleToggleExpanded}
     >

@@ -155,14 +155,14 @@ const EmergencySection = () => {
 
   return (
     <SectionContainer
-      title={t('Emergency Contact')}
+      title={t('Mates’ Contact Info')}
       isExpanded={isExpanded}
       onToggle={handleToggleExpanded}
       hideToggle={!hasContacts}
     >
       {hasContacts ? (
         <View style={styles.root}>
-          {/* Emergency Contacts List */}
+          {/* Mates' Contact Infos List */}
           <View style={styles.contactsContainer}>
             <View style={styles.contactList}>
               {user?.settings?.emergencyContacts?.map((contact, idx) =>
@@ -185,7 +185,7 @@ const EmergencySection = () => {
         </View>
       ) : (
         <NoteMessage
-          message={t('No emergency contacts yet. Add contacts below for quick access.')}
+          message={t('No quick contacts yet. Add contacts below for quick access.')}
           buttonProps={{
             mode: 'contained',
             icon: 'plus',

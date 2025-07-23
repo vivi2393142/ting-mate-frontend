@@ -28,11 +28,11 @@ const ConnectCopilotStep = ({
           order: 1,
         },
         [CopilotStepName.CONTACT]: {
-          text: t('Add contact info for your mates here.'),
+          text: t('Add contact info for your mates.'),
           order: 2,
         },
         [CopilotStepName.SHARED]: {
-          text: t('Share notes and updates with your mates.'),
+          text: t('Notes for you and your mates.'),
           order: 3,
         },
       })[name],

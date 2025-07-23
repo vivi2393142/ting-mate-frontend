@@ -216,7 +216,7 @@ const HomeScreen = () => {
             </ThemedText>
           </View>
           <ThemedButton onPress={handleLinkAccount} icon="link">
-            {t('Link Account')}
+            {t('Add a Mate')}
           </ThemedButton>
         </View>
       </ScreenContainer>
