@@ -10,7 +10,6 @@ import colorWithAlpha from '@/utils/colorWithAlpha';
 import { createStyles, type StyleRecord } from '@/utils/createStyles';
 
 import ThemedText from '@/components/atoms/ThemedText';
-import SectionContainer from '@/components/screens/Connect/SectionContainer';
 import SharedLogContent from '@/components/screens/Connect/SharedSection/SharedLogContent';
 import SharedNoteContent from '@/components/screens/Connect/SharedSection/SharedNoteContent';
 
@@ -39,26 +38,24 @@ const SharedSection = () => {
   ];
 
   return (
-    <SectionContainer title={t('Shared Info')}>
-      <View style={styles.root}>
-        <View style={styles.tabContainer}>
-          {tabs.map((tab) => (
-            <TouchableRipple
-              key={tab.type}
-              onPress={() => setActiveTab(tab.type)}
-              style={[styles.tabButton, activeTab === tab.type && styles.activeTabButton]}
-              rippleColor={colorWithAlpha(theme.colors.primary, 0.1)}
-            >
-              <ThemedText color={activeTab === tab.type ? 'onPrimary' : 'onSurfaceVariant'}>
-                {tab.label}
-              </ThemedText>
-            </TouchableRipple>
-          ))}
-        </View>
-        {activeTab === TabType.NOTE && <SharedNoteContent />}
-        {activeTab === TabType.LOG && <SharedLogContent />}
+    <View style={styles.root}>
+      <View style={styles.tabContainer}>
+        {tabs.map((tab) => (
+          <TouchableRipple
+            key={tab.type}
+            onPress={() => setActiveTab(tab.type)}
+            style={[styles.tabButton, activeTab === tab.type && styles.activeTabButton]}
+            rippleColor={colorWithAlpha(theme.colors.primary, 0.1)}
+          >
+            <ThemedText color={activeTab === tab.type ? 'onPrimary' : 'onSurfaceVariant'}>
+              {tab.label}
+            </ThemedText>
+          </TouchableRipple>
+        ))}
       </View>
-    </SectionContainer>
+      {activeTab === TabType.NOTE && <SharedNoteContent />}
+      {activeTab === TabType.LOG && <SharedLogContent />}
+    </View>
   );
 };
 

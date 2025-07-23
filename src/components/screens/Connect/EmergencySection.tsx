@@ -17,7 +17,6 @@ import { getDisplayPhone } from '@/utils/phoneNumberUtils';
 import ThemedIconButton from '@/components/atoms/ThemedIconButton';
 import ThemedText from '@/components/atoms/ThemedText';
 import NoteMessage from '@/components/screens/Connect/NoteMessage';
-import SectionContainer from '@/components/screens/Connect/SectionContainer';
 import { TouchableRipple } from 'react-native-paper';
 
 const MIN_ITEM_COUNT = 3;
@@ -138,26 +137,22 @@ const EmergencySection = () => {
 
   const hasContacts = !!user?.settings?.emergencyContacts?.length;
 
-  return (
-    <SectionContainer title={t('Mates’ Contacts')}>
-      {hasContacts ? (
-        <View>
-          {user?.settings?.emergencyContacts?.map((contact, idx) =>
-            idx < MIN_ITEM_COUNT ? <ContactRow key={contact.id} contact={contact} /> : null,
-          )}
-        </View>
-      ) : (
-        <NoteMessage
-          message={t('Connect with a mate first to add quick contacts.')}
-          buttonProps={{
-            mode: 'contained',
-            icon: 'plus',
-            onPress: handleLinkAccount,
-            children: t('Connect Now'),
-          }}
-        />
+  return hasContacts ? (
+    <View>
+      {user?.settings?.emergencyContacts?.map((contact, idx) =>
+        idx < MIN_ITEM_COUNT ? <ContactRow key={contact.id} contact={contact} /> : null,
       )}
-    </SectionContainer>
+    </View>
+  ) : (
+    <NoteMessage
+      message={t('Connect with a mate first to add quick contacts.')}
+      buttonProps={{
+        mode: 'contained',
+        icon: 'plus',
+        onPress: handleLinkAccount,
+        children: t('Connect Now'),
+      }}
+    />
   );
 };
 

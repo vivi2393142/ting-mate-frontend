@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { walkthroughable } from 'react-native-copilot';
 
-import { View } from 'react-native';
+import { ScrollView, View } from 'react-native';
 import { TouchableRipple } from 'react-native-paper';
 
 import useAppTheme from '@/hooks/useAppTheme';
@@ -42,7 +42,7 @@ const ConnectScreen = () => {
   });
 
   return (
-    <ScreenContainer scrollable style={styles.container} contentContainerStyle={styles.content}>
+    <ScreenContainer style={styles.container} contentContainerStyle={styles.content}>
       <View style={styles.tabRow}>
         {TAB_LIST.map((tab, idx) => (
           <TouchableRipple
@@ -65,27 +65,31 @@ const ConnectScreen = () => {
           </TouchableRipple>
         ))}
       </View>
-      {activeTab === 'contact' && (
-        <ConnectCopilotStep name={CopilotStepName.CONTACT}>
-          <CopilotView>
-            <EmergencySection />
-          </CopilotView>
-        </ConnectCopilotStep>
-      )}
-      {activeTab === 'location' && (
-        <ConnectCopilotStep name={CopilotStepName.LOCATION}>
-          <CopilotView>
-            <LocationSection />
-          </CopilotView>
-        </ConnectCopilotStep>
-      )}
-      {activeTab === 'shared' && (
-        <ConnectCopilotStep name={CopilotStepName.SHARED}>
-          <CopilotView>
-            <SharedSection />
-          </CopilotView>
-        </ConnectCopilotStep>
-      )}
+      <View style={styles.tabContentWrapper}>
+        <ScrollView contentContainerStyle={styles.tabContentScroll}>
+          {activeTab === 'contact' && (
+            <ConnectCopilotStep name={CopilotStepName.CONTACT}>
+              <CopilotView>
+                <EmergencySection />
+              </CopilotView>
+            </ConnectCopilotStep>
+          )}
+          {activeTab === 'location' && (
+            <ConnectCopilotStep name={CopilotStepName.LOCATION}>
+              <CopilotView>
+                <LocationSection />
+              </CopilotView>
+            </ConnectCopilotStep>
+          )}
+          {activeTab === 'shared' && (
+            <ConnectCopilotStep name={CopilotStepName.SHARED}>
+              <CopilotView>
+                <SharedSection />
+              </CopilotView>
+            </ConnectCopilotStep>
+          )}
+        </ScrollView>
+      </View>
     </ScreenContainer>
   );
 };
@@ -100,20 +104,22 @@ export default ConnectScreenWithCopilot;
 
 const getStyles = createStyles<
   StyleRecord<
-    'container' | 'content' | 'tabRow' | 'tabButton',
+    'container' | 'content' | 'tabRow' | 'tabButton' | 'tabContentWrapper' | 'tabContentScroll',
     'tabButtonContent' | 'tabButtonContentActive' | 'tabButtonContentFirst' | 'tabButtonContentLast'
   >
 >({
   container: {
     flex: 1,
+    paddingBottom: 0,
   },
   content: {
-    gap: StaticTheme.spacing.sm,
+    borderWidth: 1,
     paddingBottom: StaticTheme.spacing.md,
   },
   tabRow: {
     flexDirection: 'row',
     marginTop: StaticTheme.spacing.md,
+    marginBottom: StaticTheme.spacing.md,
     borderRadius: StaticTheme.borderRadius.s,
     overflow: 'hidden',
     borderWidth: 1,
@@ -126,7 +132,7 @@ const getStyles = createStyles<
   },
   tabButtonContent: {
     backgroundColor: ({ colors }) => colors.surface,
-    paddingVertical: StaticTheme.spacing.md,
+    paddingVertical: StaticTheme.spacing.sm * 1.5,
     width: '100%',
     textAlign: 'center',
   },
@@ -140,5 +146,12 @@ const getStyles = createStyles<
   tabButtonContentLast: {
     borderTopRightRadius: StaticTheme.borderRadius.s,
     borderBottomRightRadius: StaticTheme.borderRadius.s,
+  },
+  tabContentWrapper: {
+    flex: 1,
+    minHeight: 0,
+  },
+  tabContentScroll: {
+    flexGrow: 1,
   },
 });

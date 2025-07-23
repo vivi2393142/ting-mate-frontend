@@ -13,12 +13,21 @@ import IconSymbol, { type IconName } from '@/components/atoms/IconSymbol';
 interface ThemedButtonProps
   extends Omit<ButtonProps, 'icon' | 'color' | 'buttonColor' | 'textColor'> {
   icon?: IconName;
-  color?: 'primary' | 'secondary' | 'error' | 'onSurface' | 'outline' | 'outlineVariant';
+  color?:
+    | 'primary'
+    | 'secondary'
+    | 'error'
+    | 'onSurface'
+    | 'outline'
+    | 'outlineVariant'
+    | 'onSurfaceVariant';
+  size?: 'small' | 'medium';
 }
 
 const ThemedButton = ({
   mode = 'contained',
   color = 'primary',
+  size = 'medium',
   icon,
   style,
   labelStyle,
@@ -46,8 +55,13 @@ const ThemedButton = ({
           ? ({ color }) => <IconSymbol name={icon} color={color} size={StaticTheme.iconSize.s} />
           : undefined
       }
-      style={[styles.button, !rest?.disabled && styles.activeButton, style]}
-      labelStyle={[styles.buttonLabel, labelStyle]}
+      style={[
+        styles.button,
+        !rest?.disabled && styles.activeButton,
+        size === 'small' && styles.smallButton,
+        style,
+      ]}
+      labelStyle={[styles.buttonLabel, size === 'small' && styles.smallButtonLabel, labelStyle]}
       {...rest}
     >
       {children}
@@ -62,11 +76,15 @@ interface StyleParams {
   color: string;
 }
 
-const getStyles = createStyles<StyleRecord<'button' | 'activeButton', 'buttonLabel'>, StyleParams>({
+const getStyles = createStyles<
+  StyleRecord<'button' | 'smallButton' | 'activeButton', 'buttonLabel' | 'smallButtonLabel'>,
+  StyleParams
+>({
   button: {
     borderRadius: StaticTheme.borderRadius.s,
     borderWidth: 1,
   },
+  smallButton: {},
   activeButton: {
     borderColor: (_, { color }) => color,
   },
@@ -75,5 +93,8 @@ const getStyles = createStyles<StyleRecord<'button' | 'activeButton', 'buttonLab
     fontWeight: ({ fonts }) => fonts.titleMedium.fontWeight,
     marginVertical: (_, { userTextSize }) =>
       userTextSize === UserTextSize.LARGE ? StaticTheme.spacing.xs * 5 : StaticTheme.spacing.md,
+  },
+  smallButtonLabel: {
+    marginVertical: StaticTheme.spacing.sm * 1.5,
   },
 });
