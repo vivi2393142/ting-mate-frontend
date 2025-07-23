@@ -1,6 +1,6 @@
 import * as Linking from 'expo-linking';
 import { useRouter } from 'expo-router';
-import { useCallback, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import { Alert, View } from 'react-native';
@@ -14,7 +14,6 @@ import type { EmergencyContact } from '@/types/user';
 import { createStyles, type StyleRecord } from '@/utils/createStyles';
 import { getDisplayPhone } from '@/utils/phoneNumberUtils';
 
-import ThemedButton from '@/components/atoms/ThemedButton';
 import ThemedIconButton from '@/components/atoms/ThemedIconButton';
 import ThemedText from '@/components/atoms/ThemedText';
 import NoteMessage from '@/components/screens/Connect/NoteMessage';
@@ -22,6 +21,7 @@ import SectionContainer from '@/components/screens/Connect/SectionContainer';
 
 const MIN_ITEM_COUNT = 3;
 
+// TODO: use theme color
 const whatsAppColor = '#25A366';
 
 // Keep leading '+' if present, remove all other non-digit characters except the leading '+'
@@ -84,43 +84,51 @@ const ContactRow = ({
     });
   }, [contact.id, router]);
 
+  const validPhone = useMemo(() => getDisplayPhone(contact.phone), [contact.phone]);
+  const isPhoneDisabled = useMemo(
+    () => !validPhone || !contact.methods.includes(ContactMethod.PHONE),
+    [contact.methods, validPhone],
+  );
+  const isWhatsAppDisabled = useMemo(
+    () => !validPhone || !contact.methods.includes(ContactMethod.WHATSAPP),
+    [contact.methods, validPhone],
+  );
+
   return (
     <View style={styles.contactRow}>
       <View style={styles.contactInfo}>
         <ThemedText>{contact.name}</ThemedText>
         {isExpanded && (
           <ThemedText variant="bodyMedium" color="onSurfaceVariant">
-            {getDisplayPhone(contact.phone)}
+            {validPhone || '---'}
           </ThemedText>
         )}
       </View>
       <View style={styles.contactActions}>
-        {contact.methods.includes(ContactMethod.PHONE) && (
-          <ThemedIconButton
-            mode="outlined"
-            name="phone.fill"
-            size={'medium'}
-            color={theme.colors.primary}
-            onPress={handleEmergencyCall}
-            accessibilityLabel={t('Call {{name}}', { name: contact.name })}
-          />
-        )}
-        {contact.methods.includes(ContactMethod.WHATSAPP) && (
-          <ThemedIconButton
-            mode="outlined"
-            name="message.fill"
-            size={'medium'}
-            color={whatsAppColor}
-            onPress={handleWhatsAppMessage}
-            accessibilityLabel={t('Send WhatsApp to {{name}}', { name: contact.name })}
-          />
-        )}
+        <ThemedIconButton
+          mode="outlined"
+          name="phone.fill"
+          size={'medium'}
+          color={whatsAppColor}
+          onPress={handleEmergencyCall}
+          accessibilityLabel={t('Call {{name}}', { name: contact.name })}
+          disabled={isPhoneDisabled}
+        />
+        <ThemedIconButton
+          mode="outlined"
+          name="message.fill"
+          size={'medium'}
+          color={whatsAppColor}
+          onPress={handleWhatsAppMessage}
+          accessibilityLabel={t('Send WhatsApp to {{name}}', { name: contact.name })}
+          disabled={isWhatsAppDisabled}
+        />
         {isExpanded && (
           <ThemedIconButton
             mode="outlined"
             name="pencil"
             size={'medium'}
-            color={theme.colors.outline}
+            color={theme.colors.onSurfaceVariant}
             onPress={handleEditContact}
             accessibilityLabel={t('Edit {{name}}', { name: contact.name })}
           />
@@ -140,16 +148,16 @@ const EmergencySection = () => {
 
   const [isExpanded, setIsExpanded] = useState(false);
 
-  const handleAddContact = useCallback(() => {
-    router.push({
-      pathname: ROUTES.ADD_EMERGENCY_CONTACT,
-      params: { from: ROUTES.CONNECT },
-    });
-  }, [router]);
-
   const handleToggleExpanded = useCallback(() => {
     setIsExpanded((prev) => !prev);
   }, []);
+
+  const handleLinkAccount = useCallback(() => {
+    router.push({
+      pathname: ROUTES.ACCOUNT_LINKING,
+      params: { from: ROUTES.CONNECT },
+    });
+  }, [router]);
 
   const hasContacts = !!user?.settings?.emergencyContacts?.length;
 
@@ -171,26 +179,16 @@ const EmergencySection = () => {
                 ) : null,
               )}
             </View>
-            {isExpanded && (
-              <ThemedButton
-                mode="contained"
-                icon="plus"
-                onPress={handleAddContact}
-                style={styles.button}
-              >
-                {t('Add Contact')}
-              </ThemedButton>
-            )}
           </View>
         </View>
       ) : (
         <NoteMessage
-          message={t('No quick contacts yet. Add contacts below for quick access.')}
+          message={t('Connect with a mate first to add quick contacts.')}
           buttonProps={{
             mode: 'contained',
             icon: 'plus',
-            onPress: handleAddContact,
-            children: t('Add Contact'),
+            onPress: handleLinkAccount,
+            children: t('Connect Now'),
           }}
         />
       )}

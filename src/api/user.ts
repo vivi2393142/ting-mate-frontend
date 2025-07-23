@@ -5,13 +5,14 @@ import {
   useQueryClient,
   type UseQueryOptions,
 } from '@tanstack/react-query';
+import uuid from 'react-native-uuid';
 import { z } from 'zod';
 
 import { axiosClientWithAuth } from '@/api/axiosClient';
 import API_PATH from '@/api/path';
 import useUserStore from '@/store/useUserStore';
 import { ContactMethod } from '@/types/connect';
-import type { ReminderSettings, User, UserSettings } from '@/types/user';
+import type { EmergencyContact, ReminderSettings, User, UserSettings } from '@/types/user';
 import { Role, UserDisplayMode, UserTextSize } from '@/types/user';
 
 /* =============================================================================
@@ -43,6 +44,7 @@ const ContactMethodSchema = z.nativeEnum(ContactMethod);
 
 const EmergencyContactSchema = z.object({
   id: z.string(),
+  email: z.string().optional().nullable(),
   name: z.string(),
   phone: z.string(),
   methods: z.array(ContactMethodSchema),
@@ -76,6 +78,8 @@ const RemoveLinkResponseSchema = z.object({
 type APIUserSettings = z.infer<typeof UserSettingsSchema>;
 
 type APIReminderSettings = z.infer<typeof ReminderSettingsSchema>;
+
+type APIEmergencyContact = z.infer<typeof EmergencyContactSchema>;
 
 type APIUser = z.infer<typeof UserSchema>;
 
@@ -116,6 +120,19 @@ const transformReminderSettingsFromAPI = (apiReminderSettings: unknown): Reminde
   }
 };
 
+const transformEmergencyContactFromAPI = (
+  apiEmergencyContacts: APIEmergencyContact[],
+): EmergencyContact[] =>
+  apiEmergencyContacts.reduce<EmergencyContact[]>((acc, curr) => {
+    if (curr.email) {
+      acc.push({
+        ...curr,
+        email: curr.email,
+      });
+    }
+    return acc;
+  }, []);
+
 // Transform API user settings (snake_case, nullable) to FE UserSettings (camelCase, strict)
 const transformUserSettingsFromAPI = (apiUserSettings: APIUserSettings): UserSettings => {
   const userSettings: UserSettings = {
@@ -124,7 +141,7 @@ const transformUserSettingsFromAPI = (apiUserSettings: APIUserSettings): UserSet
     textSize: apiUserSettings.textSize,
     displayMode: apiUserSettings.displayMode,
     reminder: transformReminderSettingsFromAPI(apiUserSettings.reminder),
-    emergencyContacts: apiUserSettings.emergency_contacts || [],
+    emergencyContacts: transformEmergencyContactFromAPI(apiUserSettings.emergency_contacts || []),
     allowShareLocation: apiUserSettings.allow_share_location || false,
     // language: apiUserSettings.language, // TODO: implement if needed
   };
@@ -141,6 +158,28 @@ export const transformUserFromAPI = (apiUser: APIUser): User => {
   return user;
 };
 
+// Merged linked accounts with emergency contacts
+const userWithMergedContacts = (user: User): User => {
+  const newContacts = user.settings.linked.map((link) => {
+    const targetContact = user.settings.emergencyContacts.find((c) => c.email === link.email);
+    return {
+      email: link.email,
+      name: link.name,
+      id: targetContact?.id || uuid.v4(),
+      phone: targetContact?.phone || '',
+      methods: targetContact?.methods || [],
+    };
+  });
+  return {
+    ...user,
+    settings: {
+      ...user.settings,
+      emergencyContacts: newContacts,
+    },
+  };
+};
+
+// Transform FE UserSettings (camelCase) to API user settings (snake_case)
 const transformReminderSettingsToAPI = (
   reminderSettings: ReminderSettings | undefined,
 ): APIReminderSettings =>
@@ -168,7 +207,6 @@ const transformReminderSettingsToAPI = (
         task_change_notification: false,
       };
 
-// Transform FE UserSettings (camelCase) to API user settings (snake_case)
 const transformUserSettingsToAPI = (
   userSettings: UserSettingsUpdateRequest,
 ): Partial<APIUserSettings> => {
@@ -194,7 +232,8 @@ export const useCurrentUser = (options?: Omit<UseQueryOptions<User>, 'queryKey' 
     queryFn: async (): Promise<User> => {
       const res = await axiosClientWithAuth.get(API_PATH.USER_ME);
       const parsed = UserSchema.parse(res.data);
-      return transformUserFromAPI(parsed);
+      const transformed = transformUserFromAPI(parsed);
+      return userWithMergedContacts(transformed);
     },
     ...options,
   });

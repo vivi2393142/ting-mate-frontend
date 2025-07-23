@@ -65,7 +65,11 @@ const ThemedIconButton = ({
         />
       )}
       size={sizes.button[size]}
-      style={[styles.button, props.mode === 'outlined' ? { borderColor: color } : style]}
+      style={[
+        styles.button,
+        props.mode === 'outlined' ? { borderColor: color } : style,
+        props.disabled && { borderColor: theme.colors.outlineVariant },
+      ]}
       {...props}
     />
   );

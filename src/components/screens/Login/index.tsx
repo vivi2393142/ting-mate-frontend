@@ -68,7 +68,7 @@ const LoginScreen = () => {
         onError: () => {
           setError(
             t(
-              "Sorry, we couldn't find an account with that email and password. Please double-check and try again.",
+              'Sorry, we couldn’t find an account with that email and password. Please double-check and try again.',
             ),
           );
         },

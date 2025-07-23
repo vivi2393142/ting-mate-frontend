@@ -43,6 +43,9 @@ import ThemedText from '@/components/atoms/ThemedText';
 import NoteMessage from '@/components/screens/Connect/NoteMessage';
 import SectionContainer from '@/components/screens/Connect/SectionContainer';
 
+// TODO: use theme color
+const whatsAppColor = '#25A366';
+
 // Status enum for location section UI
 export enum Status {
   INITIALIZING = 'INITIALIZING', // Data is initializing from API
@@ -361,7 +364,7 @@ const LocationSection = () => {
     return (
       <SectionContainer title={t('Mate’s Location')} hideToggle>
         <NoteMessage
-          message={t('Connect with a mate first to use this feature.')}
+          message={t("Connect with a mate first to get mate's location.")}
           buttonProps={{
             onPress: handleLinkAccount,
             children: t('Connect Now'),
@@ -529,10 +532,13 @@ const LocationSection = () => {
                 <IconSymbol
                   name="figure.wave"
                   size={StaticTheme.iconSize.l}
-                  color={theme.colors.primary}
+                  color={isInSafeZone ? whatsAppColor : theme.colors.error}
                 />
                 {markerName && (
-                  <ThemedText variant="bodyMedium" color="primary">
+                  <ThemedText
+                    variant="bodyMedium"
+                    style={isInSafeZone ? styles.markerName : styles.markerNameOut}
+                  >
                     {markerName}
                   </ThemedText>
                 )}
@@ -546,11 +552,8 @@ const LocationSection = () => {
                   safeZone.location.longitude,
                 )}
                 radius={getSafeRadius(safeZone.radius)}
-                fillColor={colorWithAlpha(
-                  isInSafeZone ? theme.colors.primary : theme.colors.error,
-                  0.2,
-                )}
-                strokeColor={theme.colors.primary}
+                fillColor={colorWithAlpha(isInSafeZone ? whatsAppColor : theme.colors.error, 0.2)}
+                strokeColor={isInSafeZone ? whatsAppColor : theme.colors.error}
                 strokeWidth={2}
                 zIndex={1}
               />
@@ -645,7 +648,7 @@ const getStyles = createStyles<
     | 'expandedOptions'
     | 'optionsRow'
     | 'optionButton',
-    'markerName'
+    'markerName' | 'markerNameOut'
   >
 >({
   container: {
@@ -675,9 +678,12 @@ const getStyles = createStyles<
     justifyContent: 'center',
   },
   markerName: {
-    backgroundColor: ({ colors }) => colorWithAlpha(colors.onPrimary, 0.8),
     paddingHorizontal: StaticTheme.spacing.xs,
     borderRadius: StaticTheme.borderRadius.s,
+    color: whatsAppColor,
+  },
+  markerNameOut: {
+    color: ({ colors }) => colors.error,
   },
   warningChip: {
     position: 'absolute',
@@ -690,7 +696,7 @@ const getStyles = createStyles<
     paddingVertical: StaticTheme.spacing.xs,
     borderRadius: StaticTheme.borderRadius.s,
     gap: StaticTheme.spacing.xs,
-    backgroundColor: ({ colors }) => colors.outline,
+    backgroundColor: whatsAppColor,
   },
   warningChipOut: {
     backgroundColor: ({ colors }) => colors.error,

@@ -8,7 +8,6 @@ import PhoneInput, {
   getCountryByCca2,
   isValidPhoneNumber,
 } from 'react-native-international-phone-number';
-import uuid from 'react-native-uuid';
 
 import { Alert, Button, View } from 'react-native';
 import { Divider, TouchableRipple } from 'react-native-paper';
@@ -56,15 +55,15 @@ const ContactFormScreen = () => {
   const router = useRouter();
   const params = useLocalSearchParams();
 
-  const isEditMode = params.contactId !== undefined;
+  const hasContactId = params.contactId !== undefined;
 
   const user = useUserStore((s) => s.user);
   const updateUserSettingsMutation = useUpdateUserSettings();
 
   const [hasInit, setHasInit] = useState(false);
-  const [name, setName] = useState('');
   const [methods, setMethods] = useState<ContactMethod[]>([]);
 
+  const [name, setName] = useState('');
   const [phoneCountry, setPhoneCountry] = useState<null | ICountry>(null);
   const [phoneNumber, setPhoneNumber] = useState<string>('');
 
@@ -119,9 +118,6 @@ const ContactFormScreen = () => {
         return;
       }
 
-      const name = data.name || `${data.firstName} ${data.lastName}`;
-      setName(name.trim() || 'Unknown');
-
       if (phoneData.countryCode) {
         setPhoneCountry(
           getCountriesByCallingCode(phoneData.countryCode)?.[0] || defaultPhoneCountry,
@@ -154,55 +150,15 @@ const ContactFormScreen = () => {
       return;
     }
 
-    if (!user) return;
+    if (!user || !hasContactId) return;
     const originContacts = user.settings.emergencyContacts;
     const mergedPhone = getMergedPhone(phoneNumber, phoneCountry);
 
-    if (isEditMode) {
-      updateUserSettingsMutation.mutate(
-        {
-          emergencyContacts: originContacts.map((c) =>
-            c.id === params.contactId ? { ...c, name, phone: mergedPhone, methods } : c,
-          ),
-        },
-        {
-          onSuccess: () => {
-            router.back();
-          },
-        },
-      );
-    } else {
-      const phone = getMergedPhone(phoneNumber, phoneCountry);
-      updateUserSettingsMutation.mutate(
-        {
-          emergencyContacts: [...originContacts, { id: uuid.v4(), name, phone, methods }],
-        },
-        {
-          onSuccess: () => {
-            router.back();
-          },
-        },
-      );
-    }
-  }, [
-    name,
-    phoneCountry,
-    methods,
-    user,
-    phoneNumber,
-    isEditMode,
-    t,
-    updateUserSettingsMutation,
-    params.contactId,
-    router,
-  ]);
-
-  const handleDeleteContact = useCallback(() => {
-    if (!isEditMode || !user) return;
-    const originContacts = user.settings.emergencyContacts;
     updateUserSettingsMutation.mutate(
       {
-        emergencyContacts: originContacts.filter((c) => c.id !== params.contactId),
+        emergencyContacts: originContacts.map((c) =>
+          c.id === params.contactId ? { ...c, name, phone: mergedPhone, methods } : c,
+        ),
       },
       {
         onSuccess: () => {
@@ -210,38 +166,45 @@ const ContactFormScreen = () => {
         },
       },
     );
-  }, [isEditMode, params.contactId, updateUserSettingsMutation, user, router]);
+  }, [
+    name,
+    phoneCountry,
+    phoneNumber,
+    methods,
+    user,
+    hasContactId,
+    updateUserSettingsMutation,
+    t,
+    params.contactId,
+    router,
+  ]);
 
   const handleCancel = useCallback(() => {
     router.back();
   }, [router]);
 
   useEffect(() => {
-    if (hasInit) return;
-    if (isEditMode) {
-      const targetContact = user?.settings?.emergencyContacts?.find(
-        (c) => c.id === params.contactId,
-      );
-      if (targetContact) {
-        setName(targetContact.name);
-        setMethods(targetContact.methods);
-        const { phoneCountry, phoneNumber } = getSeparatedPhone(targetContact.phone);
+    if (hasInit || !hasContactId) return;
+    const targetContact = user?.settings?.emergencyContacts?.find((c) => c.id === params.contactId);
+    if (targetContact) {
+      setName(targetContact.name);
+      setMethods(targetContact.methods);
+      const validPhone = getSeparatedPhone(targetContact.phone);
+      if (validPhone) {
+        const { phoneCountry, phoneNumber } = validPhone;
         setPhoneCountry(phoneCountry || null);
         setPhoneNumber(phoneNumber);
       }
-      setHasInit(true);
-    } else {
-      setPhoneCountry(defaultPhoneCountry);
-      setHasInit(true);
     }
-  }, [hasInit, isEditMode, params.contactId, user?.settings?.emergencyContacts]);
+    setHasInit(true);
+  }, [hasContactId, hasInit, params.contactId, user?.settings?.emergencyContacts]);
 
   return (
     <Fragment>
       <Stack.Screen
         options={{
           ...getStackScreenOptions({
-            title: isEditMode ? ROUTES.EDIT_EMERGENCY_CONTACT : ROUTES.ADD_EMERGENCY_CONTACT,
+            title: ROUTES.EDIT_EMERGENCY_CONTACT,
           }),
           headerLeft: () => (
             <Button color={theme.colors.primary} onPress={handleCancel} title={tCommon('Cancel')} />
@@ -250,7 +213,7 @@ const ContactFormScreen = () => {
             <Button
               color={theme.colors.primary}
               onPress={handleSave}
-              title={isEditMode ? tCommon('Save') : tCommon('Done')}
+              title={tCommon('Save')}
               disabled={updateUserSettingsMutation.isPending}
             />
           ),
@@ -261,10 +224,9 @@ const ContactFormScreen = () => {
           <FormInput
             label={t('Name')}
             icon="person"
-            placeholder={t('Enter name')}
-            value={name}
+            value={name || '---'}
             valueColor={theme.colors.onSurfaceVariant}
-            onChangeValue={setName}
+            readOnly
           />
           <FormInput
             label={t('Phone')}
@@ -357,18 +319,6 @@ const ContactFormScreen = () => {
           >
             {t('Load from Contacts')}
           </ThemedButton>
-          {isEditMode && (
-            <ThemedButton
-              mode="outlined"
-              onPress={handleDeleteContact}
-              color="error"
-              icon="trash"
-              disabled={updateUserSettingsMutation.isPending}
-              loading={updateUserSettingsMutation.isPending}
-            >
-              {t('Delete Contact')}
-            </ThemedButton>
-          )}
         </View>
       </ScreenContainer>
     </Fragment>

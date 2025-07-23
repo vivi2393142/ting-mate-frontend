@@ -5,11 +5,16 @@ export const getMergedPhone = (phoneNumber: string, phoneCountry: ICountry) =>
 
 export const getSeparatedPhone = (phone: string) => {
   const phoneCountry = getCountryByPhoneNumber(phone);
-  const callingCode = phoneCountry?.idd?.root;
+  if (!phoneCountry) return null;
+
+  const callingCode = phoneCountry.idd.root;
   return { phoneCountry, phoneNumber: phone.replace(`${callingCode}`, '') };
 };
 
 export const getDisplayPhone = (phone: string) => {
-  const { phoneCountry, phoneNumber } = getSeparatedPhone(phone);
+  const separatedPhone = getSeparatedPhone(phone);
+  if (!separatedPhone) return '';
+
+  const { phoneCountry, phoneNumber } = separatedPhone;
   return `${phoneCountry?.idd.root} ${phoneNumber}`;
 };

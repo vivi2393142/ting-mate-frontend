@@ -36,6 +36,7 @@ export interface UserLink {
 
 export interface EmergencyContact {
   id: string;
+  email: string;
   name: string;
   phone: string;
   methods: ContactMethod[];

@@ -1,10 +1,9 @@
 {
   "/": "Home",
   "/account-linking": "Mates",
-  "/add-emergency-contact": "Add Contact",
   "/add-task": "Add Task",
   "/connect": "Connect",
-  "/edit-emergency-contact": "Edit Contact",
+  "/edit-emergency-contact": "Edit Quick Contact",
   "/edit-name": "Edit Name",
   "/edit-notification": "Edit Notification",
   "/edit-safe-zone": "Edit Safe Zone",
