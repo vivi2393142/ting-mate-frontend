@@ -299,8 +299,21 @@ const SettingsScreen = () => {
           onPress={handleNotificationPress}
         />
       </SectionGroup>
-      {user?.role === Role.CARERECEIVER && (
-        <SectionGroup title={t('Connect')} subheaderStyle={styles.subheader}>
+      <SectionGroup title={t('Connect')} subheaderStyle={styles.subheader}>
+        <SettingsCopilotStep name={CopilotStepName.LINK_ACCOUNT}>
+          <CopilotView>
+            <FormInput
+              valueAlign="right"
+              rightIconName="chevron.right"
+              dense={false}
+              label={t('Connections')}
+              value={user?.settings.linked?.length ? t('Connected') : '---'}
+              valueColor={theme.colors.primary}
+              onPress={handleAccountLinkingPress}
+            />
+          </CopilotView>
+        </SettingsCopilotStep>
+        {user?.role === Role.CARERECEIVER && (
           <FormInput
             valueAlign="right"
             rightIconName="chevron.right"
@@ -310,8 +323,8 @@ const SettingsScreen = () => {
               <Switch value={isAllowLocationSharing} onValueChange={handleLocationSharingPress} />
             )}
           />
-        </SectionGroup>
-      )}
+        )}
+      </SectionGroup>
       <SectionGroup title={t('Account')} subheaderStyle={styles.subheader}>
         <FormInput
           valueAlign="right"
@@ -331,19 +344,7 @@ const SettingsScreen = () => {
           valueColor={theme.colors.primary}
           onPress={handleRolePress}
         />
-        <SettingsCopilotStep name={CopilotStepName.LINK_ACCOUNT}>
-          <CopilotView>
-            <FormInput
-              valueAlign="right"
-              rightIconName="chevron.right"
-              dense={false}
-              label={t('Linked Accounts')}
-              value={user?.settings.linked?.length ? t('Linked') : '---'}
-              valueColor={theme.colors.primary}
-              onPress={handleAccountLinkingPress}
-            />
-          </CopilotView>
-        </SettingsCopilotStep>
+
         {!token && (
           <SettingsCopilotStep name={CopilotStepName.LOGIN} active={!token}>
             <CopilotListItem

@@ -153,7 +153,7 @@ export const OnboardingSlidesScreen = () => {
               </ThemedButton>
             ) : (
               <ThemedButton accessibilityLabel={t('Next slide')} onPress={handleDone}>
-                {t('Get Started')}
+                {t('Ready')}
               </ThemedButton>
             )}
             <ThemedButton

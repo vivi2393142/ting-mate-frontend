@@ -91,7 +91,7 @@ const EditNameScreen = () => {
               disabled={!name.trim() || isSaving}
             />
           ),
-          headerBackVisible: !isFromSignup,
+          headerBackVisible: isFromSignup,
         }}
       />
       <ScreenContainer isRoot={false} style={styles.screenContainer}>

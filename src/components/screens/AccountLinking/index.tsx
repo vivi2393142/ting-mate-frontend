@@ -54,7 +54,7 @@ const LinkedAccountList = ({
               name="xmark.circle"
               color={theme.colors.error}
               onPress={handleUnlink(user.email, user.name)}
-              accessibilityLabel={t('Unlink')}
+              accessibilityLabel={t('Remove Connection')}
             />
           </View>
         ))}
@@ -102,7 +102,7 @@ const AccountLinkingScreen = () => {
   });
 
   const handleUnlink = (userEmail: string, userName: string) => () => {
-    Alert.alert(t('Unlink Account'), `${t('Are you sure you want to unlink')} ${userName}?`, [
+    Alert.alert(t('Remove Connection'), `${t('Remove this connection?')} ${userName}?`, [
       {
         text: tCommon('Cancel'),
         style: 'cancel',
@@ -128,7 +128,7 @@ const AccountLinkingScreen = () => {
   const handleShare = useCallback(async () => {
     try {
       await Share.share({
-        message: `${t("I'm using Ting Mate to manage tasks and stay in touch.")}\n${t('Join me with this code')}: ${inviteCode}`,
+        message: `${t("I'm using Ting Mate to manage tasks and stay in touch.")}\n${t('Use this code to connect with me')}: ${inviteCode}`,
       });
     } catch {
       Alert.alert(tCommon('Error'), t('Failed to share code'));
@@ -145,7 +145,7 @@ const AccountLinkingScreen = () => {
       onError: () => {
         Alert.alert(
           tCommon('Error'),
-          t('Failed to link account. Make sure the code is correct and not expired.'),
+          t("Couldn't connect. Please check if the code is correct or expired."),
         );
       },
     });
@@ -158,7 +158,7 @@ const AccountLinkingScreen = () => {
         setInviteExpiresAt(data.expires_at);
       },
       onError: () => {
-        Alert.alert(tCommon('Error'), t('Failed to generate invitation code. Please try again.'));
+        Alert.alert(tCommon('Error'), t("Couldn't create a connection code. Please try again."));
       },
     });
     setShowInviteModal(true);
@@ -230,7 +230,7 @@ const AccountLinkingScreen = () => {
       >
         {/* Linked Account Section */}
         <ThemedView style={styles.linkedAccountsContainer}>
-          <ThemedText variant="titleLarge">{t('Linked Accounts')}</ThemedText>
+          <ThemedText variant="titleLarge">{t('Connections')}</ThemedText>
           {carereceivers.length !== 0 && (
             <LinkedAccountList
               title={tCommon('role.Core User')}
@@ -247,13 +247,13 @@ const AccountLinkingScreen = () => {
           )}
           {linkedUsers?.length === 0 && (
             <ThemedText variant="bodyMedium" color="outline">
-              {t('No linked accounts yet. Use the options below to connect with someone.')}
+              {t('No connections yet. Use the options below to connect with someone.')}
             </ThemedText>
           )}
         </ThemedView>
-        {/* Add Link Section */}
+        {/* Add Connection Section */}
         <ThemedView style={styles.addLinkContainer}>
-          <ThemedText variant="titleLarge">{t('Add Link')}</ThemedText>
+          <ThemedText variant="titleLarge">{t('Add Connection')}</ThemedText>
           {shouldDisableAddLink && (
             <View style={styles.warningContainer}>
               <IconSymbol
@@ -264,9 +264,9 @@ const AccountLinkingScreen = () => {
               />
               <ThemedText variant="bodyMedium" color="outline">
                 {!isLoggedIn
-                  ? t('Please sign in to link accounts with others.')
+                  ? t('Please sign in to add connections with others.')
                   : t(
-                      'Caregivers can only link with one account. To link other account, please remove existing links first.',
+                      "You're already connected. To connect with someone else, please remove the current connection first.",
                     )}
               </ThemedText>
             </View>
@@ -285,7 +285,7 @@ const AccountLinkingScreen = () => {
                   color={shouldDisableAddLink ? theme.colors.outlineVariant : theme.colors.primary}
                 />
                 <ThemedText color={shouldDisableAddLink ? 'outlineVariant' : 'primary'}>
-                  {t('Invite Someone')}
+                  {t('Get My Code')}
                 </ThemedText>
               </View>
             </TouchableRipple>
@@ -309,7 +309,7 @@ const AccountLinkingScreen = () => {
           </View>
           <ThemedView style={styles.note}>
             <ThemedText variant="titleMedium" color="onSurfaceVariant" style={styles.noteTitle}>
-              {t('Why link accounts?')}
+              {t('Why Connections Matter')}
             </ThemedText>
             {purposeItems.map((item, idx) => (
               <View key={idx} style={styles.purposeRow}>
@@ -330,12 +330,12 @@ const AccountLinkingScreen = () => {
             </ThemedButton>
           )}
         </ThemedView>
-        {/* Invite Code Modal */}
+        {/* Connection Code Modal */}
         <CommonModal
           visible={showInviteModal}
           onDismiss={handleCloseInviteModal}
-          title={t('Share Your Invite Code')}
-          subtitle={t('Share this code to link and manage tasks together')}
+          title={t('Share Your Connection Code')}
+          subtitle={t('Share this code to connect and manage tasks together')}
           topIcon="qrcode"
         >
           <View style={styles.codeDisplay}>
@@ -374,14 +374,14 @@ const AccountLinkingScreen = () => {
         <CommonModal
           visible={showInputModal}
           onDismiss={handleCloseInputModal}
-          title={t('Link with Invite Code')}
-          subtitle={t('Enter the code shared by someone else')}
+          title={t('Connect Using a Code')}
+          subtitle={t('Enter the code someone gave you')}
           topIcon="plus"
         >
           <TextInput
             value={inputCode}
             onChangeText={handleInputCodeChange}
-            placeholder={t('Enter invite code')}
+            placeholder={t('Enter connection code')}
             style={styles.codeInput}
             maxLength={8}
             autoFocus
@@ -393,7 +393,7 @@ const AccountLinkingScreen = () => {
               disabled={!inputCode.trim() || acceptInvitationMutation.isPending}
               loading={acceptInvitationMutation.isPending}
             >
-              {t('Link Account')}
+              {t('Add Connection')}
             </ThemedButton>
             <ThemedButton mode="outlined" onPress={handleCloseInputModal} color="error">
               {tCommon('Cancel')}
