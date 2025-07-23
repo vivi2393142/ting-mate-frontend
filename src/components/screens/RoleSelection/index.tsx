@@ -104,7 +104,7 @@ const RoleSelectionScreen = () => {
     if (user?.settings.linked && user.settings.linked.length > 0) {
       Alert.alert(
         t('Cannot Switch Role'),
-        t('You must remove all linked users before switching roles.'),
+        t('Please remove all current connections before switching roles.'),
         [
           {
             text: tCommon('Confirm'),
@@ -187,7 +187,7 @@ const RoleSelectionScreen = () => {
         <ThemedView style={styles.header}>
           <ThemedText variant="titleLarge">{t('Choose Your Role')}</ThemedText>
           <ThemedText variant="bodyMedium" color="outline">
-            {t('Select how you’ll use Ting Mate!')}
+            {t("Select how you'll use Ting Mate!")}
           </ThemedText>
         </ThemedView>
         <ThemedView style={styles.roleContainer}>

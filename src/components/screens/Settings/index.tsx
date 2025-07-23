@@ -166,7 +166,7 @@ const SettingsScreen = () => {
       } else {
         Alert.alert(
           t('Location Sharing'),
-          t('You need to link with someone first to share your location.'),
+          t('Connect with someone first to share your location.'),
           [
             {
               text: tCommon('Cancel'),

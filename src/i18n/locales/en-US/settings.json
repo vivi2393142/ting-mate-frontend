@@ -8,6 +8,7 @@
   "Are you sure you want to logout?": "Are you sure you want to logout?",
   "Bigger text and simple design for easier reading.": "Bigger text and simple design for easier reading.",
   "Connect": "Connect",
+  "Connect with someone first to share your location.": "Connect with someone first to share your location.",
   "Connected": "Connected",
   "Connections": "Connections",
   "Display Mode": "Display Mode",
@@ -19,7 +20,7 @@
   "Link with someone you care for or who cares for you.": "Link with someone you care for or who cares for you.",
   "Link with your care partner to stay connected.": "Link with your care partner to stay connected.",
   "Location Sharing": "Location Sharing",
-  "Log in to link accounts and stay in sync.": "Log in to link accounts and stay in sync.",
+  "Log in to connect with someone and stay in sync.": "Log in to connect with someone and stay in sync.",
   "Logout": "Logout",
   "Logout failed": "Logout failed, please try again",
   "Logout failed, please try again": "Logout failed, please try again",
@@ -29,10 +30,10 @@
   "Notify Me After": "Notify Me After",
   "Notify again if a task is not done on time.": "Notify again if a task is not done on time.",
   "Notify when a task is completed.": "Notify when a task is completed.",
-  "Notify when it’s time to do a task.": "Notify when it’s time to do a task.",
-  "Notify when linked user leaves safe zone. They need to allow location in 'Connect'.": "Notify when linked user leaves safe zone. They need to allow location in 'Connect'.",
+  "Notify when it's time to do a task.": "Notify when it's time to do a task.",
   "Notify when someone finishes a task.": "Notify when someone finishes a task.",
   "Notify when tasks are created, edited or deleted.": "Notify when tasks are created, edited or deleted.",
+  "Notify when your companion leaves the safe zone. They'll need to enable location in 'Connect'.": "Notify when your companion leaves the safe zone. They'll need to enable location in 'Connect'.",
   "Off": "Off",
   "Overdue Reminder": "Overdue Reminder",
   "Partial": "Partial",
@@ -54,6 +55,5 @@
   "Task Reminder": "Task Reminder",
   "Text Size": "Text Size",
   "Turn this on to let your companions see where you are.": "Turn this on to let your companions see where you are.",
-  "Voice Assistant": "Voice Assistant",
-  "You need to link with someone first to share your location.": "You need to link with someone first to share your location."
+  "Voice Assistant": "Voice Assistant"
 }

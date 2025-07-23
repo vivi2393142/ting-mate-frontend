@@ -251,9 +251,7 @@ const LocationSection = () => {
   const handleTurnOffLocationSharing = useCallback(() => {
     Alert.alert(
       t('Turn Off Location Sharing'),
-      t(
-        'Are you sure you want to turn off location sharing? Your linked user will not be able to track your location.',
-      ),
+      t("Turn off location sharing? Your companion won't be able to see where you are."),
       [
         { text: tCommon('Cancel'), style: 'cancel' },
         {
@@ -379,7 +377,7 @@ const LocationSection = () => {
         {user.role === Role.CAREGIVER ? (
           <NoteMessage
             message={t(
-              'The linked user has not enabled location sharing. Please ask them to turn on location sharing in their app then refresh.',
+              "Your companion hasn't turned on location sharing. Ask them to enable it in their app, then refresh.",
             )}
             buttonProps={{
               onPress: handleRefresh,
@@ -425,7 +423,7 @@ const LocationSection = () => {
         {user.role === Role.CAREGIVER ? (
           <NoteMessage
             message={t(
-              'We cannot get the current location. The linked user may have just turned on location sharing or has not allowed location access on their device. Please check their settings or try again.',
+              "We can't get their location. Your companion might have just enabled sharing or hasn't allowed access yet. Please check settings or try again.",
             )}
             buttonProps={{
               onPress: handleRefresh,
@@ -455,7 +453,7 @@ const LocationSection = () => {
         {user.role === Role.CAREGIVER ? (
           <NoteMessage
             message={t(
-              "No location data available yet. Please check the linked user's settings or try again.",
+              "No location info yet. Please check your companion's settings or try again.",
             )}
             buttonProps={{
               onPress: handleRefresh,

@@ -222,7 +222,7 @@ const HomeScreen = () => {
             />
             <ThemedText variant="bodyMedium" color="outline" style={styles.warningText}>
               {t(
-                'You haven’t linked with a companion yet. Link now to see and help manage their tasks.',
+                "You're not connected with a companion yet. Connect now to see and help manage their tasks.",
               )}
             </ThemedText>
           </View>

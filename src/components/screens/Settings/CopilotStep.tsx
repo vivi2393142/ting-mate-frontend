@@ -54,7 +54,7 @@ const SettingsCopilotStep = ({
               order: 2,
             },
             [CopilotStepName.LOGIN]: {
-              text: t('Log in to link accounts and stay in sync.'),
+              text: t('Log in to connect with someone and stay in sync.'),
               order: 3,
             },
           })[name],
