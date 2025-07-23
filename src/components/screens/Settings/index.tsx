@@ -306,7 +306,7 @@ const SettingsScreen = () => {
               valueAlign="right"
               rightIconName="chevron.right"
               dense={false}
-              label={t('Connections')}
+              label={t('Mates')}
               value={user?.settings.linked?.length ? t('Connected') : '---'}
               valueColor={theme.colors.primary}
               onPress={handleAccountLinkingPress}

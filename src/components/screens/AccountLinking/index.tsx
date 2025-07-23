@@ -1,5 +1,5 @@
 import * as Clipboard from 'expo-clipboard';
-import { Fragment, useCallback, useMemo, useState } from 'react';
+import { Fragment, ReactNode, useCallback, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import { Stack, useRouter } from 'expo-router';
@@ -19,7 +19,7 @@ import colorWithAlpha from '@/utils/colorWithAlpha';
 import { createStyles, StyleRecord } from '@/utils/createStyles';
 
 import CommonModal from '@/components/atoms/CommonModal';
-import IconSymbol from '@/components/atoms/IconSymbol';
+import IconSymbol, { IconName } from '@/components/atoms/IconSymbol';
 import ScreenContainer from '@/components/atoms/ScreenContainer';
 import ThemedButton from '@/components/atoms/ThemedButton';
 import ThemedIconButton from '@/components/atoms/ThemedIconButton';
@@ -54,12 +54,75 @@ const LinkedAccountList = ({
               name="xmark.circle"
               color={theme.colors.error}
               onPress={handleUnlink(user.email, user.name)}
-              accessibilityLabel={t('Remove Connection')}
+              accessibilityLabel={t('Remove Mate')}
             />
           </View>
         ))}
       </View>
     </Fragment>
+  );
+};
+
+interface ActionCardProps {
+  title: string;
+  desc: string;
+  icon: IconName;
+  disabled: boolean;
+  onPress: () => void;
+}
+
+const ActionCard = ({ title, desc, icon, disabled, onPress }: ActionCardProps) => {
+  const theme = useAppTheme();
+  const styles = getActionCardStyles(theme);
+
+  return (
+    <TouchableRipple
+      style={[styles.actionCard, disabled && styles.disabledCard]}
+      rippleColor={colorWithAlpha(theme.colors.primary, 0.1)}
+      disabled={disabled}
+      onPress={onPress}
+    >
+      <View style={styles.actionCardContent}>
+        <IconSymbol
+          name={icon}
+          size={StaticTheme.iconSize.xxl}
+          color={disabled ? theme.colors.outlineVariant : theme.colors.primary}
+        />
+        <ThemedText
+          variant="titleMedium"
+          color={disabled ? 'outlineVariant' : 'primary'}
+          style={styles.actionCardText}
+        >
+          {title}
+        </ThemedText>
+        <ThemedText
+          variant="bodyMedium"
+          color={disabled ? 'outlineVariant' : 'outline'}
+          style={styles.actionCardText}
+        >
+          {desc}
+        </ThemedText>
+      </View>
+    </TouchableRipple>
+  );
+};
+
+const WarningText = ({ children }: { children: ReactNode }) => {
+  const theme = useAppTheme();
+  const styles = getWarningTextStyles(theme);
+
+  return (
+    <View style={styles.warningContainer}>
+      <IconSymbol
+        name="exclamationmark.triangle"
+        size={StaticTheme.iconSize.s}
+        color={theme.colors.error}
+        style={styles.warmingIcon}
+      />
+      <ThemedText variant="bodyMedium" color="outline">
+        {children}
+      </ThemedText>
+    </View>
   );
 };
 
@@ -77,10 +140,15 @@ const AccountLinkingScreen = () => {
   const linkedUsers = useMemo(() => user?.settings.linked || [], [user]);
 
   // Check if user is caregiver and has linked accounts
-  const isCaregiver = user?.role === Role.CAREGIVER;
   const hasLinkedAccounts = linkedUsers.length > 0;
   const isLoggedIn = !!useAuthStore((s) => s.token);
-  const shouldDisableAddLink = (isCaregiver && hasLinkedAccounts) || !isLoggedIn;
+  // const shouldDisableAddLink = (isCaregiver && hasLinkedAccounts) || !isLoggedIn;
+  const canConnectToCaregivers =
+    (isLoggedIn && !hasLinkedAccounts) ||
+    (isLoggedIn && hasLinkedAccounts && linkedUsers.every((u) => u.role === Role.CAREGIVER));
+  const canConnectToCarereceivers = isLoggedIn && !hasLinkedAccounts;
+  const cannotConnectToMoreCarereceiver =
+    isLoggedIn && linkedUsers.some((u) => u.role === Role.CARERECEIVER);
 
   const [inviteCode, setInviteCode] = useState('');
   const [inviteExpiresAt, setInviteExpiresAt] = useState<string>('');
@@ -102,7 +170,7 @@ const AccountLinkingScreen = () => {
   });
 
   const handleUnlink = (userEmail: string, userName: string) => () => {
-    Alert.alert(t('Remove Connection'), `${t('Remove this connection?')} ${userName}?`, [
+    Alert.alert(t('Remove Mate'), `${t('Remove this mate?')} ${userName}?`, [
       {
         text: tCommon('Cancel'),
         style: 'cancel',
@@ -121,17 +189,17 @@ const AccountLinkingScreen = () => {
       setCopySuccess(true);
       setTimeout(() => setCopySuccess(false), 2000);
     } catch {
-      Alert.alert(tCommon('Error'), t('Failed to copy code to clipboard'));
+      Alert.alert(tCommon('Error'), t('Failed to copy code'));
     }
   }, [inviteCode, tCommon, t]);
 
   const handleShare = useCallback(async () => {
     try {
       await Share.share({
-        message: `${t("I'm using Ting Mate to manage tasks and stay in touch.")}\n${t('Use this code to connect with me')}: ${inviteCode}`,
+        message: `${t('I’m using Ting Mate to stay on top of things with my mate.')}\n${t('Use this code to connect and stay in sync with me')}: ${inviteCode}`,
       });
     } catch {
-      Alert.alert(tCommon('Error'), t('Failed to share code'));
+      Alert.alert(tCommon('Error'), t('Failed to share mate code'));
     }
   }, [inviteCode, t, tCommon]);
 
@@ -145,7 +213,7 @@ const AccountLinkingScreen = () => {
       onError: () => {
         Alert.alert(
           tCommon('Error'),
-          t("Couldn't connect. Please check if the code is correct or expired."),
+          t('Couldn’t connect. Please check if the code is correct or expired.'),
         );
       },
     });
@@ -158,7 +226,7 @@ const AccountLinkingScreen = () => {
         setInviteExpiresAt(data.expires_at);
       },
       onError: () => {
-        Alert.alert(tCommon('Error'), t("Couldn't create a connection code. Please try again."));
+        Alert.alert(tCommon('Error'), t('Couldn’t create a mate code. Please try again.'));
       },
     });
     setShowInviteModal(true);
@@ -212,9 +280,9 @@ const AccountLinkingScreen = () => {
   );
 
   const purposeItems = [
-    { text: t('Keep track of tasks together'), icon: 'checklist' },
-    { text: t('Get gentle updates when things are done'), icon: 'bell' },
-    { text: t("Stay close, even when you're apart"), icon: 'heart' },
+    { text: t('Stay on track together'), icon: 'checklist' },
+    { text: t('Stay in sync when things are done'), icon: 'bell' },
+    { text: t('Stay close, even when you’re apart'), icon: 'heart' },
   ] as const;
 
   // TODO: Adjust layout for Large mode
@@ -230,86 +298,63 @@ const AccountLinkingScreen = () => {
       >
         {/* Linked Account Section */}
         <ThemedView style={styles.linkedAccountsContainer}>
-          <ThemedText variant="titleLarge">{t('Connections')}</ThemedText>
+          <ThemedText variant="titleLarge">{t('Mates')}</ThemedText>
           {carereceivers.length !== 0 && (
             <LinkedAccountList
-              title={tCommon('role.Core User')}
+              title={t('Mates you can view their info')}
               users={carereceivers}
               handleUnlink={handleUnlink}
             />
           )}
           {caregivers.length !== 0 && (
             <LinkedAccountList
-              title={tCommon('role.Companion')}
+              title={
+                user?.role === Role.CARERECEIVER
+                  ? t('Mates you shared info with')
+                  : t('Mates who are also connected to {{userName}}', {
+                      userName: carereceivers?.[0]?.name || carereceivers?.[0]?.email || '---',
+                    })
+              }
               users={caregivers}
               handleUnlink={handleUnlink}
             />
           )}
           {linkedUsers?.length === 0 && (
             <ThemedText variant="bodyMedium" color="outline">
-              {t('No connections yet. Use the options below to connect with someone.')}
+              {t('No mates yet. Use the options below to get started.')}
             </ThemedText>
           )}
         </ThemedView>
-        {/* Add Connection Section */}
+        {/* Add a Mate Section */}
         <ThemedView style={styles.addLinkContainer}>
-          <ThemedText variant="titleLarge">{t('Add Connection')}</ThemedText>
-          {shouldDisableAddLink && (
-            <View style={styles.warningContainer}>
-              <IconSymbol
-                name="exclamationmark.triangle"
-                size={StaticTheme.iconSize.s}
-                color={theme.colors.error}
-                style={styles.warmingIcon}
-              />
-              <ThemedText variant="bodyMedium" color="outline">
-                {!isLoggedIn
-                  ? t('Please sign in to add connections with others.')
-                  : t(
-                      "You're already connected. To connect with someone else, please remove the current connection first.",
-                    )}
-              </ThemedText>
-            </View>
+          <ThemedText variant="titleLarge">{t('Add a Mate')}</ThemedText>
+          {!isLoggedIn && <WarningText>{t('Please sign in to add a mate.')}</WarningText>}
+          {cannotConnectToMoreCarereceiver && (
+            <WarningText>
+              {t(
+                'You’re already connected with a mate. To connect with someone else, please remove your current mate first.',
+              )}
+            </WarningText>
           )}
           <View style={styles.addLinkContent}>
-            <TouchableRipple
+            <ActionCard
+              title={t('Share with a Mate')}
+              desc={t('Let them see your tasks, reminders, and notes.')}
+              icon="person.badge.plus"
+              disabled={!canConnectToCaregivers}
               onPress={handleShowInviteModal}
-              style={[styles.actionCard, shouldDisableAddLink && styles.disabledCard]}
-              rippleColor={colorWithAlpha(theme.colors.primary, 0.1)}
-              disabled={shouldDisableAddLink}
-            >
-              <View style={styles.actionCardContent}>
-                <IconSymbol
-                  name="qrcode"
-                  size={StaticTheme.iconSize.l}
-                  color={shouldDisableAddLink ? theme.colors.outlineVariant : theme.colors.primary}
-                />
-                <ThemedText color={shouldDisableAddLink ? 'outlineVariant' : 'primary'}>
-                  {t('Get My Code')}
-                </ThemedText>
-              </View>
-            </TouchableRipple>
-            <TouchableRipple
+            />
+            <ActionCard
+              title={t('Join a mate')}
+              desc={t('Enter a code to see what they’ve shared with you.')}
+              icon="person.2"
+              disabled={!canConnectToCarereceivers}
               onPress={handleShowInputModal}
-              style={[styles.actionCard, shouldDisableAddLink && styles.disabledCard]}
-              rippleColor={colorWithAlpha(theme.colors.primary, 0.1)}
-              disabled={shouldDisableAddLink}
-            >
-              <View style={styles.actionCardContent}>
-                <IconSymbol
-                  name="plus"
-                  size={StaticTheme.iconSize.l}
-                  color={shouldDisableAddLink ? theme.colors.outlineVariant : theme.colors.primary}
-                />
-                <ThemedText color={shouldDisableAddLink ? 'outlineVariant' : 'primary'}>
-                  {t('I Got a Code')}
-                </ThemedText>
-              </View>
-            </TouchableRipple>
+            />
           </View>
           <ThemedView style={styles.note}>
             <ThemedText variant="titleMedium" color="onSurfaceVariant" style={styles.noteTitle}>
-              {t('Why Connections Matter')}
+              {t('Why Mates Matter')}
             </ThemedText>
             {purposeItems.map((item, idx) => (
               <View key={idx} style={styles.purposeRow}>
@@ -330,12 +375,12 @@ const AccountLinkingScreen = () => {
             </ThemedButton>
           )}
         </ThemedView>
-        {/* Connection Code Modal */}
+        {/* Mate Code Modal */}
         <CommonModal
           visible={showInviteModal}
           onDismiss={handleCloseInviteModal}
-          title={t('Share Your Connection Code')}
-          subtitle={t('Share this code to connect and manage tasks together')}
+          title={t('Share Your Mate Code')}
+          subtitle={t('Share this code so your mate can see your tasks, reminders, and location.')}
           topIcon="qrcode"
         >
           <View style={styles.codeDisplay}>
@@ -374,14 +419,14 @@ const AccountLinkingScreen = () => {
         <CommonModal
           visible={showInputModal}
           onDismiss={handleCloseInputModal}
-          title={t('Connect Using a Code')}
-          subtitle={t('Enter the code someone gave you')}
+          title={t('Connect to a Mate Who Shared with You')}
+          subtitle={t('Enter the code from your mate')}
           topIcon="plus"
         >
           <TextInput
             value={inputCode}
             onChangeText={handleInputCodeChange}
-            placeholder={t('Enter connection code')}
+            placeholder={t('Enter a Mate’s Code')}
             style={styles.codeInput}
             maxLength={8}
             autoFocus
@@ -393,7 +438,7 @@ const AccountLinkingScreen = () => {
               disabled={!inputCode.trim() || acceptInvitationMutation.isPending}
               loading={acceptInvitationMutation.isPending}
             >
-              {t('Add Connection')}
+              {t('Add a Mate')}
             </ThemedButton>
             <ThemedButton mode="outlined" onPress={handleCloseInputModal} color="error">
               {tCommon('Cancel')}
@@ -428,6 +473,44 @@ const getLinkedAccountListStyles = createStyles<
   },
 });
 
+const getActionCardStyles = createStyles<
+  StyleRecord<'actionCard' | 'disabledCard' | 'actionCardContent', 'actionCardText'>
+>({
+  actionCard: {
+    flex: 1,
+    borderWidth: 1,
+    minHeight: 180,
+    borderRadius: StaticTheme.borderRadius.s,
+    borderColor: ({ colors }) => colors.primary,
+    backgroundColor: ({ colors }) => colorWithAlpha(colors.primary, 0.05),
+  },
+  disabledCard: {
+    borderColor: ({ colors }) => colors.outlineVariant,
+    backgroundColor: ({ colors }) => colorWithAlpha(colors.surfaceVariant, 0.5),
+  },
+  actionCardContent: {
+    flex: 1,
+    alignItems: 'center',
+    gap: StaticTheme.spacing.sm,
+    paddingVertical: StaticTheme.spacing.xl,
+  },
+  actionCardText: {
+    textAlign: 'center',
+    paddingHorizontal: StaticTheme.spacing.sm,
+    marginVertical: 'auto',
+  },
+});
+
+const getWarningTextStyles = createStyles<StyleRecord<'warningContainer', 'warmingIcon'>>({
+  warningContainer: {
+    flexDirection: 'row',
+    gap: StaticTheme.spacing.sm,
+  },
+  warmingIcon: {
+    marginTop: StaticTheme.spacing.xs * 0.5,
+  },
+});
+
 const getStyles = createStyles<
   StyleRecord<
     | 'container'
@@ -437,15 +520,11 @@ const getStyles = createStyles<
     | 'linkedAccountsContainer'
     | 'addLinkContainer'
     | 'addLinkContent'
-    | 'actionCard'
-    | 'actionCardContent'
-    | 'disabledCard'
     | 'codeDisplay'
     | 'modalButtonContainer'
     | 'expiryContainer'
-    | 'warningContainer'
     | 'signInButton',
-    'noteTitle' | 'codeText' | 'codeInput' | 'warmingIcon'
+    'noteTitle' | 'codeText' | 'codeInput'
   >
 >({
   container: {
@@ -482,24 +561,7 @@ const getStyles = createStyles<
     gap: StaticTheme.spacing.md,
     marginBottom: StaticTheme.spacing.sm,
   },
-  actionCard: {
-    flex: 1,
-    borderWidth: 1,
-    minHeight: 100,
-    borderRadius: StaticTheme.borderRadius.s,
-    borderColor: ({ colors }) => colors.primary,
-    backgroundColor: ({ colors }) => colorWithAlpha(colors.primary, 0.05),
-  },
-  disabledCard: {
-    borderColor: ({ colors }) => colors.outlineVariant,
-    backgroundColor: ({ colors }) => colorWithAlpha(colors.surfaceVariant, 0.5),
-  },
-  actionCardContent: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: StaticTheme.spacing.sm,
-  },
+
   codeDisplay: {
     paddingVertical: StaticTheme.spacing.sm,
     paddingLeft: StaticTheme.spacing.md * 1.5,
@@ -534,13 +596,7 @@ const getStyles = createStyles<
     gap: StaticTheme.spacing.xs,
     marginBottom: StaticTheme.spacing.md * 1.5,
   },
-  warmingIcon: {
-    marginTop: StaticTheme.spacing.xs * 0.5,
-  },
-  warningContainer: {
-    flexDirection: 'row',
-    gap: StaticTheme.spacing.sm,
-  },
+
   signInButton: {
     marginTop: StaticTheme.spacing.xs * 1.5,
   },
