@@ -163,7 +163,7 @@ const EmergencySection = () => {
 
   return (
     <SectionContainer
-      title={t('Mates’ Contact Info')}
+      title={t('Mates’ Contacts')}
       isExpanded={isExpanded}
       onToggle={handleToggleExpanded}
       hideToggle={!hasContacts}
