@@ -1,6 +1,6 @@
 import * as Linking from 'expo-linking';
 import { useRouter } from 'expo-router';
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import { Alert, View } from 'react-native';
@@ -18,6 +18,7 @@ import ThemedIconButton from '@/components/atoms/ThemedIconButton';
 import ThemedText from '@/components/atoms/ThemedText';
 import NoteMessage from '@/components/screens/Connect/NoteMessage';
 import SectionContainer from '@/components/screens/Connect/SectionContainer';
+import { TouchableRipple } from 'react-native-paper';
 
 const MIN_ITEM_COUNT = 3;
 
@@ -32,13 +33,7 @@ const sanitizePhoneNumber = (phone: string): string => {
 
 const getWhatsAppMessageUrl = (phone: string) => `https://wa.me/${phone}`;
 
-const ContactRow = ({
-  contact,
-  isExpanded,
-}: {
-  contact: EmergencyContact;
-  isExpanded: boolean;
-}) => {
+const ContactRow = ({ contact }: { contact: EmergencyContact }) => {
   const { t } = useTranslation('connect');
 
   const theme = useAppTheme();
@@ -95,62 +90,44 @@ const ContactRow = ({
   );
 
   return (
-    <View style={styles.contactRow}>
-      <View style={styles.contactInfo}>
-        <ThemedText>{contact.name}</ThemedText>
-        {isExpanded && (
+    <TouchableRipple onPress={handleEditContact}>
+      <View style={styles.contactRow}>
+        <View style={styles.contactInfo}>
+          <ThemedText>{contact.name}</ThemedText>
           <ThemedText variant="bodyMedium" color="onSurfaceVariant">
             {validPhone || '---'}
           </ThemedText>
-        )}
-      </View>
-      <View style={styles.contactActions}>
-        <ThemedIconButton
-          mode="outlined"
-          name="phone.fill"
-          size={'medium'}
-          color={whatsAppColor}
-          onPress={handleEmergencyCall}
-          accessibilityLabel={t('Call {{name}}', { name: contact.name })}
-          disabled={isPhoneDisabled}
-        />
-        <ThemedIconButton
-          mode="outlined"
-          name="message.fill"
-          size={'medium'}
-          color={whatsAppColor}
-          onPress={handleWhatsAppMessage}
-          accessibilityLabel={t('Send WhatsApp to {{name}}', { name: contact.name })}
-          disabled={isWhatsAppDisabled}
-        />
-        {isExpanded && (
+        </View>
+        <View style={styles.contactActions}>
           <ThemedIconButton
             mode="outlined"
-            name="pencil"
-            size={'medium'}
-            color={theme.colors.onSurfaceVariant}
-            onPress={handleEditContact}
-            accessibilityLabel={t('Edit {{name}}', { name: contact.name })}
+            name="phone.fill"
+            size={'xlarge'}
+            color={whatsAppColor}
+            onPress={handleEmergencyCall}
+            accessibilityLabel={t('Call {{name}}', { name: contact.name })}
+            disabled={isPhoneDisabled}
           />
-        )}
+          <ThemedIconButton
+            mode="outlined"
+            name="message.fill"
+            size={'xlarge'}
+            color={whatsAppColor}
+            onPress={handleWhatsAppMessage}
+            accessibilityLabel={t('Send WhatsApp to {{name}}', { name: contact.name })}
+            disabled={isWhatsAppDisabled}
+          />
+        </View>
       </View>
-    </View>
+    </TouchableRipple>
   );
 };
 
 const EmergencySection = () => {
-  const theme = useAppTheme();
-  const styles = getStyles(theme);
   const router = useRouter();
 
   const { t } = useTranslation('connect');
   const user = useUserStore((s) => s.user);
-
-  const [isExpanded, setIsExpanded] = useState(false);
-
-  const handleToggleExpanded = useCallback(() => {
-    setIsExpanded((prev) => !prev);
-  }, []);
 
   const handleLinkAccount = useCallback(() => {
     router.push({
@@ -162,24 +139,12 @@ const EmergencySection = () => {
   const hasContacts = !!user?.settings?.emergencyContacts?.length;
 
   return (
-    <SectionContainer
-      title={t('Mates’ Contacts')}
-      isExpanded={isExpanded}
-      onToggle={handleToggleExpanded}
-      hideToggle={!hasContacts}
-    >
+    <SectionContainer title={t('Mates’ Contacts')}>
       {hasContacts ? (
-        <View style={styles.root}>
-          {/* Mates' Contact Infos List */}
-          <View style={styles.contactsContainer}>
-            <View style={styles.contactList}>
-              {user?.settings?.emergencyContacts?.map((contact, idx) =>
-                isExpanded || idx < MIN_ITEM_COUNT ? (
-                  <ContactRow key={contact.id} contact={contact} isExpanded={isExpanded} />
-                ) : null,
-              )}
-            </View>
-          </View>
+        <View>
+          {user?.settings?.emergencyContacts?.map((contact, idx) =>
+            idx < MIN_ITEM_COUNT ? <ContactRow key={contact.id} contact={contact} /> : null,
+          )}
         </View>
       ) : (
         <NoteMessage
@@ -203,35 +168,17 @@ const getContactRowStyles = createStyles<
     alignItems: 'center',
     flexDirection: 'row',
     gap: StaticTheme.spacing.sm,
-    borderRadius: StaticTheme.borderRadius.s,
     paddingHorizontal: StaticTheme.spacing.md,
-    paddingVertical: StaticTheme.spacing.xs * 1.5,
-    borderWidth: 1,
+    paddingVertical: StaticTheme.spacing.md,
     borderColor: ({ colors }) => colors.outline,
+    borderBottomWidth: 1 / 3,
   },
   contactInfo: {
     flex: 1,
   },
   contactActions: {
     flexDirection: 'row',
-    gap: StaticTheme.spacing.sm * 1.25,
-  },
-});
-
-const getStyles = createStyles<
-  StyleRecord<'root' | 'contactsContainer' | 'contactList' | 'button'>
->({
-  root: {
     gap: StaticTheme.spacing.md,
-  },
-  contactsContainer: {
-    gap: StaticTheme.spacing.sm,
-  },
-  contactList: {
-    gap: StaticTheme.spacing.sm * 1.5,
-  },
-  button: {
-    marginTop: StaticTheme.spacing.sm,
   },
 });
 

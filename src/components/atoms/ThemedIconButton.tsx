@@ -13,12 +13,14 @@ const sizeMap = {
     small: 12,
     medium: 16,
     large: 20,
+    xlarge: 24,
   },
   icon: {
     tiny: 16,
     small: 20,
     medium: 24,
     large: 28,
+    xlarge: 32,
   },
 };
 
@@ -28,18 +30,20 @@ const outlinedSizeMap = {
     small: 12,
     medium: 16,
     large: 20,
+    xlarge: 24,
   },
   icon: {
     tiny: 8,
     small: 12,
     medium: 16,
     large: 20,
+    xlarge: 24,
   },
 };
 
 interface ThemedIconButtonProps extends Omit<IconButtonProps, 'icon' | 'size'> {
   name: IconName;
-  size?: 'tiny' | 'small' | 'medium' | 'large';
+  size?: 'tiny' | 'small' | 'medium' | 'large' | 'xlarge';
   color?: string;
   style?: ViewStyle;
 }

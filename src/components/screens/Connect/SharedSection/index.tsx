@@ -1,4 +1,4 @@
-import { useCallback, useState } from 'react';
+import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import { View } from 'react-native';
@@ -25,12 +25,7 @@ const SharedSection = () => {
 
   const { t } = useTranslation('connect');
 
-  const [isExpanded, setIsExpanded] = useState(false);
   const [activeTab, setActiveTab] = useState<TabType>(TabType.NOTE);
-
-  const handleToggleExpanded = useCallback(() => {
-    setIsExpanded((prev) => !prev);
-  }, []);
 
   const tabs = [
     {
@@ -44,11 +39,7 @@ const SharedSection = () => {
   ];
 
   return (
-    <SectionContainer
-      title={t('Shared Info')}
-      isExpanded={isExpanded}
-      onToggle={handleToggleExpanded}
-    >
+    <SectionContainer title={t('Shared Info')}>
       <View style={styles.root}>
         <View style={styles.tabContainer}>
           {tabs.map((tab) => (
@@ -64,8 +55,8 @@ const SharedSection = () => {
             </TouchableRipple>
           ))}
         </View>
-        {activeTab === TabType.NOTE && <SharedNoteContent isExpanded={isExpanded} />}
-        {activeTab === TabType.LOG && <SharedLogContent isExpanded={isExpanded} />}
+        {activeTab === TabType.NOTE && <SharedNoteContent />}
+        {activeTab === TabType.LOG && <SharedLogContent />}
       </View>
     </SectionContainer>
   );

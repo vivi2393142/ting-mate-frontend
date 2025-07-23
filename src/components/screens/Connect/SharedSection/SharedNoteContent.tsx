@@ -20,7 +20,7 @@ import SharedTabContent from '@/components/screens/Connect/SharedSection/SharedT
 
 const MIN_ITEM_COUNT = 3;
 
-const SharedNoteContent = ({ isExpanded }: { isExpanded: boolean }) => {
+const SharedNoteContent = () => {
   const theme = useAppTheme();
   const styles = getStyles(theme);
 
@@ -69,13 +69,13 @@ const SharedNoteContent = ({ isExpanded }: { isExpanded: boolean }) => {
 
   return (
     <SharedTabContent
-      isExpanded={isExpanded}
+      isExpanded={true}
       isLoading={isFetchingNotes}
       lastUpdated={lastNoteUpdate}
       isFetching={isFetchingNotes}
       onRefresh={handleRefreshNotes}
       contentAreaNode={
-        isExpanded && sharedNotesData?.notes?.length !== 0 ? (
+        sharedNotesData?.notes?.length !== 0 ? (
           <ThemedIconButton
             name="plus.circle.fill"
             size="large"
@@ -95,7 +95,7 @@ const SharedNoteContent = ({ isExpanded }: { isExpanded: boolean }) => {
         )}
         {!isLoadingNotes &&
           sharedNotesData?.notes?.map((note, idx) =>
-            isExpanded || idx < MIN_ITEM_COUNT ? (
+            idx < MIN_ITEM_COUNT ? (
               <ChipItem
                 key={note.id}
                 label={note.title}

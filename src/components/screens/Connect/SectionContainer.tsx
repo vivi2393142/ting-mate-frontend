@@ -1,74 +1,23 @@
 import { type ReactNode } from 'react';
 
-import { View } from 'react-native';
-
-import useAppTheme from '@/hooks/useAppTheme';
 import { StaticTheme } from '@/theme';
-import { createStyles, type StyleRecord } from '@/utils/createStyles';
 
-import ThemedIconButton from '@/components/atoms/ThemedIconButton';
-import ThemedText from '@/components/atoms/ThemedText';
 import ThemedView from '@/components/atoms/ThemedView';
+import { StyleSheet } from 'react-native';
 
-type SectionContainerProps =
-  | {
-      title: string;
-      children: ReactNode;
-      isExpanded: boolean;
-      onToggle: () => void;
-      hideToggle?: false;
-    }
-  | {
-      title: string;
-      children: ReactNode;
-      hideToggle: true;
-    };
+interface SectionContainerProps {
+  title: string;
+  children: ReactNode;
+}
 
-const SectionContainer = ({ title, children, ...props }: SectionContainerProps) => {
-  const theme = useAppTheme();
-  const styles = getStyles(theme);
-
-  return (
-    <ThemedView style={styles.sectionContainer}>
-      <View style={styles.sectionHeader}>
-        <ThemedText
-          variant="titleLarge"
-          style={[
-            styles.sectionTitle,
-            !props.hideToggle && props.isExpanded && styles.sectionTitleHighlight,
-          ]}
-        >
-          {title}
-        </ThemedText>
-        {!props.hideToggle && (
-          <ThemedIconButton
-            name={props.isExpanded ? 'chevron.down' : 'chevron.right'}
-            size={'tiny'}
-            onPress={props.onToggle}
-          />
-        )}
-      </View>
-      {children}
-    </ThemedView>
-  );
+const SectionContainer = ({ children }: SectionContainerProps) => {
+  return <ThemedView style={styles.sectionContainer}>{children}</ThemedView>;
 };
 
-const getStyles = createStyles<
-  StyleRecord<'sectionContainer' | 'sectionHeader', 'sectionTitle' | 'sectionTitleHighlight'>
->({
+const styles = StyleSheet.create({
   sectionContainer: {
     gap: StaticTheme.spacing.xs,
-  },
-  sectionHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
-  sectionTitle: {
-    marginBottom: StaticTheme.spacing.sm,
-  },
-  sectionTitleHighlight: {
-    color: ({ colors }) => colors.primary,
+    padding: 0,
   },
 });
 

@@ -108,7 +108,7 @@ const getStyles = createStyles<
     flex: 1,
   },
   content: {
-    gap: StaticTheme.spacing.md * 1.5,
+    gap: StaticTheme.spacing.sm,
     paddingBottom: StaticTheme.spacing.md,
   },
   tabRow: {

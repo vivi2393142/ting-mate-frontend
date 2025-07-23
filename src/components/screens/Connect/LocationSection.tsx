@@ -131,7 +131,6 @@ const LocationSection = () => {
   const { isGranted, requestPermission } = useLocationPermission();
   const { syncNow } = useSyncCurrentLocation();
 
-  const [isExpanded, setIsExpanded] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(false);
 
   const targetEmail = useMemo<string | undefined>(() => {
@@ -193,10 +192,6 @@ const LocationSection = () => {
   const updateUserSettingsMutation = useUpdateUserSettings();
 
   // --- Handlers ---
-  const handleToggleExpanded = useCallback(() => {
-    setIsExpanded((prev) => !prev);
-  }, []);
-
   const handleTurnOnLocationSharing = useCallback(() => {
     updateUserSettingsMutation.mutate({ allowShareLocation: true });
   }, [updateUserSettingsMutation]);
@@ -338,7 +333,7 @@ const LocationSection = () => {
   // If not authenticated, show sign in button
   if (!token) {
     return (
-      <SectionContainer title={t('Mate’s Location')} hideToggle>
+      <SectionContainer title={t('Mate’s Location')}>
         <NoteMessage
           message={t('Please sign in to use this feature.')}
           buttonProps={{
@@ -352,7 +347,7 @@ const LocationSection = () => {
 
   if (status === Status.INITIALIZING || !user) {
     return (
-      <SectionContainer title={t('Mate’s Location')} hideToggle>
+      <SectionContainer title={t('Mate’s Location')}>
         <View style={styles.container}>
           <Skeleton width={'100%'} height={150} />
         </View>
@@ -362,7 +357,7 @@ const LocationSection = () => {
 
   if (status === Status.NO_LINKED) {
     return (
-      <SectionContainer title={t('Mate’s Location')} hideToggle>
+      <SectionContainer title={t('Mate’s Location')}>
         <NoteMessage
           message={t("Connect with a mate first to get mate's location.")}
           buttonProps={{
@@ -376,7 +371,7 @@ const LocationSection = () => {
 
   if (status === Status.NO_AGREEMENT) {
     return (
-      <SectionContainer title={t('Mate’s Location')} hideToggle>
+      <SectionContainer title={t('Mate’s Location')}>
         {user.role === Role.CAREGIVER ? (
           <NoteMessage
             message={t(
@@ -404,7 +399,7 @@ const LocationSection = () => {
 
   if (status === Status.NO_PERMISSION) {
     return (
-      <SectionContainer title={t('Mate’s Location')} hideToggle>
+      <SectionContainer title={t('Mate’s Location')}>
         <NoteMessage
           message={t('YTurn on location access in your phone to share.')}
           buttonProps={{
@@ -418,7 +413,7 @@ const LocationSection = () => {
 
   if (status === Status.NO_DATA) {
     return (
-      <SectionContainer title={t('Mate’s Location')} hideToggle>
+      <SectionContainer title={t('Mate’s Location')}>
         {user.role === Role.CAREGIVER ? (
           <NoteMessage
             message={t(
@@ -448,7 +443,7 @@ const LocationSection = () => {
 
   if (status === Status.ONLY_SAFEZONE || !location) {
     return (
-      <SectionContainer title={t('Mate’s Location')} hideToggle>
+      <SectionContainer title={t('Mate’s Location')}>
         {user.role === Role.CAREGIVER ? (
           <NoteMessage
             message={t('No location info yet. Please check your mate’s settings or try again.')}
@@ -476,17 +471,13 @@ const LocationSection = () => {
 
   // --- UI: Ready ---
   return (
-    <SectionContainer
-      title={t('Mate’s Location')}
-      isExpanded={isExpanded}
-      onToggle={handleToggleExpanded}
-    >
+    <SectionContainer title={t('Mate’s Location')}>
       <View style={styles.container}>
         {/* Map Container */}
         <View
           style={[
             styles.mapContainer,
-            isExpanded && styles.mapContainerExpanded,
+            styles.mapContainerExpanded,
             !isInSafeZone && safeZone && styles.mapContainerWarning,
           ]}
         >
@@ -593,41 +584,39 @@ const LocationSection = () => {
           />
         </View>
         {/* Expanded Options */}
-        {isExpanded && (
-          <View style={styles.expandedOptions}>
-            <View style={styles.optionsRow}>
+        <View style={styles.expandedOptions}>
+          <View style={styles.optionsRow}>
+            <ThemedButton
+              mode="outlined"
+              icon="location"
+              onPress={handlePanToLocation}
+              style={styles.optionButton}
+              disabled={isLoadingLocation}
+            >
+              {t('Go to User')}
+            </ThemedButton>
+            {safeZone && (
               <ThemedButton
                 mode="outlined"
-                icon="location"
-                onPress={handlePanToLocation}
+                icon="shield"
+                onPress={handlePanToSafeZone}
                 style={styles.optionButton}
-                disabled={isLoadingLocation}
+                disabled={isLoadingSafeZone}
               >
-                {t('Go to User')}
-              </ThemedButton>
-              {safeZone && (
-                <ThemedButton
-                  mode="outlined"
-                  icon="shield"
-                  onPress={handlePanToSafeZone}
-                  style={styles.optionButton}
-                  disabled={isLoadingSafeZone}
-                >
-                  {t('Go to Safe Zone')}
-                </ThemedButton>
-              )}
-            </View>
-            <ThemedButton mode="contained" icon="gearshape" onPress={handleEditSafeZone}>
-              {t('Edit Safe Zone')}
-            </ThemedButton>
-            {/* Carereceiver: Turn off location sharing button */}
-            {user.role === Role.CARERECEIVER && user.settings.allowShareLocation && (
-              <ThemedButton mode="outlined" color="error" onPress={handleTurnOffLocationSharing}>
-                {t('Turn Off Location Sharing')}
+                {t('Go to Safe Zone')}
               </ThemedButton>
             )}
           </View>
-        )}
+          <ThemedButton mode="contained" icon="gearshape" onPress={handleEditSafeZone}>
+            {t('Edit Safe Zone')}
+          </ThemedButton>
+          {/* Carereceiver: Turn off location sharing button */}
+          {user.role === Role.CARERECEIVER && user.settings.allowShareLocation && (
+            <ThemedButton mode="outlined" color="error" onPress={handleTurnOffLocationSharing}>
+              {t('Turn Off Location Sharing')}
+            </ThemedButton>
+          )}
+        </View>
       </View>
     </SectionContainer>
   );

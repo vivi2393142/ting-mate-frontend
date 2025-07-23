@@ -23,7 +23,7 @@ const MIN_ITEM_COUNT = 3;
 const MAX_LOG_COUNT = 50;
 const LOG_CTN_PER_PAGE = 10;
 
-const SharedLogContent = ({ isExpanded }: { isExpanded: boolean }) => {
+const SharedLogContent = () => {
   const theme = useAppTheme();
   const styles = getStyles(theme);
 
@@ -84,7 +84,7 @@ const SharedLogContent = ({ isExpanded }: { isExpanded: boolean }) => {
 
   return (
     <SharedTabContent
-      isExpanded={isExpanded}
+      isExpanded={true}
       hasMoreItems={hasMoreLogs && !isReachedLogLimit}
       onLoadMore={handleLoadMoreLogs}
       isLoading={isFetchingLogs}
@@ -101,7 +101,7 @@ const SharedLogContent = ({ isExpanded }: { isExpanded: boolean }) => {
       )}
       {!isLoadingLogs &&
         activityLogsData?.logs?.map((log, idx) =>
-          isExpanded || idx < MIN_ITEM_COUNT ? (
+          idx < MIN_ITEM_COUNT ? (
             <ChipItem
               key={log.id}
               label={dayjs(log.timestamp).format(LOG_TIME_FORMAT)}

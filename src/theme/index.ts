@@ -22,9 +22,9 @@ const spacing = {
 export const StaticTheme = {
   spacing,
   borderRadius: {
-    s: 4,
-    m: 8,
-    l: 16,
+    s: 8,
+    m: 16,
+    l: 24,
     round: '100%',
   },
   iconSize: {
