@@ -17,6 +17,7 @@ const ROUTES = {
   NOTIFICATIONS: '/notifications',
   // Onboarding
   ONBOARDING_SLIDES: '/onboarding-slides',
+  ONBOARDING_ROLE: '/onboarding-role',
 } as const;
 
 export type Route = (typeof ROUTES)[keyof typeof ROUTES];

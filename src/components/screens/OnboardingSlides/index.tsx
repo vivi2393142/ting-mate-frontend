@@ -63,7 +63,6 @@ export const OnboardingSlidesScreen = () => {
   const [current, setCurrent] = useState(0);
 
   const hasSeenOnboarding = useOnboardingStore((s) => s.hasSeenOnboarding);
-  const setHasSeenOnboarding = useOnboardingStore((s) => s.setHasSeenOnboarding);
 
   const handleClickDot = (idx: number) => () => {
     setCurrent(idx);
@@ -74,12 +73,12 @@ export const OnboardingSlidesScreen = () => {
   }, [current]);
 
   const handleDone = useCallback(() => {
+    void useOnboardingStore.getState().setHasSeenOnboarding(true);
     router.replace({
-      pathname: ROUTES.HOME,
+      pathname: ROUTES.ONBOARDING_ROLE,
       params: { from: 'onboarding' },
     });
-    void setHasSeenOnboarding(true);
-  }, [router, setHasSeenOnboarding]);
+  }, [router]);
 
   // Animate slide content
   const { width } = useWindowDimensions();

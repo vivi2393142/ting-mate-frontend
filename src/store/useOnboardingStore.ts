@@ -2,14 +2,14 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { create } from 'zustand';
 
 const ONBOARDING_KEY = 'onboarding_shown';
-const VISITED_SCREENS_KEY = 'visited_screens';
+const HAS_SET_ONBOARDING_ROLE_KEY = 'has_set_onboarding_role';
 const VISITED_TASK_KEY = 'visited_task';
 const VISITED_CONNECT_KEY = 'visited_connect';
 const VISITED_SETTING_KEY = 'visited_settings';
 
 interface OnboardingState {
   hasSeenOnboarding: boolean;
-  hasVisitedScreens: boolean;
+  hasSetOnboardingRole: boolean;
   hasVisitedTask: boolean;
   hasVisitedConnect: boolean;
   hasVisitedSettings: boolean;
@@ -19,7 +19,7 @@ interface OnboardingStateStore extends OnboardingState {
   hasInit: boolean;
 
   setHasSeenOnboarding: (value: boolean) => Promise<void>;
-  setHasVisitedScreens: (value: boolean) => Promise<void>;
+  setHasSetOnboardingRole: (value: boolean) => Promise<void>;
   setHasVisitedTask: (value: boolean) => Promise<void>;
   setHasVisitedConnect: (value: boolean) => Promise<void>;
   setHasVisitedSettings: (value: boolean) => Promise<void>;
@@ -31,7 +31,7 @@ export const useOnboardingStore = create<OnboardingStateStore>((set) => ({
   hasInit: false,
 
   hasSeenOnboarding: true,
-  hasVisitedScreens: true,
+  hasSetOnboardingRole: true,
   hasVisitedTask: true,
   hasVisitedConnect: true,
   hasVisitedSettings: true,
@@ -40,9 +40,9 @@ export const useOnboardingStore = create<OnboardingStateStore>((set) => ({
     await AsyncStorage.setItem(ONBOARDING_KEY, value ? 'true' : 'false');
     set({ hasSeenOnboarding: value });
   },
-  setHasVisitedScreens: async (value: boolean) => {
-    await AsyncStorage.setItem(VISITED_SCREENS_KEY, value ? 'true' : 'false');
-    set({ hasVisitedScreens: value });
+  setHasSetOnboardingRole: async (value: boolean) => {
+    await AsyncStorage.setItem(HAS_SET_ONBOARDING_ROLE_KEY, value ? 'true' : 'false');
+    set({ hasSetOnboardingRole: value });
   },
   setHasVisitedTask: async (value: boolean) => {
     await AsyncStorage.setItem(VISITED_TASK_KEY, value ? 'true' : 'false');
@@ -61,14 +61,14 @@ export const useOnboardingStore = create<OnboardingStateStore>((set) => ({
     set({ hasInit: true });
     const [onboarding, screens, task, connect, setting] = await Promise.allSettled([
       AsyncStorage.getItem(ONBOARDING_KEY),
-      AsyncStorage.getItem(VISITED_SCREENS_KEY),
+      AsyncStorage.getItem(HAS_SET_ONBOARDING_ROLE_KEY),
       AsyncStorage.getItem(VISITED_TASK_KEY),
       AsyncStorage.getItem(VISITED_CONNECT_KEY),
       AsyncStorage.getItem(VISITED_SETTING_KEY),
     ]);
     const result = {
       hasSeenOnboarding: getInitStateSafely(onboarding),
-      hasVisitedScreens: getInitStateSafely(screens),
+      hasSetOnboardingRole: getInitStateSafely(screens),
       hasVisitedTask: getInitStateSafely(task),
       hasVisitedConnect: getInitStateSafely(connect),
       hasVisitedSettings: getInitStateSafely(setting),

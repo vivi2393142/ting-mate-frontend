@@ -1,4 +1,5 @@
 {
+  "Are you using this app for yourself or helping someone?": "Are you using this app for yourself or helping someone?",
   "Auto-stopped due to time limit": "Auto-stopped due to time limit",
   "Back": "Back",
   "Can you delete the 'take medicine' task?": "Can you delete the 'take medicine' task?",
@@ -18,7 +19,9 @@
   "Go to Settings": "Go to Settings",
   "Go to home screen!": "Go to home screen!",
   "Hmm… couldn't hear you. Try again?": "Hmm… couldn't hear you. Try again?",
+  "I'm helping someone": "I'm helping someone",
   "I'm listening": "I'm listening",
+  "Just for me": "Just for me",
   "Link accounts to manage tasks together and stay connected.": "Link accounts to manage tasks together and stay connected.",
   "Linking account has been updated, please refresh to see changes": "Linking account has been updated, please refresh to see changes",
   "Location Access Needed": "Location Access Needed",
@@ -70,6 +73,7 @@
     "Sun": "Sun",
     "Sunday": "Sunday"
   },
+  "or": "or",
   "recurrenceText_day": "Every {{interval}} {{unit}}",
   "recurrenceText_week_month": "Every {{interval}} {{unit}} on {{days}}",
   "recurrenceUnit": {
