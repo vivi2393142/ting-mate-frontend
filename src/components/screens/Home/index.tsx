@@ -222,7 +222,7 @@ const HomeScreen = () => {
             />
             <ThemedText variant="bodyMedium" color="outline" style={styles.warningText}>
               {t(
-                "You're not connected with a companion yet. Connect now to see and help manage their tasks.",
+                'You’re not connected with a mate yet. Connect now to see and help manage their tasks.',
               )}
             </ThemedText>
           </View>
@@ -270,7 +270,7 @@ const HomeScreen = () => {
             {!isLoading && sortedTasks.length === 0 && (
               <View style={styles.emptyContainer}>
                 <ThemedText color="onSurfaceVariant">
-                  {t("You haven't added any tasks yet.")}
+                  {t('You haven’t added any tasks yet.')}
                 </ThemedText>
                 <ThemedText color="onSurfaceVariant">{t('Add a task to get started!')}</ThemedText>
               </View>

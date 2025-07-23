@@ -251,7 +251,7 @@ const LocationSection = () => {
   const handleTurnOffLocationSharing = useCallback(() => {
     Alert.alert(
       t('Turn Off Location Sharing'),
-      t("Turn off location sharing? Your companion won't be able to see where you are."),
+      t('Turn off location sharing? Your mate won’t be able to see where you are.'),
       [
         { text: tCommon('Cancel'), style: 'cancel' },
         {
@@ -377,7 +377,7 @@ const LocationSection = () => {
         {user.role === Role.CAREGIVER ? (
           <NoteMessage
             message={t(
-              "Your companion hasn't turned on location sharing. Ask them to enable it in their app, then refresh.",
+              'Your mate hasn’t turned on location sharing. Ask them to enable it in their app, then refresh.',
             )}
             buttonProps={{
               onPress: handleRefresh,
@@ -388,9 +388,7 @@ const LocationSection = () => {
           />
         ) : (
           <NoteMessage
-            message={t(
-              "Location sharing is off. Turn it on to let your companions know you're safe.",
-            )}
+            message={t('Location sharing is off. Turn it on to let your mates know you’re safe.')}
             buttonProps={{
               onPress: handleTurnOnLocationSharing,
               children: t('Turn On Location Sharing'),
@@ -406,7 +404,7 @@ const LocationSection = () => {
       <SectionContainer title={t('Location')} hideToggle>
         <NoteMessage
           message={t(
-            "You're sharing your location, but the app still needs permission from your phone.",
+            'You’re sharing your location, but the app still needs permission from your phone.',
           )}
           buttonProps={{
             onPress: requestPermission,
@@ -423,7 +421,7 @@ const LocationSection = () => {
         {user.role === Role.CAREGIVER ? (
           <NoteMessage
             message={t(
-              "We can't get their location. Your companion might have just enabled sharing or hasn't allowed access yet. Please check settings or try again.",
+              'We can’t get their location. Your mate might have just enabled sharing or hasn’t allowed access yet. Please check settings or try again.',
             )}
             buttonProps={{
               onPress: handleRefresh,
@@ -452,9 +450,7 @@ const LocationSection = () => {
       <SectionContainer title={t('Location')} hideToggle>
         {user.role === Role.CAREGIVER ? (
           <NoteMessage
-            message={t(
-              "No location info yet. Please check your companion's settings or try again.",
-            )}
+            message={t('No location info yet. Please check your mate’s settings or try again.')}
             buttonProps={{
               onPress: handleRefresh,
               loading: isRefreshing,

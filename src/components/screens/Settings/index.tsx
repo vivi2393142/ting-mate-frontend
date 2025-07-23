@@ -125,7 +125,7 @@ const SettingsScreen = () => {
         if (newAllowShareLocation) {
           Alert.alert(
             t('Share Location?'),
-            t('Turn this on to let your companions see where you are.'),
+            t('Turn this on to let your mates see where you are.'),
             [
               {
                 text: tCommon('Cancel'),
@@ -145,7 +145,7 @@ const SettingsScreen = () => {
         } else {
           Alert.alert(
             t('Stop Sharing Location?'),
-            t('If you turn this off, your companions won’t be able to see where you are.'),
+            t('If you turn this off, your mates won’t be able to see where you are.'),
             [
               {
                 text: tCommon('Cancel'),

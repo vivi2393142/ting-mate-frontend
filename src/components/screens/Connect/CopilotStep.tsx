@@ -24,7 +24,7 @@ const ConnectCopilotStep = ({
     () =>
       ({
         [CopilotStepName.LOCATION]: {
-          text: t("See your companion's location here."),
+          text: t("See your mate's location here."),
           order: 1,
         },
         [CopilotStepName.CONTACT]: {

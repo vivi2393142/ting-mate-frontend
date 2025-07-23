@@ -32,7 +32,7 @@ const SettingsCopilotStep = ({
       (isCaregiver
         ? {
             [CopilotStepName.LOGIN]: {
-              text: t('Sign up first so we can set you as a companion.'),
+              text: t('Sign up first so we can set you as a mate.'),
               order: 1,
             },
             [CopilotStepName.LINK_ACCOUNT]: {

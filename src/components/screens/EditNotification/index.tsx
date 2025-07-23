@@ -154,7 +154,7 @@ const EditNotification = () => {
             rightIconName="chevron.right"
             dense={false}
             label={t('Task Reminder')}
-            helperText={t("Notify when it's time to do a task.")}
+            helperText={t('Notify when it’s time to do a task.')}
             render={() => <Switch value={taskReminder} onValueChange={setTaskReminder} />}
           />
           <FormInput
@@ -237,7 +237,7 @@ const EditNotification = () => {
                   dense={false}
                   label={t('Safe Zone Alert')}
                   helperText={t(
-                    "Notify when your companion leaves the safe zone. They'll need to enable location in 'Connect'.",
+                    "Notify when your mate leaves the safe zone. They’ll need to enable location in 'Connect'.",
                   )}
                   render={() => (
                     <Switch value={safeZoneExitReminder} onValueChange={setSafeZoneExitReminder} />

@@ -6,7 +6,7 @@
 
 ## Project Overview
 
-**TingMate** is a daily support app designed for memory-impaired individuals and their caregivers, featuring an AI voice assistant to help manage reminders and tasks. The name "TingMate" reflects its role as a reliable companion for reminders and to-do tasks. This repository contains the frontend implementation, built with React Native and Expo.
+**TingMate** is a daily support app designed for memory-impaired individuals and their caregivers, featuring an AI voice assistant to help manage reminders and tasks. The name "TingMate" reflects its role as a reliable mate for reminders and to-do tasks. This repository contains the frontend implementation, built with React Native and Expo.
 
 ## Project Structure
 
