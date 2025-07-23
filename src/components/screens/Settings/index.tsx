@@ -4,14 +4,13 @@ import { useTranslation } from 'react-i18next';
 import { walkthroughable } from 'react-native-copilot';
 
 import { Alert, View } from 'react-native';
-import { List, Switch } from 'react-native-paper';
+import { List, Switch, TouchableRipple } from 'react-native-paper';
 
 import { useLogout } from '@/api/auth';
 import { useUpdateUserSettings } from '@/api/user';
 import ROUTES from '@/constants/routes';
 import useAppTheme from '@/hooks/useAppTheme';
 import { useCopilotOnboarding } from '@/hooks/useCopilotOnboarding';
-import useRoleTranslation from '@/hooks/useRoleTranslation';
 import useUserDisplayModeTranslation from '@/hooks/useUserDisplayModeTranslation';
 import useUserTextSizeTranslation from '@/hooks/useUserTextSizeTranslation';
 import useAuthStore from '@/store/useAuthStore';
@@ -24,6 +23,7 @@ import { createStyles, StyleRecord } from '@/utils/createStyles';
 import FormInput from '@/components/atoms/FormInput';
 import ScreenContainer from '@/components/atoms/ScreenContainer';
 import Select from '@/components/atoms/Select';
+import ThemedText from '@/components/atoms/ThemedText';
 import CopilotProvider from '@/components/providers/CopilotProvider';
 import SettingsCopilotStep, { CopilotStepName } from '@/components/screens/Settings/CopilotStep';
 
@@ -50,7 +50,6 @@ const SettingsScreen = () => {
 
   const { tUserTextSize } = useUserTextSizeTranslation();
   const { tUserDisplayMode } = useUserDisplayModeTranslation();
-  const { tRole } = useRoleTranslation();
 
   const token = useAuthStore((s) => s.token);
   const user = useUserStore((s) => s.user);
@@ -94,13 +93,6 @@ const SettingsScreen = () => {
     },
     [updateUserSettingsMutation],
   );
-
-  const handleRolePress = useCallback(() => {
-    router.push({
-      pathname: ROUTES.ROLE_SELECTION,
-      params: { from: ROUTES.SETTINGS },
-    });
-  }, [router]);
 
   const handleNotificationPress = useCallback(() => {
     router.push({
@@ -164,16 +156,12 @@ const SettingsScreen = () => {
           );
         }
       } else {
-        Alert.alert(
-          t('Location Sharing'),
-          t('Connect with someone first to share your location.'),
-          [
-            {
-              text: tCommon('Cancel'),
-              style: 'cancel',
-            },
-          ],
-        );
+        Alert.alert(t('Location Sharing'), t('Connect with a mate first to share your location.'), [
+          {
+            text: tCommon('Cancel'),
+            style: 'cancel',
+          },
+        ]);
       }
     },
     [t, tCommon, token, updateUserSettingsMutation, user],
@@ -300,6 +288,19 @@ const SettingsScreen = () => {
         />
       </SectionGroup>
       <SectionGroup title={t('Connect')} subheaderStyle={styles.subheader}>
+        <View style={styles.connectHint}>
+          <ThemedText variant="bodyMedium" color="outline" style={styles.connectHintText}>
+            {t('No mates yet? Tap ')}
+          </ThemedText>
+          <TouchableRipple onPress={handleAccountLinkingPress}>
+            <ThemedText variant="bodyMedium" color="primary" style={styles.connectHintText}>
+              {t('here')}
+            </ThemedText>
+          </TouchableRipple>
+          <ThemedText variant="bodyMedium" color="outline" style={styles.connectHintText}>
+            {t(' to get started.')}
+          </ThemedText>
+        </View>
         <SettingsCopilotStep name={CopilotStepName.LINK_ACCOUNT}>
           <CopilotView>
             <FormInput
@@ -335,16 +336,6 @@ const SettingsScreen = () => {
           valueColor={theme.colors.primary}
           onPress={handleNamePress}
         />
-        <FormInput
-          valueAlign="right"
-          rightIconName="chevron.right"
-          dense={false}
-          label={t('Role')}
-          value={tRole(user?.role || Role.CARERECEIVER)}
-          valueColor={theme.colors.primary}
-          onPress={handleRolePress}
-        />
-
         {!token && (
           <SettingsCopilotStep name={CopilotStepName.LOGIN} active={!token}>
             <CopilotListItem
@@ -382,8 +373,8 @@ export default SettingsScreenWithCopilot;
 
 const getStyles = createStyles<
   StyleRecord<
-    'buttonItem' | 'buttonContainer' | 'buttonContent',
-    'subheader' | 'signInText' | 'logoutText'
+    'buttonItem' | 'buttonContainer' | 'buttonContent' | 'connectHint',
+    'subheader' | 'signInText' | 'logoutText' | 'connectHintText'
   >
 >({
   subheader: {
@@ -412,5 +403,12 @@ const getStyles = createStyles<
     color: ({ colors }) => colors.error,
     fontSize: ({ fonts }) => fonts.bodyLarge.fontSize,
     fontWeight: ({ fonts }) => fonts.bodyLarge.fontWeight,
+  },
+  connectHint: {
+    flexDirection: 'row',
+    paddingBottom: StaticTheme.spacing.sm,
+  },
+  connectHintText: {
+    fontStyle: 'italic',
   },
 });

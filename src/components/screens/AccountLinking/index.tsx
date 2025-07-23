@@ -332,7 +332,7 @@ const AccountLinkingScreen = () => {
           {cannotConnectToMoreCarereceiver && (
             <WarningText>
               {t(
-                'You’re already connected with a mate. To connect with someone else, please remove your current mate first.',
+                'You’re already connected with a mate. To Use It Together else, please remove your current mate first.',
               )}
             </WarningText>
           )}

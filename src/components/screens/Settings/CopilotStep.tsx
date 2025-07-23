@@ -32,11 +32,11 @@ const SettingsCopilotStep = ({
       (isCaregiver
         ? {
             [CopilotStepName.LOGIN]: {
-              text: t('Sign up first so we can set you as a mate.'),
+              text: t('Sign up to connect with your mate and use all features.'),
               order: 1,
             },
             [CopilotStepName.LINK_ACCOUNT]: {
-              text: t('Link with your care partner to stay connected.'),
+              text: t('Connect with mates to view their info and stay in sync.'),
               order: 2,
             },
             [CopilotStepName.DISPLAY]: {
@@ -50,11 +50,11 @@ const SettingsCopilotStep = ({
               order: 1,
             },
             [CopilotStepName.LINK_ACCOUNT]: {
-              text: t('Link with someone you care for or who cares for you.'),
+              text: t('Connect with your mates here to share and stay in sync.'),
               order: 2,
             },
             [CopilotStepName.LOGIN]: {
-              text: t('Log in to connect with someone and stay in sync.'),
+              text: t('Log in to connect a mate and use all features.'),
               order: 3,
             },
           })[name],

@@ -183,17 +183,6 @@ const HomeScreen = () => {
     });
   }, [router]);
 
-  const linkedText = useMemo(() => {
-    const linkedList = user?.settings?.linked;
-    if (!linkedList?.length) return '';
-    if (user?.role === Role.CAREGIVER) {
-      const target = linkedList.filter((u) => u.role === Role.CARERECEIVER)?.[0];
-      return target ? target.name || target.email : '';
-    } else {
-      return linkedList.map((u) => u.name || u.email).join(', ');
-    }
-  }, [user]);
-
   // Handle copilot
   const hasSeenOnboarding = useOnboardingStore((s) => s.hasSeenOnboarding);
   const hasVisitedTask = useOnboardingStore((s) => s.hasVisitedTask);
@@ -242,18 +231,6 @@ const HomeScreen = () => {
           <ThemedText variant="titleLarge" style={styles.headline}>
             {t('Todays Tasks')}
           </ThemedText>
-          {linkedText && (
-            <View style={styles.linkedUserIndicator}>
-              <IconSymbol
-                name="link"
-                size={StaticTheme.iconSize.xs}
-                color={theme.colors.secondary}
-              />
-              <ThemedText variant="bodyMedium" color="secondary">
-                {linkedText}
-              </ThemedText>
-            </View>
-          )}
           {userDisplayMode === UserDisplayMode.FULL && (
             <NotificationCenterButton style={styles.notificationButton} />
           )}

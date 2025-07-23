@@ -361,7 +361,7 @@ const LocationSection = () => {
     return (
       <SectionContainer title={t('Location')} hideToggle>
         <NoteMessage
-          message={t('Connect with someone first to use this feature.')}
+          message={t('Connect with a mate first to use this feature.')}
           buttonProps={{
             onPress: handleLinkAccount,
             children: t('Link Now'),

@@ -24,7 +24,7 @@ const HomeCopilotStep = ({
     () =>
       ({
         [CopilotStepName.VIEW_TASKS]: {
-          text: t('Your tasks will show up here.'),
+          text: t('Tasks will show up here.'),
           order: 1,
         },
         [CopilotStepName.ADD_TASK]: {

@@ -95,16 +95,18 @@ export const OnboardingSlidesScreen = () => {
   // Slide titles
   const slideTitles = {
     [SlideKey.TASK]: {
-      title: t('Manage Daily Tasks'),
-      subtitle: t('Set reminders and check off tasks like medicine or appointments.'),
+      title: t('Stay on Top of Your Day'),
+      subtitle: t('Create simple reminders and check off tasks like medicine or appointments.'),
     },
     [SlideKey.CONNECT]: {
-      title: t('Connect with Someone'),
-      subtitle: t('Link accounts to manage tasks together and stay connected.'),
+      title: t('Use It Together'),
+      subtitle: t(
+        'Share your tasks with a mate you trust, or connect to manage a mate’s shared tasks.',
+      ),
     },
     [SlideKey.SAFE]: {
-      title: t('Stay Safe and Together'),
-      subtitle: t('Get alerts if a loved one leaves a safe zone.'),
+      title: t('Stay Close, Even from Afar'),
+      subtitle: t('Get alerts when your mate leaves a safe zone.'),
     },
   };
 

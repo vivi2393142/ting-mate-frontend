@@ -162,7 +162,7 @@ const VoiceModal = ({
           {isRecording && (
             <View style={styles.listeningContainer}>
               <ThemedText variant="headlineSmall" color="onPrimary" style={styles.listeningText}>
-                {t("I'm listening")}
+                {t('I’m listening')}
               </ThemedText>
               <Animated.View
                 style={[

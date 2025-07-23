@@ -40,10 +40,10 @@ export const OnboardingRoleScreen = () => {
       <Stack.Screen options={{ headerShown: false }} />
       <ScreenContainer isRoot style={styles.root}>
         <ThemedText variant="headlineLarge" style={styles.title}>
-          {t('Are you using this app for yourself or helping someone?')}
+          {t('How do you plan to use Ting Mate?')}
         </ThemedText>
         <View style={styles.cardsWrapper}>
-          {/* Just for me card */}
+          {/* Try It for Yourself card */}
           <View style={styles.cardRow}>
             <TouchableRipple
               style={styles.svgLeftWrapper}
@@ -56,7 +56,7 @@ export const OnboardingRoleScreen = () => {
               style={[styles.roleCard, selectedRole === Role.CARERECEIVER && styles.selectedCard]}
             >
               <ThemedText variant="titleLarge" color="onPrimary" style={styles.cardTextRight}>
-                {t('Just for me')}
+                {t('Try It for Yourself')}
               </ThemedText>
             </TouchableRipple>
           </View>
@@ -68,7 +68,7 @@ export const OnboardingRoleScreen = () => {
               style={[styles.roleCard, selectedRole === Role.CAREGIVER && styles.selectedCard]}
             >
               <ThemedText variant="titleLarge" color="onPrimary" style={styles.cardTextLeft}>
-                {t("I'm helping someone")}
+                {t('Connect with Mates')}
               </ThemedText>
             </TouchableRipple>
             <TouchableRipple
@@ -101,6 +101,7 @@ const getStyles = createStyles<
     paddingHorizontal: StaticTheme.spacing.xxl,
     flex: 1,
     justifyContent: 'center',
+    marginBottom: StaticTheme.spacing.xxl,
   },
   title: {
     marginBottom: StaticTheme.spacing.xxl * 1.5,
@@ -145,7 +146,8 @@ const getStyles = createStyles<
   },
   cardTextRight: {
     alignSelf: 'flex-end',
-    marginLeft: 80,
+    marginLeft: 120,
+    textAlign: 'right',
   },
 });
 

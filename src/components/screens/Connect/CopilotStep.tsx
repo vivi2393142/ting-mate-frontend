@@ -24,15 +24,15 @@ const ConnectCopilotStep = ({
     () =>
       ({
         [CopilotStepName.LOCATION]: {
-          text: t("See your mate's location here."),
+          text: t('See where you or your mates are here.'),
           order: 1,
         },
         [CopilotStepName.CONTACT]: {
-          text: t('Link your emergency contacts here.'),
+          text: t('Add contact info for your mates here.'),
           order: 2,
         },
         [CopilotStepName.SHARED]: {
-          text: t('Share notes and view group activity logs.'),
+          text: t('Share notes and updates with your mates.'),
           order: 3,
         },
       })[name],

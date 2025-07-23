@@ -3,7 +3,6 @@ const ROUTES = {
   SETTINGS: '/settings',
   CONNECT: '/connect',
   ACCOUNT_LINKING: '/account-linking',
-  ROLE_SELECTION: '/role-selection',
   EDIT_NOTIFICATION: '/edit-notification',
   EDIT_NAME: '/edit-name',
   LOGIN: '/login',
