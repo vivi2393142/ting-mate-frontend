@@ -27,7 +27,7 @@ dayjs.extend(relativeTime);
 
 const categoryIconMap: Record<NotificationCategory, IconName> = {
   [NotificationCategory.TASK]: 'checklist',
-  [NotificationCategory.USER_SETTING]: 'gearshape.fill',
+  [NotificationCategory.LINKING_ACCOUNT]: 'gearshape.fill',
   [NotificationCategory.SAFEZONE]: 'location',
   [NotificationCategory.SYSTEM]: 'bell',
 };

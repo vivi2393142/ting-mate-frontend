@@ -202,7 +202,7 @@ const EditNotification = () => {
               <Divider />
             </Fragment>
           )}
-          {user?.settings?.linked?.length && (
+          {user?.settings?.linked?.length ? (
             <Fragment>
               <FormInput
                 valueAlign="right"
@@ -245,7 +245,7 @@ const EditNotification = () => {
                 />
               )}
             </Fragment>
-          )}
+          ) : null}
         </ThemedView>
       </ScreenContainer>
     </Fragment>

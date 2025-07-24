@@ -111,11 +111,11 @@ const SharedLogContent = () => {
             />
           ) : null,
         )}
-      {!isLoadingLogs && !isFetchingLogs && !activityLogsData?.logs?.length && (
+      {!isLoadingLogs && !isFetchingLogs && !activityLogsData?.logs?.length ? (
         <ThemedText color="onSurfaceVariant" style={styles.contentNoteText}>
           {t('No Log Found')}
         </ThemedText>
-      )}
+      ) : null}
       {!isLoadingLogs && !isFetchingLogs && isReachedLogLimit && (
         <ThemedText color="outline" style={[styles.contentNoteText, styles.limitNoteText]}>
           {t('Only the latest {{count}} records are shown.', { count: MAX_LOG_COUNT })}

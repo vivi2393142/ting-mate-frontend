@@ -104,13 +104,13 @@ const SharedNoteContent = () => {
               />
             ) : null,
           )}
-        {!isLoadingNotes && !sharedNotesData?.notes?.length && (
+        {!isLoadingNotes && !sharedNotesData?.notes?.length ? (
           <View style={styles.contentNoteTextContainer}>
             <ThemedText color="onSurfaceVariant" style={styles.contentNoteText}>
               {t('No Note Found')}
             </ThemedText>
           </View>
-        )}
+        ) : null}
       </Fragment>
       <ThemedIconButton
         name="plus.circle"
