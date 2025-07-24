@@ -1,4 +1,5 @@
-import { useMemo, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { walkthroughable } from 'react-native-copilot';
 
 import { ScrollView, View } from 'react-native';
@@ -17,13 +18,6 @@ import ConnectCopilotStep, { CopilotStepName } from '@/components/screens/Connec
 import EmergencySection from '@/components/screens/Connect/EmergencySection';
 import LocationSection from '@/components/screens/Connect/LocationSection';
 import SharedSection from '@/components/screens/Connect/SharedSection';
-import { useTranslation } from 'react-i18next';
-
-enum TabKey {
-  CONTACT = 'CONTACT',
-  LOCATION = 'LOCATION',
-  SHARED = 'SHARED',
-}
 
 const CopilotView = walkthroughable(View);
 
@@ -33,7 +27,7 @@ const ConnectScreen = () => {
 
   const { t } = useTranslation('connect');
 
-  const [activeTab, setActiveTab] = useState(TabKey.LOCATION);
+  const [activeTab, setActiveTab] = useState(CopilotStepName.LOCATION);
 
   // Handle copilot
   const hasSeenOnboarding = useOnboardingStore((s) => s.hasSeenOnboarding);
@@ -46,12 +40,16 @@ const ConnectScreen = () => {
 
   const TAB_LIST = useMemo(
     () => [
-      { key: TabKey.CONTACT, label: t('Mates’ Contacts') },
-      { key: TabKey.LOCATION, label: t('Mate’s Location') },
-      { key: TabKey.SHARED, label: t('Shared Space') },
+      { key: CopilotStepName.CONTACT, label: t('Mates’ Contacts') },
+      { key: CopilotStepName.LOCATION, label: t('Mate’s Location') },
+      { key: CopilotStepName.SHARED, label: t('Shared Space') },
     ],
     [t],
   );
+
+  const handleStepChange = useCallback((step: CopilotStepName) => {
+    setActiveTab(step);
+  }, []);
 
   return (
     <ScreenContainer style={styles.container} contentContainerStyle={styles.content}>
@@ -80,27 +78,21 @@ const ConnectScreen = () => {
       </View>
       <View style={styles.tabContentWrapper}>
         <ScrollView contentContainerStyle={styles.tabContentScroll}>
-          {activeTab === TabKey.CONTACT && (
-            <ConnectCopilotStep name={CopilotStepName.CONTACT}>
-              <CopilotView>
-                <EmergencySection />
-              </CopilotView>
-            </ConnectCopilotStep>
-          )}
-          {activeTab === TabKey.LOCATION && (
-            <ConnectCopilotStep name={CopilotStepName.LOCATION}>
-              <CopilotView>
-                <LocationSection />
-              </CopilotView>
-            </ConnectCopilotStep>
-          )}
-          {activeTab === TabKey.SHARED && (
-            <ConnectCopilotStep name={CopilotStepName.SHARED}>
-              <CopilotView>
-                <SharedSection />
-              </CopilotView>
-            </ConnectCopilotStep>
-          )}
+          <ConnectCopilotStep name={CopilotStepName.CONTACT} onStepChange={handleStepChange}>
+            <CopilotView style={activeTab !== CopilotStepName.CONTACT && styles.hidden}>
+              <EmergencySection />
+            </CopilotView>
+          </ConnectCopilotStep>
+          <ConnectCopilotStep name={CopilotStepName.LOCATION} onStepChange={handleStepChange}>
+            <CopilotView style={activeTab !== CopilotStepName.LOCATION && styles.hidden}>
+              <LocationSection />
+            </CopilotView>
+          </ConnectCopilotStep>
+          <ConnectCopilotStep name={CopilotStepName.SHARED} onStepChange={handleStepChange}>
+            <CopilotView style={activeTab !== CopilotStepName.SHARED && styles.hidden}>
+              <SharedSection />
+            </CopilotView>
+          </ConnectCopilotStep>
         </ScrollView>
       </View>
     </ScreenContainer>
@@ -117,7 +109,13 @@ export default ConnectScreenWithCopilot;
 
 const getStyles = createStyles<
   StyleRecord<
-    'container' | 'content' | 'tabRow' | 'tabButton' | 'tabContentWrapper' | 'tabContentScroll',
+    | 'container'
+    | 'content'
+    | 'tabRow'
+    | 'tabButton'
+    | 'tabContentWrapper'
+    | 'tabContentScroll'
+    | 'hidden',
     'tabButtonContent' | 'tabButtonContentActive' | 'tabButtonContentFirst' | 'tabButtonContentLast'
   >
 >({
@@ -167,5 +165,8 @@ const getStyles = createStyles<
   },
   tabContentScroll: {
     flexGrow: 1,
+  },
+  hidden: {
+    display: 'none',
   },
 });

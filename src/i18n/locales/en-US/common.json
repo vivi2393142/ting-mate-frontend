@@ -84,10 +84,6 @@
     "Month_one": "Month",
     "Month_other": "Months"
   },
-  "role": {
-    "Core User": "Core User",
-    "Companion": "Companion"
-  },
   "userDisplayMode": {
     "Full": "Full",
     "Simple": "Simple"
