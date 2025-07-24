@@ -1,10 +1,7 @@
-import dayjs from 'dayjs';
-import { Fragment, type ReactNode } from 'react';
-import { useTranslation } from 'react-i18next';
+import { type ReactNode } from 'react';
 
 import { ScrollView, View } from 'react-native';
 
-import { LAST_UPDATE_DATETIME_FORMAT } from '@/constants';
 import useAppTheme from '@/hooks/useAppTheme';
 import { StaticTheme } from '@/theme';
 import { createStyles, type StyleRecord } from '@/utils/createStyles';
@@ -13,7 +10,6 @@ import ThemedIconButton from '@/components/atoms/ThemedIconButton';
 import ThemedText from '@/components/atoms/ThemedText';
 
 interface ContentContainerProps {
-  isExpanded: boolean;
   children: ReactNode;
   hasMoreItems?: boolean;
   onLoadMore?: () => void;
@@ -21,7 +17,6 @@ interface ContentContainerProps {
 }
 
 const ContentContainer = ({
-  isExpanded,
   children,
   hasMoreItems,
   onLoadMore,
@@ -30,15 +25,13 @@ const ContentContainer = ({
   const theme = useAppTheme();
   const styles = getStyles(theme);
 
-  if (!isExpanded) return <View style={styles.content}>{children}</View>;
-
   return (
     <ScrollView
       style={styles.scrollContainer}
       showsVerticalScrollIndicator={false}
       nestedScrollEnabled={true}
     >
-      <View style={styles.content}>
+      <View>
         {children}
         {hasMoreItems && onLoadMore && (
           <ThemedIconButton
@@ -60,41 +53,49 @@ interface RefreshRowProps {
   onRefresh: () => void;
 }
 
-interface SharedTabContentProps extends ContentContainerProps, RefreshRowProps {
+interface SharedContentProps extends ContentContainerProps, RefreshRowProps {
+  title: string;
+  titleRightNode?: ReactNode;
   contentAreaNode?: ReactNode;
 }
 
-const SharedTabContent = ({
-  isExpanded,
+const SharedContent = ({
+  title,
+  titleRightNode,
   hasMoreItems,
-  lastUpdated,
   isLoading,
   isFetching,
   onRefresh,
   onLoadMore,
   children,
   contentAreaNode,
-}: SharedTabContentProps) => {
+}: SharedContentProps) => {
   const theme = useAppTheme();
   const styles = getStyles(theme);
 
-  const { t } = useTranslation('connect');
-
   return (
-    <Fragment>
-      <View style={[styles.contentArea, isExpanded && styles.contentAreaExpanded]}>
-        <ContentContainer
-          isExpanded={isExpanded}
-          hasMoreItems={hasMoreItems}
-          onLoadMore={onLoadMore}
-          isLoading={isLoading}
-        >
+    <View>
+      <View style={styles.titleContainer}>
+        <ThemedText variant="titleMedium">{title}</ThemedText>
+        <ThemedIconButton
+          name={isFetching ? 'arrow.clockwise.circle' : 'arrow.clockwise'}
+          onPress={onRefresh}
+          size={'tiny'}
+          color={theme.colors.onSurfaceVariant}
+          loading={isFetching}
+          disabled={isFetching}
+          style={styles.refreshButton}
+        />
+        {titleRightNode}
+      </View>
+      <View style={styles.contentArea}>
+        <ContentContainer hasMoreItems={hasMoreItems} onLoadMore={onLoadMore} isLoading={isLoading}>
           {children}
         </ContentContainer>
         {contentAreaNode}
       </View>
       {/* Last updated & refresh */}
-      <View style={styles.updateWrapper}>
+      {/* <View style={styles.updateWrapper}>
         <ThemedText variant="bodyMedium" color="onSurfaceVariant">
           {t('Last updated:')}{' '}
           {lastUpdated ? dayjs(lastUpdated).format(LAST_UPDATE_DATETIME_FORMAT) : '--'}
@@ -107,37 +108,36 @@ const SharedTabContent = ({
           loading={isFetching}
           disabled={isFetching}
         />
-      </View>
-    </Fragment>
+      </View> */}
+    </View>
   );
 };
 
 const getStyles = createStyles<
   StyleRecord<
+    | 'titleContainer'
+    | 'refreshButton'
     | 'contentArea'
-    | 'contentAreaExpanded'
     | 'scrollContainer'
-    | 'content'
     | 'loadMoreButton'
     | 'updateWrapper'
   >
 >({
-  contentArea: {
-    borderWidth: 1,
-    borderTopWidth: 0,
-    borderColor: ({ colors }) => colors.outline,
-    borderBottomLeftRadius: StaticTheme.borderRadius.s,
-    borderBottomRightRadius: StaticTheme.borderRadius.s,
-    position: 'relative',
+  titleContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: StaticTheme.spacing.xs,
   },
-  contentAreaExpanded: {
-    height: 180,
+  refreshButton: {
+    marginLeft: StaticTheme.spacing.xs,
+    marginRight: 'auto',
+  },
+  contentArea: {
+    flex: 1,
+    position: 'relative',
   },
   scrollContainer: {
     flex: 1,
-  },
-  content: {
-    padding: StaticTheme.spacing.sm,
   },
   loadMoreButton: {
     alignSelf: 'center',
@@ -147,8 +147,8 @@ const getStyles = createStyles<
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    marginTop: StaticTheme.spacing.xs * 1.5,
+    marginTop: StaticTheme.spacing.md,
   },
 });
 
-export default SharedTabContent;
+export default SharedContent;

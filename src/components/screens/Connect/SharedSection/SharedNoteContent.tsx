@@ -16,7 +16,7 @@ import Skeleton from '@/components/atoms/Skeleton';
 import ThemedIconButton from '@/components/atoms/ThemedIconButton';
 import ThemedText from '@/components/atoms/ThemedText';
 import ChipItem from '@/components/screens/Connect/SharedSection/ChipItem';
-import SharedTabContent from '@/components/screens/Connect/SharedSection/SharedTabContent';
+import SharedContent from '@/components/screens/Connect/SharedSection/SharedContent';
 
 const MIN_ITEM_COUNT = 3;
 
@@ -68,22 +68,22 @@ const SharedNoteContent = () => {
   }, [router]);
 
   return (
-    <SharedTabContent
-      isExpanded={true}
+    <SharedContent
+      title={t('Shared Notes')}
       isLoading={isFetchingNotes}
       lastUpdated={lastNoteUpdate}
       isFetching={isFetchingNotes}
       onRefresh={handleRefreshNotes}
-      contentAreaNode={
-        sharedNotesData?.notes?.length !== 0 ? (
-          <ThemedIconButton
-            name="plus.circle.fill"
-            size="large"
-            onPress={handleAddNote}
-            style={styles.addNoteButton}
-          />
-        ) : null
-      }
+      // contentAreaNode={
+      //   sharedNotesData?.notes?.length !== 0 ? (
+      //     <ThemedIconButton
+      //       name="plus.circle.fill"
+      //       size="large"
+      //       onPress={handleAddNote}
+      //       style={styles.addNoteButton}
+      //     />
+      //   ) : null
+      // }
     >
       <Fragment>
         {isLoadingNotes && (
@@ -109,16 +109,21 @@ const SharedNoteContent = () => {
             <ThemedText color="onSurfaceVariant" style={styles.contentNoteText}>
               {t('No Note Found')}
             </ThemedText>
-            <ThemedIconButton name="plus.circle.fill" size="large" onPress={handleAddNote} />
           </View>
         )}
       </Fragment>
-    </SharedTabContent>
+      <ThemedIconButton
+        name="plus.circle"
+        size="medium"
+        onPress={handleAddNote}
+        style={styles.addNoteButton}
+      />
+    </SharedContent>
   );
 };
 
 const getStyles = createStyles<
-  StyleRecord<'addNoteButton' | 'loadingContainer' | 'contentNoteTextContainer', 'contentNoteText'>
+  StyleRecord<'loadingContainer' | 'contentNoteTextContainer' | 'addNoteButton', 'contentNoteText'>
 >({
   contentNoteTextContainer: {
     flexDirection: 'row',
@@ -131,9 +136,8 @@ const getStyles = createStyles<
     textAlign: 'center',
   },
   addNoteButton: {
-    position: 'absolute',
-    bottom: StaticTheme.spacing.sm,
-    right: StaticTheme.spacing.sm,
+    alignSelf: 'center',
+    marginTop: StaticTheme.spacing.sm,
   },
   loadingContainer: {
     gap: StaticTheme.spacing.xs,

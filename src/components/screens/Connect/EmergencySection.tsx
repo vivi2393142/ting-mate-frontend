@@ -4,6 +4,7 @@ import { useCallback, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import { Alert, View } from 'react-native';
+import { TouchableRipple } from 'react-native-paper';
 
 import ROUTES from '@/constants/routes';
 import useAppTheme from '@/hooks/useAppTheme';
@@ -11,13 +12,13 @@ import useUserStore from '@/store/useUserStore';
 import { StaticTheme } from '@/theme';
 import { ContactMethod } from '@/types/connect';
 import type { EmergencyContact } from '@/types/user';
+import colorWithAlpha from '@/utils/colorWithAlpha';
 import { createStyles, type StyleRecord } from '@/utils/createStyles';
 import { getDisplayPhone } from '@/utils/phoneNumberUtils';
 
 import ThemedIconButton from '@/components/atoms/ThemedIconButton';
 import ThemedText from '@/components/atoms/ThemedText';
 import NoteMessage from '@/components/screens/Connect/NoteMessage';
-import { TouchableRipple } from 'react-native-paper';
 
 const MIN_ITEM_COUNT = 3;
 
@@ -123,6 +124,9 @@ const ContactRow = ({ contact }: { contact: EmergencyContact }) => {
 };
 
 const EmergencySection = () => {
+  const theme = useAppTheme();
+  const styles = getStyles(theme);
+
   const router = useRouter();
 
   const { t } = useTranslation('connect');
@@ -139,9 +143,14 @@ const EmergencySection = () => {
 
   return hasContacts ? (
     <View>
-      {user?.settings?.emergencyContacts?.map((contact, idx) =>
-        idx < MIN_ITEM_COUNT ? <ContactRow key={contact.id} contact={contact} /> : null,
-      )}
+      <ThemedText variant="bodyMedium" color="outline" style={styles.sectionDesc}>
+        {t('Keep quick contact details for your mates here.')}
+      </ThemedText>
+      <View style={styles.emergencyContainer}>
+        {user?.settings?.emergencyContacts?.map((contact, idx) =>
+          idx < MIN_ITEM_COUNT ? <ContactRow key={contact.id} contact={contact} /> : null,
+        )}
+      </View>
     </View>
   ) : (
     <NoteMessage
@@ -155,6 +164,19 @@ const EmergencySection = () => {
     />
   );
 };
+
+const getStyles = createStyles<StyleRecord<'emergencyContainer', 'sectionDesc'>>({
+  sectionDesc: {
+    marginBottom: StaticTheme.spacing.sm * 1.5,
+    paddingHorizontal: StaticTheme.spacing.sm * 1.25,
+  },
+  emergencyContainer: {
+    backgroundColor: ({ colors }) => colorWithAlpha(colors.surfaceVariant, 0.5),
+    borderRadius: StaticTheme.borderRadius.s,
+    paddingHorizontal: StaticTheme.spacing.sm * 1.5,
+    paddingVertical: StaticTheme.spacing.sm,
+  },
+});
 
 const getContactRowStyles = createStyles<
   StyleRecord<'contactRow' | 'contactInfo' | 'contactActions'>

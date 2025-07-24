@@ -17,9 +17,9 @@ import { createStyles, type StyleRecord } from '@/utils/createStyles';
 import Skeleton from '@/components/atoms/Skeleton';
 import ThemedText from '@/components/atoms/ThemedText';
 import ChipItem from '@/components/screens/Connect/SharedSection/ChipItem';
-import SharedTabContent from '@/components/screens/Connect/SharedSection/SharedTabContent';
+import SharedContent from '@/components/screens/Connect/SharedSection/SharedContent';
 
-const MIN_ITEM_COUNT = 3;
+const MIN_ITEM_COUNT = 5;
 const MAX_LOG_COUNT = 50;
 const LOG_CTN_PER_PAGE = 10;
 
@@ -83,8 +83,8 @@ const SharedLogContent = () => {
   }, []);
 
   return (
-    <SharedTabContent
-      isExpanded={true}
+    <SharedContent
+      title={t('Shared Logs')}
       hasMoreItems={hasMoreLogs && !isReachedLogLimit}
       onLoadMore={handleLoadMoreLogs}
       isLoading={isFetchingLogs}
@@ -104,6 +104,7 @@ const SharedLogContent = () => {
           idx < MIN_ITEM_COUNT ? (
             <ChipItem
               key={log.id}
+              size="small"
               label={dayjs(log.timestamp).format(LOG_TIME_FORMAT)}
               description={formatLogText(log, 'summary')}
               onPress={() => handleLogPress(log)}
@@ -120,7 +121,7 @@ const SharedLogContent = () => {
           {t('Only the latest {{count}} records are shown.', { count: MAX_LOG_COUNT })}
         </ThemedText>
       )}
-    </SharedTabContent>
+    </SharedContent>
   );
 };
 

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { walkthroughable } from 'react-native-copilot';
 
 import { ScrollView, View } from 'react-native';
@@ -17,20 +17,23 @@ import ConnectCopilotStep, { CopilotStepName } from '@/components/screens/Connec
 import EmergencySection from '@/components/screens/Connect/EmergencySection';
 import LocationSection from '@/components/screens/Connect/LocationSection';
 import SharedSection from '@/components/screens/Connect/SharedSection';
+import { useTranslation } from 'react-i18next';
+
+enum TabKey {
+  CONTACT = 'CONTACT',
+  LOCATION = 'LOCATION',
+  SHARED = 'SHARED',
+}
 
 const CopilotView = walkthroughable(View);
-
-const TAB_LIST = [
-  { key: 'contact', label: 'Contact' },
-  { key: 'location', label: 'Location' },
-  { key: 'shared', label: 'Shared' },
-];
 
 const ConnectScreen = () => {
   const theme = useAppTheme();
   const styles = getStyles(theme);
 
-  const [activeTab, setActiveTab] = useState('location');
+  const { t } = useTranslation('connect');
+
+  const [activeTab, setActiveTab] = useState(TabKey.LOCATION);
 
   // Handle copilot
   const hasSeenOnboarding = useOnboardingStore((s) => s.hasSeenOnboarding);
@@ -40,6 +43,15 @@ const ConnectScreen = () => {
     shouldShowCopilot: hasSeenOnboarding && !hasVisitedConnect,
     onStop: () => useOnboardingStore.getState().setHasVisitedConnect(true),
   });
+
+  const TAB_LIST = useMemo(
+    () => [
+      { key: TabKey.CONTACT, label: t('Mates’ Contacts') },
+      { key: TabKey.LOCATION, label: t('Mate’s Location') },
+      { key: TabKey.SHARED, label: t('Shared Space') },
+    ],
+    [t],
+  );
 
   return (
     <ScreenContainer style={styles.container} contentContainerStyle={styles.content}>
@@ -59,6 +71,7 @@ const ConnectScreen = () => {
                 idx === 0 && styles.tabButtonContentFirst,
                 idx === TAB_LIST.length - 1 && styles.tabButtonContentLast,
               ]}
+              numberOfLines={2}
             >
               {tab.label}
             </ThemedText>
@@ -67,21 +80,21 @@ const ConnectScreen = () => {
       </View>
       <View style={styles.tabContentWrapper}>
         <ScrollView contentContainerStyle={styles.tabContentScroll}>
-          {activeTab === 'contact' && (
+          {activeTab === TabKey.CONTACT && (
             <ConnectCopilotStep name={CopilotStepName.CONTACT}>
               <CopilotView>
                 <EmergencySection />
               </CopilotView>
             </ConnectCopilotStep>
           )}
-          {activeTab === 'location' && (
+          {activeTab === TabKey.LOCATION && (
             <ConnectCopilotStep name={CopilotStepName.LOCATION}>
               <CopilotView>
                 <LocationSection />
               </CopilotView>
             </ConnectCopilotStep>
           )}
-          {activeTab === 'shared' && (
+          {activeTab === TabKey.SHARED && (
             <ConnectCopilotStep name={CopilotStepName.SHARED}>
               <CopilotView>
                 <SharedSection />
@@ -132,7 +145,8 @@ const getStyles = createStyles<
   },
   tabButtonContent: {
     backgroundColor: ({ colors }) => colors.surface,
-    paddingVertical: StaticTheme.spacing.sm * 1.5,
+    paddingVertical: StaticTheme.spacing.xs * 1.5,
+    paddingHorizontal: StaticTheme.spacing.sm,
     width: '100%',
     textAlign: 'center',
   },

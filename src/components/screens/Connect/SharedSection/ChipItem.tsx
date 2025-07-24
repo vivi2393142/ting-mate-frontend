@@ -8,12 +8,13 @@ import colorWithAlpha from '@/utils/colorWithAlpha';
 import { createStyles, type StyleRecord } from '@/utils/createStyles';
 
 interface ChipItemProps {
+  size?: 'small' | 'medium';
   label: string;
   description: string;
   onPress: () => void;
 }
 
-const ChipItem = ({ label, description, onPress }: ChipItemProps) => {
+const ChipItem = ({ size, label, description, onPress }: ChipItemProps) => {
   const theme = useAppTheme();
   const styles = getStyles(theme);
 
@@ -23,14 +24,9 @@ const ChipItem = ({ label, description, onPress }: ChipItemProps) => {
       style={styles.chip}
       rippleColor={colorWithAlpha(theme.colors.primary, 0.1)}
     >
-      <View style={styles.chipContent}>
+      <View style={[styles.chipContent, size === 'small' && styles.chipContentSmall]}>
         <ThemedText color="primary">{label}</ThemedText>
-        <ThemedText
-          color="onSurfaceVariant"
-          numberOfLines={1}
-          ellipsizeMode="tail"
-          style={styles.chipDesc}
-        >
+        <ThemedText color="outline" numberOfLines={1} ellipsizeMode="tail" style={styles.chipDesc}>
           {description}
         </ThemedText>
       </View>
@@ -40,17 +36,22 @@ const ChipItem = ({ label, description, onPress }: ChipItemProps) => {
 
 export default ChipItem;
 
-const getStyles = createStyles<StyleRecord<'chip' | 'chipContent', 'chipDesc'>>({
+const getStyles = createStyles<
+  StyleRecord<'chip' | 'chipContent' | 'chipContentSmall', 'chipDesc'>
+>({
   chip: {
     borderBottomWidth: 1,
     borderColor: ({ colors }) => colors.outlineVariant,
   },
   chipContent: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: StaticTheme.spacing.sm * 1.5,
+    gap: StaticTheme.spacing.sm,
     paddingHorizontal: StaticTheme.spacing.sm,
-    paddingVertical: StaticTheme.spacing.xs * 1.5,
+    paddingVertical: StaticTheme.spacing.sm * 1.5,
+  },
+  chipContentSmall: {
+    paddingVertical: StaticTheme.spacing.xs * 1.25,
+    gap: StaticTheme.spacing.md,
+    flexDirection: 'row',
   },
   chipDesc: {
     flex: 1,
