@@ -35,7 +35,6 @@ const getWhatsAppMessageUrl = (phone: string) => `https://wa.me/${phone}`;
 
 const ContactRow = ({ contact }: { contact: EmergencyContact }) => {
   const { t } = useTranslation('connect');
-
   const theme = useAppTheme();
   const styles = getContactRowStyles(theme);
 
@@ -114,6 +113,8 @@ const ContactRow = ({ contact }: { contact: EmergencyContact }) => {
             size={'xlarge'}
             color={whatsAppColor}
             onPress={handleWhatsAppMessage}
+            role="button"
+            accessibilityRole="button"
             accessibilityLabel={t('Send WhatsApp to {{name}}', { name: contact.name })}
             disabled={isWhatsAppDisabled}
           />

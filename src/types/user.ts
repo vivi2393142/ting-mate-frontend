@@ -35,8 +35,7 @@ export interface UserLink {
 }
 
 export interface EmergencyContact {
-  id: string;
-  email: string;
+  id: string; // reference to linked account's email
   name: string;
   phone: string;
   methods: ContactMethod[];

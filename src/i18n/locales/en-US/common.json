@@ -53,6 +53,7 @@
   "Yes": "Yes",
   "Your mate list changed. Tap to update.": "Your mate list changed. Tap to update.",
   "[Voice message]": "[Voice message]",
+  "checkbox": "checkbox",
   "contactMethod": {
     "Phone": "Phone",
     "WhatsApp": "WhatsApp"

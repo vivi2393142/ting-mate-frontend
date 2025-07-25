@@ -5,14 +5,13 @@ import {
   useQueryClient,
   type UseQueryOptions,
 } from '@tanstack/react-query';
-import uuid from 'react-native-uuid';
 import { z } from 'zod';
 
 import { axiosClientWithAuth } from '@/api/axiosClient';
 import API_PATH from '@/api/path';
 import useUserStore from '@/store/useUserStore';
 import { ContactMethod } from '@/types/connect';
-import type { EmergencyContact, ReminderSettings, User, UserSettings } from '@/types/user';
+import type { ReminderSettings, User, UserSettings } from '@/types/user';
 import { Role, UserDisplayMode, UserTextSize } from '@/types/user';
 
 /* =============================================================================
@@ -79,8 +78,6 @@ type APIUserSettings = z.infer<typeof UserSettingsSchema>;
 
 type APIReminderSettings = z.infer<typeof ReminderSettingsSchema>;
 
-type APIEmergencyContact = z.infer<typeof EmergencyContactSchema>;
-
 type APIUser = z.infer<typeof UserSchema>;
 
 export type UserSettingsUpdateRequest = Partial<UserSettings>;
@@ -120,19 +117,6 @@ const transformReminderSettingsFromAPI = (apiReminderSettings: unknown): Reminde
   }
 };
 
-const transformEmergencyContactFromAPI = (
-  apiEmergencyContacts: APIEmergencyContact[],
-): EmergencyContact[] =>
-  apiEmergencyContacts.reduce<EmergencyContact[]>((acc, curr) => {
-    if (curr.email) {
-      acc.push({
-        ...curr,
-        email: curr.email,
-      });
-    }
-    return acc;
-  }, []);
-
 // Transform API user settings (snake_case, nullable) to FE UserSettings (camelCase, strict)
 const transformUserSettingsFromAPI = (apiUserSettings: APIUserSettings): UserSettings => {
   const userSettings: UserSettings = {
@@ -141,7 +125,7 @@ const transformUserSettingsFromAPI = (apiUserSettings: APIUserSettings): UserSet
     textSize: apiUserSettings.textSize,
     displayMode: apiUserSettings.displayMode,
     reminder: transformReminderSettingsFromAPI(apiUserSettings.reminder),
-    emergencyContacts: transformEmergencyContactFromAPI(apiUserSettings.emergency_contacts || []),
+    emergencyContacts: apiUserSettings.emergency_contacts || [],
     allowShareLocation: apiUserSettings.allow_share_location || false,
     // language: apiUserSettings.language, // TODO: implement if needed
   };
@@ -161,11 +145,10 @@ export const transformUserFromAPI = (apiUser: APIUser): User => {
 // Merged linked accounts with emergency contacts
 const userWithMergedContacts = (user: User): User => {
   const newContacts = user.settings.linked.map((link) => {
-    const targetContact = user.settings.emergencyContacts.find((c) => c.email === link.email);
+    const targetContact = user.settings.emergencyContacts.find((c) => c.id === link.email);
     return {
-      email: link.email,
+      id: link.email,
       name: link.name,
-      id: targetContact?.id || uuid.v4(),
       phone: targetContact?.phone || '',
       methods: targetContact?.methods || [],
     };
