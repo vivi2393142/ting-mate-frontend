@@ -1,6 +1,5 @@
 # TingMate Frontend
 
-<!-- TODO: add logo-->
 <p align="center">
    <a href="https://vivi2393142.github.io/ting-mate-frontend/">
       <img src="./src/assets/images/adaptive-icon.png" alt="Logo" width="200">
@@ -123,10 +122,9 @@ In the output, you'll find options to open the app in a
 ### Additional Resources
 
 - [Backend API Repository](https://vivi2393142.github.io/ting-mate-backend/)
-     <!--  (link to be added) -->
 
   Contains the FastAPI backend for handling task data, user sessions, location tracking, and voice assistant integration.
 
 - [AI-Based User Research and Evaluation](https://vivi2393142.github.io/ting-mate-ai-research/)
-   <!-- (link to be added) -->
+
   This project includes a novel and deliberate use of AI personas and LLM-assisted simulations to conduct both requirement interviews and usability evaluations. This approach was designed to explore the feasibility of AI-assisted user research, particularly in contexts where access to real users (e.g., memory-impaired individuals) is limited.

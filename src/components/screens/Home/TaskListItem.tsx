@@ -151,6 +151,7 @@ const getStyles = createStyles<
     gap: (_, { userTextSize }) =>
       userTextSize === UserTextSize.LARGE ? StaticTheme.spacing.lg : StaticTheme.spacing.sm,
     backgroundColor: 'transparent',
+    alignItems: 'center',
   },
   timeText: {
     margin: 'auto',
