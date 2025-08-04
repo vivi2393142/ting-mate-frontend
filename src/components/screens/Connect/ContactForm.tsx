@@ -43,6 +43,8 @@ const contactMethods: ContactMethodOption[] = [
   { type: ContactMethod.WHATSAPP, icon: 'message' },
 ];
 
+// TODO: default country code should not be +55
+// TODO: expand "method list" always
 const ContactFormScreen = () => {
   const { t } = useTranslation('connect');
   const { t: tCommon } = useTranslation('common');

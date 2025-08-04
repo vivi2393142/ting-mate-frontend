@@ -78,11 +78,11 @@ export const useOnboardingStore = create<OnboardingStateStore>((set) => ({
   },
 }));
 
-// If cannot get state, default to true (not show onboarding)
+// If cannot get state, default to false (not show onboarding)
 const getInitStateSafely = (settled: PromiseSettledResult<string | null>) => {
-  if (settled.status === 'fulfilled' && (settled.value === null || settled.value === 'false')) {
-    return false;
-  } else {
+  if (settled.status === 'fulfilled' && settled.value === 'true') {
     return true;
+  } else {
+    return false;
   }
 };
