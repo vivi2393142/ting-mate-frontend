@@ -6,7 +6,6 @@ import PhoneInput, {
   ICountry,
   getCountriesByCallingCode,
   getCountryByCca2,
-  isValidPhoneNumber,
 } from 'react-native-international-phone-number';
 
 import { Alert, Button, View } from 'react-native';
@@ -66,13 +65,10 @@ const ContactFormScreen = () => {
   const [methods, setMethods] = useState<ContactMethod[]>([]);
 
   const [name, setName] = useState('');
-  const [phoneCountry, setPhoneCountry] = useState<null | ICountry>(null);
+  const [phoneCountry, setPhoneCountry] = useState<null | ICountry>(defaultPhoneCountry);
   const [phoneNumber, setPhoneNumber] = useState<string>('');
-
   const [hasPermission, setHasPermission] = useState(false);
   const [isRequesting, setIsRequesting] = useState(false);
-
-  const [showMethodOptions, setShowMethodOptions] = useState(false);
 
   const handlePhoneNumberChange = useCallback((phoneNumber: string) => {
     setPhoneNumber(phoneNumber);
@@ -80,10 +76,6 @@ const ContactFormScreen = () => {
 
   const handlePhonCountryChange = useCallback((country: ICountry) => {
     setPhoneCountry(country);
-  }, []);
-
-  const handleMethodPress = useCallback(() => {
-    setShowMethodOptions((prev) => !prev);
   }, []);
 
   const handleMethodToggle = useCallback((method: ContactMethod) => {
@@ -142,7 +134,8 @@ const ContactFormScreen = () => {
       return;
     }
 
-    if (!phoneCountry || !isValidPhoneNumber(phoneNumber, phoneCountry)) {
+    // TODO: check if phone number is valid
+    if (!phoneCountry || phoneNumber.length < 5) {
       Alert.alert('Error', t('Please enter a valid phone number.'));
       return;
     }
@@ -237,6 +230,7 @@ const ContactFormScreen = () => {
               <PhoneInput
                 value={phoneNumber}
                 selectedCountry={phoneCountry}
+                defaultCountry={'GB'}
                 onChangePhoneNumber={handlePhoneNumberChange}
                 onChangeSelectedCountry={handlePhonCountryChange}
                 placeholder={t('Enter phone number')}
@@ -264,50 +258,48 @@ const ContactFormScreen = () => {
             icon="phone.bubble"
             rightIconName="chevron.up.chevron.down"
             placeholder={t('Select contact methods')}
-            divider={showMethodOptions}
+            divider={true}
             value={methods.map((method) => tContactMethod(method)).join(', ')}
             valueColor={theme.colors.onSurfaceVariant}
-            onPress={handleMethodPress}
+            readOnly
           />
           {/* Methods List */}
-          {showMethodOptions && (
-            <View style={styles.methodsList}>
-              {contactMethods.map((method) => (
-                <TouchableRipple
-                  key={method.type}
-                  onPress={() => handleMethodToggle(method.type)}
-                  style={[
-                    styles.methodRow,
-                    methods.includes(method.type) && styles.selectedMethodRow,
-                  ]}
-                  rippleColor={colorWithAlpha(theme.colors.primary, 0.1)}
-                >
-                  <Fragment>
+          <View style={styles.methodsList}>
+            {contactMethods.map((method) => (
+              <TouchableRipple
+                key={method.type}
+                onPress={() => handleMethodToggle(method.type)}
+                style={[
+                  styles.methodRow,
+                  methods.includes(method.type) && styles.selectedMethodRow,
+                ]}
+                rippleColor={colorWithAlpha(theme.colors.primary, 0.1)}
+              >
+                <Fragment>
+                  <IconSymbol
+                    name={method.icon}
+                    size={StaticTheme.iconSize.m}
+                    color={
+                      methods.includes(method.type) ? theme.colors.primary : theme.colors.outline
+                    }
+                  />
+                  <ThemedText
+                    color={methods.includes(method.type) ? 'primary' : 'onSurface'}
+                    style={styles.methodLabel}
+                  >
+                    {tContactMethod(method.type)}
+                  </ThemedText>
+                  {methods.includes(method.type) && (
                     <IconSymbol
-                      name={method.icon}
-                      size={StaticTheme.iconSize.m}
-                      color={
-                        methods.includes(method.type) ? theme.colors.primary : theme.colors.outline
-                      }
+                      name="checkmark.circle.fill"
+                      size={StaticTheme.iconSize.s}
+                      color={theme.colors.primary}
                     />
-                    <ThemedText
-                      color={methods.includes(method.type) ? 'primary' : 'onSurface'}
-                      style={styles.methodLabel}
-                    >
-                      {tContactMethod(method.type)}
-                    </ThemedText>
-                    {methods.includes(method.type) && (
-                      <IconSymbol
-                        name="checkmark.circle.fill"
-                        size={StaticTheme.iconSize.s}
-                        color={theme.colors.primary}
-                      />
-                    )}
-                  </Fragment>
-                </TouchableRipple>
-              ))}
-            </View>
-          )}
+                  )}
+                </Fragment>
+              </TouchableRipple>
+            ))}
+          </View>
           <Divider />
         </ThemedView>
         <View style={styles.actionButtonsContainer}>

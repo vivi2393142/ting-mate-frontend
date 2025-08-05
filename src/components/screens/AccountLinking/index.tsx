@@ -170,6 +170,7 @@ const AccountLinkingScreen = () => {
   });
 
   const handleUnlink = (userEmail: string, userName: string) => () => {
+    // TODO: failed to remove mate
     Alert.alert(t('Remove Mate'), `${t('Remove this mate?')} ${userName}?`, [
       {
         text: tCommon('Cancel'),
