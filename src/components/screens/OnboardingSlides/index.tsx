@@ -7,7 +7,9 @@ import Animated, { useAnimatedStyle, useSharedValue, withTiming } from 'react-na
 import ROUTES from '@/constants/routes';
 import useAppTheme from '@/hooks/useAppTheme';
 import { useOnboardingStore } from '@/store/useOnboardingStore';
+import { useUserTextSize } from '@/store/useUserStore';
 import { StaticTheme } from '@/theme';
+import { UserTextSize } from '@/types/user';
 import { createStyles, type StyleRecord } from '@/utils/createStyles';
 
 import ScreenContainer from '@/components/atoms/ScreenContainer';
@@ -57,8 +59,10 @@ export const OnboardingSlidesScreen = () => {
   const { t } = useTranslation('common');
   const router = useRouter();
 
+  const userTextSize = useUserTextSize();
+
   const theme = useAppTheme();
-  const styles = getStyles(theme);
+  const styles = getStyles(theme, { userTextSize });
 
   const [current, setCurrent] = useState(0);
 
@@ -196,7 +200,8 @@ const getStyles = createStyles<
     | 'dotsContainer'
     | 'skipButton',
     'title' | 'subtitle' | 'skipButtonLabel'
-  >
+  >,
+  { userTextSize: UserTextSize }
 >({
   root: {
     backgroundColor: ({ colors }) => colors.background,
@@ -211,7 +216,7 @@ const getStyles = createStyles<
   },
   imageSlidesContainer: {
     alignItems: 'center',
-    height: '50%',
+    height: (_, { userTextSize }) => (userTextSize === UserTextSize.LARGE ? '45%' : '50%'),
   },
   slide: {
     paddingHorizontal: StaticTheme.spacing.lg,

@@ -12,9 +12,9 @@ import ROUTES from '@/constants/routes';
 import useAppTheme from '@/hooks/useAppTheme';
 import useStackScreenOptionsHelper from '@/hooks/useStackScreenOptionsHelper';
 import useAuthStore from '@/store/useAuthStore';
-import useUserStore from '@/store/useUserStore';
+import useUserStore, { useUserTextSize } from '@/store/useUserStore';
 import { StaticTheme } from '@/theme';
-import { Role, type UserLink } from '@/types/user';
+import { Role, UserTextSize, type UserLink } from '@/types/user';
 import colorWithAlpha from '@/utils/colorWithAlpha';
 import { createStyles, StyleRecord } from '@/utils/createStyles';
 
@@ -73,7 +73,8 @@ interface ActionCardProps {
 
 const ActionCard = ({ title, desc, icon, disabled, onPress }: ActionCardProps) => {
   const theme = useAppTheme();
-  const styles = getActionCardStyles(theme);
+  const userTextSize = useUserTextSize();
+  const styles = getActionCardStyles(theme, { userTextSize });
 
   return (
     <TouchableRipple
@@ -475,12 +476,13 @@ const getLinkedAccountListStyles = createStyles<
 });
 
 const getActionCardStyles = createStyles<
-  StyleRecord<'actionCard' | 'disabledCard' | 'actionCardContent', 'actionCardText'>
+  StyleRecord<'actionCard' | 'disabledCard' | 'actionCardContent', 'actionCardText'>,
+  { userTextSize: UserTextSize }
 >({
   actionCard: {
     flex: 1,
     borderWidth: 1,
-    minHeight: 180,
+    minHeight: (_, { userTextSize }) => (userTextSize === UserTextSize.LARGE ? 250 : 180),
     borderRadius: StaticTheme.borderRadius.s,
     borderColor: ({ colors }) => colors.primary,
     backgroundColor: ({ colors }) => colorWithAlpha(colors.primary, 0.05),

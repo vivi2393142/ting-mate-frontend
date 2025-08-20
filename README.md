@@ -18,60 +18,107 @@ This repository contains the frontend implementation, built with React Native an
 
 #### Task Management and Voice Interaction
 
+<p float="left">
+  <img src="./readme_source/home.png" width="30%" />
+  <img src="./readme_source/home_edit.png" width="30%" />
+  <img src="./readme_source/home_large.png" width="30%" />
+</p>
+
 - Create, complete, update, and query tasks using voice or touch
 - Recurring and time-based reminders
 - AI assistant designed for accessibility
 
-<!-- [GIF Placeholder] -->
-
 #### Voice Interaction
+
+<p float="left">
+  <img src="./readme_source/voice-command_start.png" width="30%" />
+  <img src="./readme_source/voice-command_inputing-2.png" width="30%" />
+  <img src="./readme_source/voice-command_pending-task.png" width="30%" />
+</p>
 
 - AI assistant designed for accessibility
 - Commands are processed by a backend API using speech-text and LLM-powered parsing
 
-<!-- [GIF Placeholder] -->
-
 #### Caregiver Collaboration
 
-- Share task logs and notes among linked caregiver accounts
+<p float="left">
+  <img src="./readme_source/connect_space.png" width="30%" />
+</p>
+
+- Share notes and task logs among linked mates
 - Visual indication of status, time, and updates
 
-<!-- [GIF Placeholder] -->
-
 #### Location-aware Safe Zone Detection
+
+<p float="left">
+   <img src="./readme_source/connect_location.png" width="30%" />
+   <img src="./readme_source/connect_location_edit.png" width="30%" />
+</p>
 
 - Set a safe area using address + radius input
 - Detect when the user is outside the zone via background geofencing
 
-<!-- [GIF Placeholder] -->
-
 #### Emergency Contact
+
+<p float="left">
+   <img src="./readme_source/connect_contacts.png" width="30%" />
+   <img src="./readme_source/connect_contacts_edit.png" width="30%" />
+</p>
 
 - Trigger emergency calls or WhatsApp to preset contacts
 - Customizable list stored in user settings
 
-<!-- [GIF Placeholder] -->
-
 #### Notification
+
+<p float="left">
+  <img src="./readme_source/notification.png" width="30%" />
+  <img src="./readme_source/notification_center.png" width="30%" />
+</p>
 
 - Task reminders are delivered through scheduled local notifications, even when the app is closed.
 - When the user is online, real-time updates (such as caregiver-triggered events) via SSEare pushed instantly through a live connection.
 
-<!-- [GIF Placeholder] -->
+#### Account Modes, Onboarding, and Tutorial
 
-#### Account Modes and Onboarding
+<p float="left">
+  <img src="./readme_source/onboarding_slides.png" width="30%" />
+  <img src="./readme_source/onboarding_role.png" width="30%" />
+  <img src="./readme_source/onboarding_copilot.png" width="30%" />
+</p>
 
 - Anonymous usage or linked account pairing
 - First-time user tutorial with contextual walkthrough
 
-<!-- [GIF Placeholder] -->
-
 ### Future Work
 
-- Integration of offline fallback mode
-- Additional languages and accessibility profiles
-- Server-side analytics and caregiver alert features
-<!-- TODO -->
+- **Background Functionality**
+
+  - Enable background location tracking for safe zone monitoring
+  - Implement push notifications for real-time caregiver alerts when the app is closed
+
+- **Voice Assistant Enhancements**
+
+  - Improve accuracy for commands
+  - Add support for casual conversations and non-task queries
+  - Integrate iOS built-in speech-to-text for faster and more reliable recognition
+
+- **Account Linking Improvements**
+
+  - Support QR code–based linking for easier setup
+
+- **Accessibility and Personalization**
+
+  - Expand accessibility modes (e.g., larger text profiles, simplified layouts)
+  - Add support for multiple languages
+
+- **Home Screen Widget**
+   <p float="left">
+      <img src="./readme_source/widget_large.png" width="30%" style="vertical-align: top;" />
+      <img src="./readme_source/widget_small_default.png" width="25%" style="vertical-align: top;" />
+      <img src="./readme_source/widget_small_warning.png" width="25%" style="vertical-align: top;" />
+   </p>
+   
+  - Implement task and location widgets for quick access without opening the app
 
 ## Development Stack and Setup
 

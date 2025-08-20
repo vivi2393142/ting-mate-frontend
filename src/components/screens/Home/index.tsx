@@ -3,7 +3,7 @@ import { Fragment, useCallback, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { walkthroughable } from 'react-native-copilot';
 
-import { Alert, View } from 'react-native';
+import { Alert, RefreshControl, View } from 'react-native';
 import { Divider, List, Portal } from 'react-native-paper';
 
 import { useGetTasks, useUpdateTaskStatus } from '@/api/tasks';
@@ -64,7 +64,7 @@ const HomeScreen = () => {
   const [isStackExpanded, setIsStackExpanded] = useState(false);
   const [isOtherTasksExpanded, setIsOtherTasksExpanded] = useState(false);
 
-  const { data: tasks = [], isLoading } = useGetTasks();
+  const { data: tasks = [], isLoading, refetch } = useGetTasks();
   const updateTaskStatusMutation = useUpdateTaskStatus();
 
   // Separate tasks that should appear today vs other tasks
@@ -183,6 +183,10 @@ const HomeScreen = () => {
     });
   }, [router]);
 
+  const onRefresh = useCallback(() => {
+    void refetch();
+  }, [refetch]);
+
   // Handle copilot
   const hasSeenOnboarding = useOnboardingStore((s) => s.hasSeenOnboarding);
   const hasVisitedTask = useOnboardingStore((s) => s.hasVisitedTask);
@@ -226,7 +230,11 @@ const HomeScreen = () => {
   return (
     // TODO: add animation for collapsed tasks
     <Fragment>
-      <ScreenContainer style={styles.root} scrollable>
+      <ScreenContainer
+        style={styles.root}
+        scrollable
+        refreshControl={<RefreshControl refreshing={isLoading} onRefresh={onRefresh} />}
+      >
         <View style={styles.headlineRow}>
           <ThemedText variant="titleLarge" style={styles.headline}>
             {t('Todays Tasks')}
