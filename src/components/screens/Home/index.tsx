@@ -446,7 +446,7 @@ const getStyles = createStyles<
   voiceCommandButton: {
     alignSelf: 'center',
     position: 'absolute',
-    bottom: 32,
+    bottom: 28,
   },
   voiceCommandButtonForCopilot: {
     borderRadius: StaticTheme.borderRadius.round,

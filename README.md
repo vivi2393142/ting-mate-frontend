@@ -1,4 +1,4 @@
-# TingMate Frontend
+# Ting Mate Frontend
 
 <p align="center">
    <a href="https://vivi2393142.github.io/ting-mate-frontend/">
@@ -6,11 +6,22 @@
    </a>
 </p>
 
-**Ting Mate** is a mobile app designed to simplify daily task management for memory-impaired individuals and their caregivers. The interface emphasizes clarity, low cognitive effort, and minimal input, making it easier for users to manage tasks independently or with assistance.
+**Ting Mate** is a mobile companion app designed to support **memory-impaired individuals and older adults**, along with their caregivers, through accessible, voice-enabled task management.  
+Built with **React Native + Expo** and **informed by AI-assisted user research and evaluation**, the app focuses on **clarity, low cognitive effort, and independence**.
 
-In addition to task support, Ting Mate provides collaborative features such as shared logs, notes, and location tracking, enabling caregivers to coordinate more effectively. The name "Ting Mate" reflects its role as a dependable companion for reminders and task tracking.
+Many existing reminder or care apps are too complex or text-heavy for memory-impaired users and older adults. **Ting Mate** was created to address this gap — combining **voice interaction, shared task coordination, and real-time caregiver updates** into one intuitive interface.
 
-This repository contains the frontend implementation, built with React Native and Expo.
+This frontend was developed together with a FastAPI backend and an AI-based user research framework:
+
+- 🔗 [Backend](https://github.com/vivi2393142/ting-mate-backend)
+
+  Contains the FastAPI backend for handling task data, user sessions, location tracking, and voice assistant integration.
+
+- 🧠 [AI Research and Evaluation](https://github.com/vivi2393142/ting-mate-ai-research)
+
+  This project includes a novel and deliberate use of AI personas and LLM-assisted simulations to conduct both requirement interviews and usability evaluations. This approach was designed to explore the feasibility of AI-assisted user research, particularly in contexts where access to real users (e.g., memory-impaired individuals) is limited.
+
+Feature screenshots below demonstrate implemented functions.
 
 ## App Overview and Key Features
 
@@ -165,13 +176,3 @@ In the output, you'll find options to open the app in a
 - Expo Notifications
 - Linking API for phone and WhatsApp triggers
 - TypeScript
-
-### Additional Resources
-
-- [Backend API Repository](https://github.com/vivi2393142/ting-mate-backend)
-
-  Contains the FastAPI backend for handling task data, user sessions, location tracking, and voice assistant integration.
-
-- [AI-Based User Research and Evaluation](https://github.com/vivi2393142/ting-mate-ai-research/)
-
-  This project includes a novel and deliberate use of AI personas and LLM-assisted simulations to conduct both requirement interviews and usability evaluations. This approach was designed to explore the feasibility of AI-assisted user research, particularly in contexts where access to real users (e.g., memory-impaired individuals) is limited.
