@@ -6,20 +6,12 @@
    </a>
 </p>
 
-**Ting Mate** is a mobile companion app designed to support **memory-impaired individuals and older adults**, along with their caregivers, through accessible, voice-enabled task management.  
-Built with **React Native + Expo** and **informed by AI-assisted user research and evaluation**, the app focuses on **clarity, low cognitive effort, and independence**.
+**Ting Mate** is a mobile app that helps memory-impaired individuals and older adults manage daily tasks with voice interaction and simple, clear design.
 
-Many existing reminder or care apps are too complex or text-heavy for memory-impaired users and older adults. **Ting Mate** was created to address this gap — combining **voice interaction, shared task coordination, and real-time caregiver updates** into one intuitive interface.
+Built with React Native & Expo, it focuses on accessibility, independence, and caregiver connection through shared tasks and real-time updates. This frontend works with a FastAPI backend and an AI-assisted user research framework:
 
-This frontend was developed together with a FastAPI backend and an AI-based user research framework:
-
-- 🔗 [Backend](https://github.com/vivi2393142/ting-mate-backend)
-
-  Contains the FastAPI backend for handling task data, user sessions, location tracking, and voice assistant integration.
-
-- 🧠 [AI Research and Evaluation](https://github.com/vivi2393142/ting-mate-ai-research)
-
-  This project includes a novel and deliberate use of AI personas and LLM-assisted simulations to conduct both requirement interviews and usability evaluations. This approach was designed to explore the feasibility of AI-assisted user research, particularly in contexts where access to real users (e.g., memory-impaired individuals) is limited.
+- 🔗 [Backend](https://github.com/vivi2393142/ting-mate-backend) – Task data, user sessions, location tracking, and voice assistant integration.
+- 🧠 [AI Research](https://github.com/vivi2393142/ting-mate-ai-research) – GPT-based persona interviews and usability testing that informed design decisions.
 
 Feature screenshots below demonstrate implemented functions.
 
